@@ -1,38 +1,34 @@
-# sv
+# Life Code
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+第76回駒場祭企画 C 班
 
-## Creating a project
+## 開発
 
-If you're seeing this, you've probably already done this step. Congrats!
+### 環境構築
 
-```sh
-# create a new project in the current directory
-npx sv create
+インストール:
 
-# create a new project in my-app
-npx sv create my-app
-```
+- Bun >= v1.2 <https://bun.com/>
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+実行:
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+bun install --frozen-lockfile
 ```
 
-## Building
-
-To create a production version of your app:
+### コマンド
 
 ```sh
-npm run build
+bun dev # 開発用サーバーを起動
+bun run build # リリース用にビルド
+
+bun check # 型チェック (TypeScript)
+bun lint # コードの品質・整形チェック
+bun format # コードを自動で整形
 ```
 
-You can preview the production build with `npm run preview`.
+### 学習用教材・リファレンス
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- Svelte v5・SvelteKit <https://svelte.jp/docs>
+- DaisyUI v5 <https://daisyui.com/components/>
+- TailwindCSS v4 <https://tailwindcss.com/>
