@@ -27,6 +27,16 @@ bun lint # コードの品質・整形チェック
 bun format # コードを自動で整形
 ```
 
+### コミットする前に
+
+以下のコマンドを実行して型チェックとコードの整形をしましょう。
+
+```sh
+bun check # 型チェック
+bun format # コード整形
+bun lint # 品質チェック
+```
+
 ### 学習用教材・リファレンス
 
 - Svelte v5・SvelteKit <https://svelte.jp/docs>
