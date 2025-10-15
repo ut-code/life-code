@@ -1,48 +1,86 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script>
+  import * as icons from "$lib/icons/index.js";
 
-<div class="min-h-screen bg-base-200 p-8">
-  <div class="max-w-4xl mx-auto space-y-8">
-    
-    <!-- ヘッダー -->
-    <div class="text-center space-y-4">
-      <h1 class="text-4xl font-bold text-primary">TailwindCSS & DaisyUI テスト</h1>
-      <p class="text-lg text-base-content/70">すべての要素が正しく表示されていれば、正常に動作しています</p>
+  let code = $state(
+`<!DOCTYPE html>
+<html>
+<body>
+  <h1>Life Game</h1>
+  <script>
+    console.log('実行されました');
+  <\/script>
+</body>
+</html>`);
+
+  let previewDoc = $derived(code);
+  let showEditor = $state(true);
+
+</script>
+
+<div class="navbar bg-[#E0E0E0] shadow-sm">
+  <div class="mx-5 avatar w-8 rounded">
+    <img
+      src="prepare_it_later"
+      alt="ut.code();_Logo" />
+  </div>
+  
+  <div class="font-semibold text-black text-[20px]">Life code</div>
+
+  <div class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-20">
+    <img
+      class="size-6"
+      src={icons.LeftArrow}
+      alt="Left Arrow" />
+  </div>
+
+  <label class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5">
+    <input type="checkbox" />
+    <img
+      class="size-6 swap-on" 
+      src={icons.Play}
+      alt="Play" />
+    <img
+      class="size-6 swap-off"
+      src={icons.Pause}
+      alt="Pause" />
+  </label>
+
+  <div class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5">
+    <img
+      class="size-6"
+      src={icons.RightArrow}
+      alt="Right Arrow" />
+  </div>
+
+  <label class="swap ml-auto mr-5">
+    <input type="checkbox" bind:checked={showEditor} />
+    <div class="text-black">
+      <img
+        class="size-6"
+        src={icons.CodeBracket}
+        alt="Code Bracket" />
     </div>
+  </label>
+</div>
 
-    <!-- TailwindCSS基本テスト -->
-    <div class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title text-2xl">✅ TailwindCSS 基本クラス</h2>
-        <div class="space-y-4">
-          <div class="flex gap-4">
-            <div class="w-20 h-20 bg-red-500 rounded"></div>
-            <div class="w-20 h-20 bg-blue-500 rounded-lg"></div>
-            <div class="w-20 h-20 bg-green-500 rounded-full"></div>
-            <div class="w-20 h-20 bg-yellow-500"></div>
-          </div>
-          <p class="text-sm text-base-content/70">色付きの正方形が4つ表示されていればTailwindCSS動作中</p>
-        </div>
-      </div>
-    </div>
+<div class="flex h-screen box-border">
+  <div class={[
+    "flex overflow-hidden bg-[rgb(202,202,202)] shrink-0 transition-[flex-basis] duration-300 ease-in-out",
+    showEditor ? 'basis-[60%]' : 'basis-full']}>
+    <iframe 
+      srcdoc={previewDoc} 
+      title="Preview" 
+      sandbox="allow-scripts"
+      class="w-[90%] h-[80%] rounded-lg m-auto shadow-lg"
+    ></iframe>
+  </div>
 
-    <!-- DaisyUI ボタンテスト -->
-    <div class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title text-2xl">✅ DaisyUI ボタン</h2>
-        <div class="flex flex-wrap gap-2">
-          <button class="btn">Default</button>
-          <button class="btn btn-primary">Primary</button>
-          <button class="btn btn-secondary">Secondary</button>
-          <button class="btn btn-accent">Accent</button>
-          <button class="btn btn-info">Info</button>
-          <button class="btn btn-success">Success</button>
-          <button class="btn btn-warning">Warning</button>
-          <button class="btn btn-error">Error</button>
-        </div>
-        <p class="text-sm text-base-content/70">カラフルなボタンが表示されていればDaisyUI動作中</p>
-      </div>
-    </div>
-
+  <div class={[
+    "flex box-border bg-white shrink-0 overflow-hidden transition-[flex-basis,opacity] duration-300 ease-in-out",
+    showEditor ? 'basis-[40%] opacity-100' : 'basis-0 opacity-0']}>
+    <textarea 
+      bind:value={code} 
+      class="w-full h-full border-none p-4 font-mono bg-black text-[#0f0]"
+    ></textarea>
   </div>
 </div>
