@@ -12,12 +12,32 @@ let livearoundMax = defaultLiveAroundMax;
 let livearoundMin = defaultLiveAroundMin;
 let deadaroundMax = defaultDeadAroundMax;
 let deadaroundMin = defaultDeadAroundMin;
+
+function liveCellJudge(around){
+    if (livearoundMin<=around && around<=livearoundMax){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+function deadCellJudge(around){
+    if (deadaroundMin<=around && around<=deadaroundMax){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
 const generation = document.getElementById('generation');
+const isProgress = document.getElementById('timer')
 const startButton = document.getElementById('startbutton');
 const stopButton = document.getElementById('stopbutton');
 const randomButton = document.getElementById('randombutton')
 const resetButton = document.getElementById('resetbutton');
-let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => Math.random() > 0.5));
+let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById('game-board');
 function renderBoard() {
     table.innerHTML = '';
@@ -48,16 +68,23 @@ randomButton.onclick =()=>{
     board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => Math.random() > 0.5));
     renderBoard();
     generationChange(0);
+    stop();
 }
 
 resetButton.onclick =()=>{
     board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
     renderBoard();
     generationChange(0);
+    stop();
 }
 
 startButton.onclick = start
 stopButton.onclick = stop
+
+function timerChange(sentence){
+    timer = sentence;
+    isProgress.textContent = timer==='start'?'再生中':'停止中';
+}
 
 function generationChange(num){
     generationFigure = num;
@@ -67,14 +94,14 @@ function generationChange(num){
 function start(){
     if (timer === 'stop'){
         timerId = setInterval(progressBoard,1000);
-        timer = 'start';
+        timerChange('start');
     }
 }
 
 function stop(){
     if (timer === 'start'){
         clearInterval(timerId);
-        timer = 'stop';
+        timerChange('stop');
     }
 }
 
@@ -111,10 +138,10 @@ function progressBoard(){
                 }
             }
             if (board[i][j]){
-                newBoard[i][j] = (livearoundMin<=around && around<=livearoundMax);
+                newBoard[i][j] = liveCellJudge(around);
             }
             else{
-                newBoard[i][j] = (deadaroundMin<=around && around<=deadaroundMax);
+                newBoard[i][j] = deadCellJudge(around);
             }
         }
     }
