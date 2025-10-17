@@ -20,7 +20,7 @@
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
   <div class="mx-5 avatar w-8 rounded">
-    <img src="prepare_it_later" alt="ut.code();_Logo" />
+    <img src={icons.utcode} alt="ut.code();_Logo" />
   </div>
 
   <div class="font-semibold text-black text-[20px]">Life code</div>
