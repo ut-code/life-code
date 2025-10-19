@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import * as icons from "$lib/icons/index.js";
 
   let code = $state(
@@ -6,20 +6,29 @@
 <html>
 <body>
   <h1>Life Game</h1>
-  <script>
-    console.log('実行されました');
-  <\/script>
 </body>
-</html>`,
+</html>
+<script>
+  console.log('実行されました');
+  
+  window.addEventListener("message", (event) => {
+    if (event.data.type === "play-pause") {
+      console.log("Play/Pause toggled");
+    }
+  });
+<\/script>
+`,
   );
 
   let previewDoc = $derived(code);
   let showEditor = $state(true);
+  let preview_iframe: HTMLIFrameElement | undefined = $state();
+  let PlayAndPause = $state(true);
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
   <div class="mx-5 avatar w-8 rounded">
-    <img src="prepare_it_later" alt="ut.code();_Logo" />
+    <img src={icons.utcode} alt="ut.code();_Logo" />
   </div>
 
   <div class="font-semibold text-black text-[20px]">Life code</div>
@@ -28,11 +37,17 @@
     <img class="size-6" src={icons.LeftArrow} alt="Left Arrow" />
   </div>
 
-  <label class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5">
-    <input type="checkbox" />
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5"
+    onclick={() => {
+      PlayAndPause = !PlayAndPause;
+      preview_iframe?.contentWindow?.postMessage({ type: "play-pause" }, "*");
+    }}
+  >
+    <input type="checkbox" bind:checked={PlayAndPause} />
     <img class="size-6 swap-on" src={icons.Play} alt="Play" />
     <img class="size-6 swap-off" src={icons.Pause} alt="Pause" />
-  </label>
+  </button>
 
   <div class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5">
     <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
@@ -54,6 +69,7 @@
     ]}
   >
     <iframe
+      bind:this={preview_iframe}
       srcdoc={previewDoc}
       title="Preview"
       sandbox="allow-scripts"
