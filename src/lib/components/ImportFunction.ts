@@ -1,7 +1,8 @@
 export function stripExports(code: string): string {
   return code
-    .replace(/export\s+(default\s+)?/g, "") // export文を削除
-    .replace(/export\s*\{[^}]*\}\s*from\s*['"][^'"]*['"]\s*;?/g, "") // export {...} from を削除
+    .replace(/export\s+default\s+\w+\s*;?\s*/g, "") // export default を削除
+    .replace(/export\s+/g, "") // 残りのexportを削除
+    .replace(/export\s*\{[^}]*\}\s*from\s*['"][^'"]*['"]\s*;?\s*/g, "") // export {...} from を削除
     .replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, ""); // import文も削除
 }
 
