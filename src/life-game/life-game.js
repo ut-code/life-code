@@ -198,7 +198,7 @@ function placePattern(patternKey) {
 const buttonContainer = document.getElementById('button-container');
 for (const patternKey in patterns) {
   const button = document.createElement('button');
-  button.textContent = patterns[patternKey].names[ja];
+  button.textContent = patterns[patternKey].names["ja"];
   button.onclick = () => { 
     placePattern(patternKey)
   };
