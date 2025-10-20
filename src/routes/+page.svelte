@@ -1,38 +1,26 @@
 <script lang="ts">
   import * as icons from "$lib/icons/index.js";
-  import lghtml from"../life-game/life-game.html?raw";
+  import lghtml from "../life-game/life-game.html?raw";
   import lgjs from "../life-game/life-game.js?raw";
+  import {processFunctions} from "$lib/components/ImportFunction";
 
-  const funcModules = import.meta.glob('../life-game/LifeGameFunctions/*.js', {
-    query: '?raw',
-    import: 'default',
-    eager: true
+  const funcModules = import.meta.glob("../life-game/LifeGameFunctions/*.js", {
+    query: "?raw",
+    import: "default",
+    eager: true,
   });
-
-  function stripExports(code: string): string {
-    return code
-      .replace(/export\s+(default\s+)?/g, '')           // export文を削除
-      .replace(/export\s*\{[^}]*\}\s*from\s*['"][^'"]*['"]\s*;?/g, '')  // export {...} from を削除
-      .replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '');  // import文も削除
-  }
-
-  const lgfuncs = Object.entries(funcModules).reduce((acc, [path, content]) => {
-    const fileName = path.split('/').pop()?.replace('.js', '') || '';
-    acc[fileName] = stripExports(content as string);
-    return acc;
-  }, {} as Record<string, string>);
+  
+  const lgfuncs = processFunctions(funcModules);
 
   let code = $state(
     lghtml.replace(
       /<script src="\.\/life-game\.js"><\/script>/,
       `<script>
       \n${lgjs}\n
-      ${lgfuncs.PlayAndPause || ''}
-      <\/script>`
-    )
+      ${lgfuncs.PlayAndPause || ""}
+      <\/script>`,
+    ),
   );
-
-
 
   let previewDoc = $derived(code);
   let showEditor = $state(true);

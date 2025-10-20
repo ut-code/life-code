@@ -1,1 +1,1 @@
-export {default as PlayAndPause} from "./PlayAndPause.js";
+export { default as PlayAndPause } from "./PlayAndPause.js";
