@@ -1,4 +1,5 @@
 "use strict";
+import { patterns } from "$lib/patterns.js";
 let timerId = 0;
 let timer = "stop";
 let generationFigure = 0;
@@ -163,4 +164,43 @@ function progressBoard() {
   board = newBoard;
   generationChange(generationFigure + 1);
   renderBoard();
+}
+
+function placePattern(patternKey) {
+  const newBoard = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+  const patternData = patterns[patternKey];
+  if (!patternData) {
+    console.error("パターンが見つかりません:", patternKey);
+    return;
+  }
+  const patternShape = patternData.shape;
+  const patternHeight = patternShape.length;
+  const patternWidth = patternShape[0].length;
+  if  (boardSize < patternHeight || boardSize < patternWidth) {
+    console.error("盤面が小さすぎます:", patternKey);
+    return;
+  }
+  const startCol = Math.floor((20 - patternWidth) / 2);
+  const startRow = Math.floor((20 - patternHeight) / 2);
+  for (let r = 0; r < patternHeight; r++) {
+    for (let c = 0; c < patternWidth; c++) {
+      const boardCol = startCol + c;
+      const boardRow = startRow + r;
+      newBoard[boardCol][boardRow] = (patternShape[r][c] === 1);  
+    }
+  }
+  board = newBoard;
+  renderBoard();
+  generationChange(0);
+  stop();
+}
+
+const buttonContainer = document.getElementById('button-container');
+for (const patternKey in patterns) {
+  const button = document.createElement('button');
+  button.textContent = patterns[patternKey].names[ja];
+  button.onclick = () => { 
+    placePattern(patternKey)
+  };
+  buttonContainer.appendChild(button);
 }
