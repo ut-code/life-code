@@ -6,6 +6,8 @@ let generationFigure = 0;
 
 //定数
 const defaultBoardSize = 20;
+const boardSizeMax = 300;
+const boardSizeMin = 10;
 const defaultLiveAroundMax = 3;
 const defaultLiveAroundMin = 2;
 const defaultDeadAroundMax = 3;
@@ -43,6 +45,18 @@ const startButton = document.getElementById("startbutton");
 const stopButton = document.getElementById("stopbutton");
 const randomButton = document.getElementById("randombutton");
 const resetButton = document.getElementById("resetbutton");
+const sizeChangeButton = document.getElementById("sizeChangeButton");
+const patternButtonContainer = document.getElementById('pattern-button-container');
+//サイズ入力欄
+const sizeInput = document.getElementById("sizeInput");
+const sizeLabel = document.getElementById("sizeLabel");
+
+// サイズ入力欄の設定
+sizeInput.min = boardSizeMin;
+sizeInput.max = boardSizeMax;
+sizeInput.value = defaultBoardSize; 
+sizeLabel.textContent = `(${boardSizeMin}〜${boardSizeMax})`;
+
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById("game-board");
@@ -188,19 +202,50 @@ function placePattern(patternKey) {
   stop();
 }
 
-const buttonContainer = document.getElementById('button-container');
-for (const patternKey in patterns) {
-  const patternData = patterns[patternKey];
-  const button = document.createElement('button');
-  button.textContent = patternData.names["ja"];
-  button.onclick = () => { 
-    placePattern(patternKey)
-  };
-  //↓ボードに収まるパターンのみクリック可能にする
-  const requiredSize = patternData.minBoardSize || 0;
-  if (boardSize < requiredSize) {
-    button.disabled = true;
-    button.title = `このパターンには ${requiredSize}x${requiredSize} 以上の盤面が必要です`;
+function createPatternButtons() {
+  patternButtonContainer.innerHTML = "";
+  for (const patternKey in patterns) {
+    const patternData = patterns[patternKey];
+    const button = document.createElement('button');
+    button.textContent = patternData.names["ja"];
+    button.dataset.patternKey = patternKey;  // data-pattern-key属性にキーを保存
+    button.onclick = () => { 
+      placePattern(patternKey)
+    };
+    patternButtonContainer.appendChild(button);
   }
-  buttonContainer.appendChild(button);
 }
+createPatternButtons();
+
+function updatePatternButtons() {
+  const buttons = patternButtonContainer.getElementsByTagName('button');
+  //↓ボードに収まるパターンのみクリック可能にする
+  for (const button of buttons) {
+    const patternKey = button.dataset.patternKey; // data-pattern-key 属性からキーを取得
+    const patternData = patterns[patternKey];
+    const requiredSize = patternData.minBoardSize || 0;
+    if (boardSize < requiredSize) {
+      button.disabled = true;
+      button.title = `このパターンには ${requiredSize}x${requiredSize} 以上の盤面が必要です`;
+    } else {
+      button.disabled = false;
+      button.title = "";
+    }
+  }
+}
+updatePatternButtons();
+
+sizeChangeButton.onclick = () => {
+  const newSize = parseInt(sizeInput.value, 10);
+  if (isNaN(newSize) || newSize < boardSizeMin || boardSizeMax < newSize) {
+    alert(`サイズは ${boardSizeMin} から ${boardSizeMax} の間で入力してください。`);
+    sizeInput.value = boardSize;
+    return;
+  }
+  boardSize = newSize;
+  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+  renderBoard();
+  generationChange(0);
+  stop();
+  updatePatternButtons();
+};
