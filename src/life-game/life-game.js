@@ -48,7 +48,7 @@ const stopButton = document.getElementById("stopbutton");
 const randomButton = document.getElementById("randombutton");
 const resetButton = document.getElementById("resetbutton");
 const sizeChangeButton = document.getElementById("sizeChangeButton");
-const patternButtonContainer = document.getElementById('pattern-button-container');
+const patternButtonContainer = document.getElementById("pattern-button-container");
 //サイズ入力欄
 const sizeInput = document.getElementById("sizeInput");
 const sizeLabel = document.getElementById("sizeLabel");
@@ -56,7 +56,7 @@ const sizeLabel = document.getElementById("sizeLabel");
 // サイズ入力欄の設定
 sizeInput.min = boardSizeMin;
 sizeInput.max = boardSizeMax;
-sizeInput.value = defaultBoardSize; 
+sizeInput.value = defaultBoardSize;
 sizeLabel.textContent = `(${boardSizeMin}〜${boardSizeMax})`;
 
 //Boardの初期化
@@ -184,7 +184,9 @@ function progressBoard() {
 }
 
 function placePattern(patternKey) {
-  const newBoard = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+  const newBoard = Array.from({ length: boardSize }, () =>
+    Array.from({ length: boardSize }, () => false),
+  );
   const patternData = patterns[patternKey];
   const patternShape = patternData.shape;
   const patternHeight = patternShape.length;
@@ -196,7 +198,7 @@ function placePattern(patternKey) {
     for (let c = 0; c < patternWidth; c++) {
       const boardRow = startRow + r;
       const boardCol = startCol + c;
-      newBoard[boardRow][boardCol] = (patternShape[r][c] === 1);  
+      newBoard[boardRow][boardCol] = patternShape[r][c] === 1;
     }
   }
   board = newBoard;
@@ -209,11 +211,11 @@ function createPatternButtons() {
   patternButtonContainer.innerHTML = "";
   for (const patternKey in patterns) {
     const patternData = patterns[patternKey];
-    const button = document.createElement('button');
+    const button = document.createElement("button");
     button.textContent = patternData.names["ja"];
-    button.dataset.patternKey = patternKey;  // data-pattern-key属性にキーを保存
-    button.onclick = () => { 
-      placePattern(patternKey)
+    button.dataset.patternKey = patternKey; // data-pattern-key属性にキーを保存
+    button.onclick = () => {
+      placePattern(patternKey);
     };
     patternButtonContainer.appendChild(button);
   }
@@ -221,7 +223,7 @@ function createPatternButtons() {
 createPatternButtons();
 
 function updatePatternButtons() {
-  const buttons = patternButtonContainer.getElementsByTagName('button');
+  const buttons = patternButtonContainer.getElementsByTagName("button");
   //↓ボードに収まるパターンのみクリック可能にする
   for (const button of buttons) {
     const patternKey = button.dataset.patternKey; // data-pattern-key 属性からキーを取得
@@ -246,7 +248,7 @@ sizeChangeButton.onclick = () => {
     return;
   }
   boardSize = newSize;
-  cellSize =  Math.floor(defaultCellSize * (defaultBoardSize/newSize));
+  cellSize = Math.floor(defaultCellSize * (defaultBoardSize / newSize));
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
