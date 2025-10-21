@@ -360,6 +360,7 @@ export const patterns = {
       [0, 1, 0, 0, 0, 1, 1, 1]
     ]
   },
+  /*↓minBoardSizeが大きすぎるので保留
   //寿命１１０３
   RPentomino: {
     names: {
@@ -386,4 +387,5 @@ export const patterns = {
       [1, 1, 0, 0, 1, 1, 1]
     ]
   }
+  */
 };

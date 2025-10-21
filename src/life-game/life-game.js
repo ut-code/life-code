@@ -6,7 +6,8 @@ let generationFigure = 0;
 
 //定数
 const defaultBoardSize = 20;
-const boardSizeMax = 300;
+const defaultCellSize = 22; //px
+const boardSizeMax = 100;
 const boardSizeMin = 10;
 const defaultLiveAroundMax = 3;
 const defaultLiveAroundMin = 2;
@@ -15,6 +16,7 @@ const defaultDeadAroundMin = 3;
 
 //変数設定
 let boardSize = defaultBoardSize;
+let cellSize = defaultCellSize;
 let livearoundMax = defaultLiveAroundMax;
 let livearoundMin = defaultLiveAroundMin;
 let deadaroundMax = defaultDeadAroundMax;
@@ -70,8 +72,9 @@ function renderBoard() {
       const button = document.createElement("button");
       button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
       button.style.border = "1px solid black";
-      button.style.width = "22px";
-      button.style.height = "22px";
+      button.style.width = `${cellSize}px`;
+      button.style.height = `${cellSize}px`;
+      button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
       button.onclick = () => {
         if (timer === "stop") {
           board[i][j] = !board[i][j];
@@ -243,6 +246,7 @@ sizeChangeButton.onclick = () => {
     return;
   }
   boardSize = newSize;
+  cellSize =  Math.floor(defaultCellSize * (defaultBoardSize/newSize));
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
