@@ -1,3 +1,5 @@
+let timerId = 0;
+
 window.addEventListener("message", (event) => {
   if (event.data.type === "play") {
     timer = "start";

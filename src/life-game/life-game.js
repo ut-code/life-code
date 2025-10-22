@@ -1,5 +1,5 @@
 "use strict";
-let _timerId = 0;
+
 let timer = "stop";
 let generationFigure = 0;
 
@@ -69,6 +69,7 @@ function renderBoard() {
 }
 
 renderBoard();
+progressBoard();
 
 randomButton.onclick = () => {
   //白黒ランダムにBoardを変更
