@@ -2,22 +2,14 @@
   import * as icons from "$lib/icons/index.js";
   import lghtml from "../life-game/life-game.html?raw";
   import lgjs from "../life-game/life-game.js?raw";
-  import { processFunctions } from "$lib/components/ImportFunction";
-
-  const funcModules = import.meta.glob("../life-game/LifeGameFunctions/*.js", {
-    query: "?raw",
-    import: "default",
-    eager: true,
-  });
-
-  const lgfuncs = processFunctions(funcModules);
+  import PlayandPause from "../life-game/LifeGameFunctions/PlayAndPause.js?raw";
 
   let code = $state(
     lghtml.replace(
       /<script src="\.\/life-game\.js"><\/script>/,
       `<script>
       \n${lgjs}\n
-      ${lgfuncs.PlayAndPause || ""}
+      \n${PlayandPause}\n
       <\/script>`,
     ),
   );
