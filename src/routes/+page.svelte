@@ -4,7 +4,9 @@
   import lgjs from "../life-game/life-game.js?raw";
   import PlayandPause from "../life-game/LifeGameFunctions/PlayAndPause.js?raw";
 
-  let code = $state(
+  let code = $state(lgjs);
+
+  let previewDoc = $derived(
     lghtml.replace(
       /<script src="\.\/life-game\.js"><\/script>/,
       `<script>
@@ -14,7 +16,6 @@
     ),
   );
 
-  let previewDoc = $derived(code);
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
   let isProgress = $state(false);
