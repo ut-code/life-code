@@ -66,7 +66,6 @@ function renderBoard() {
     }
     table.appendChild(tr);
   }
-  
 }
 
 renderBoard();
