@@ -1,23 +1,17 @@
 <script lang="ts">
   import * as icons from "$lib/icons/index.js";
+  import lghtml from "../life-game/life-game.html?raw";
+  import lgjs from "../life-game/life-game.js?raw";
+  import PlayandPause from "../life-game/LifeGameFunctions/PlayAndPause.js?raw";
 
   let code = $state(
-    `<!DOCTYPE html>
-<html>
-<body>
-  <h1>Life Game</h1>
-</body>
-</html>
-<script>
-  console.log('実行されました');
-  
-  window.addEventListener("message", (event) => {
-    if (event.data.type === "play-pause") {
-      console.log("Play/Pause toggled");
-    }
-  });
-<\/script>
-`,
+    lghtml.replace(
+      /<script src="\.\/life-game\.js"><\/script>/,
+      `<script>
+      \n${lgjs}\n
+      \n${PlayandPause}\n
+      <\/script>`,
+    ),
   );
 
   let previewDoc = $derived(code);
