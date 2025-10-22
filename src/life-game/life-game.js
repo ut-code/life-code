@@ -1,5 +1,5 @@
 "use strict";
-let timerId = 0;
+let _timerId = 0;
 let timer = "stop";
 let generationFigure = 0;
 
@@ -66,7 +66,9 @@ function renderBoard() {
     }
     table.appendChild(tr);
   }
+  
 }
+
 renderBoard();
 
 randomButton.onclick = () => {
