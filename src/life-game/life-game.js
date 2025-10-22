@@ -74,6 +74,7 @@ function renderBoard() {
       button.style.width = `${cellSize}px`;
       button.style.height = `${cellSize}px`;
       button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
+      button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
       button.onclick = () => {
         if (timer === "stop") {
           board[i][j] = !board[i][j];
