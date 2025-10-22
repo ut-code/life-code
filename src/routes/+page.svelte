@@ -17,7 +17,7 @@
   let previewDoc = $derived(code);
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
-  let PlayAndPause = $state(true);
+  let isProgress = $state(false);
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -34,13 +34,13 @@
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5"
     onclick={() => {
-      PlayAndPause = !PlayAndPause;
-      preview_iframe?.contentWindow?.postMessage({ type: "play-pause" }, "*");
+      preview_iframe?.contentWindow?.postMessage({ type: isProgress ? "pause" : "play" }, "*");
+      isProgress = !isProgress;
     }}
   >
-    <input type="checkbox" bind:checked={PlayAndPause} />
-    <img class="size-6 swap-on" src={icons.Play} alt="Play" />
-    <img class="size-6 swap-off" src={icons.Pause} alt="Pause" />
+    <input type="checkbox" bind:checked={isProgress} />
+    <img class="size-6 swap-on" src={icons.Pause} alt="Pause" />
+    <img class="size-6 swap-off" src={icons.Play} alt="Play" />
   </button>
 
   <div class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5">

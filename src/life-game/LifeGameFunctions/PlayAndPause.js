@@ -1,5 +1,9 @@
 window.addEventListener("message", (event) => {
-  if (event.data.type === "play-pause") {
-    console.log("Play/Pause toggled");
+  if (event.data.type === "play") {
+    timer = "start";
+    timerId = setInterval(progressBoard, 1000);
+  } else if (event.data.type === "pause") {
+    timer = "stop";
+    clearInterval(timerId);
   }
 });

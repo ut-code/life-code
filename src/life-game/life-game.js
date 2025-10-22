@@ -36,10 +36,7 @@ function deadCellJudge(around) {
 }
 
 const generation = document.getElementById("generation"); //世代を表す文（第+数字+世代)
-const isProgress = document.getElementById("timer"); //進行中かを表す文(再生中/停止中)
 //BUTTON
-const startButton = document.getElementById("startbutton");
-const stopButton = document.getElementById("stopbutton");
 const randomButton = document.getElementById("randombutton");
 const resetButton = document.getElementById("resetbutton");
 //Boardの初期化
@@ -90,33 +87,10 @@ resetButton.onclick = () => {
   stop();
 };
 
-startButton.onclick = start;
-stopButton.onclick = stop;
-
-function timerChange(sentence) {
-  //現在再生中かを表すtimer変数を変更し、文章も変更
-  timer = sentence;
-  isProgress.textContent = timer === "start" ? "再生中" : "停止中";
-}
-
 function generationChange(num) {
   //現在の世代を表すgenerationFigureを変更し、文章も変更
   generationFigure = num;
   generation.textContent = "第" + generationFigure + "世代";
-}
-
-function start() {
-  if (timer === "stop") {
-    timerId = setInterval(progressBoard, 1000);
-    timerChange("start");
-  }
-}
-
-function stop() {
-  if (timer === "start") {
-    clearInterval(timerId);
-    timerChange("stop");
-  }
 }
 
 function progressBoard() {
