@@ -5,6 +5,9 @@ let generationFigure = 0;
 
 //定数
 const defaultBoardSize = 20;
+const defaultCellSize = 22; //px
+const boardSizeMax = 100;
+const boardSizeMin = 10;
 const defaultLiveAroundMax = 3;
 const defaultLiveAroundMin = 2;
 const defaultDeadAroundMax = 3;
@@ -12,6 +15,7 @@ const defaultDeadAroundMin = 3;
 
 //変数設定
 let boardSize = defaultBoardSize;
+let cellSize = defaultCellSize;
 let livearoundMax = defaultLiveAroundMax;
 let livearoundMin = defaultLiveAroundMin;
 let deadaroundMax = defaultDeadAroundMax;
@@ -42,6 +46,18 @@ const startButton = document.getElementById("startbutton");
 const stopButton = document.getElementById("stopbutton");
 const randomButton = document.getElementById("randombutton");
 const resetButton = document.getElementById("resetbutton");
+const sizeChangeButton = document.getElementById("sizeChangeButton");
+const patternButtonContainer = document.getElementById("pattern-button-container");
+//サイズ入力欄
+const sizeInput = document.getElementById("sizeInput");
+const sizeLabel = document.getElementById("sizeLabel");
+
+// サイズ入力欄の設定
+sizeInput.min = boardSizeMin;
+sizeInput.max = boardSizeMax;
+sizeInput.value = defaultBoardSize;
+sizeLabel.textContent = `(${boardSizeMin}〜${boardSizeMax})`;
+
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById("game-board");
@@ -55,8 +71,10 @@ function renderBoard() {
       const button = document.createElement("button");
       button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
       button.style.border = "1px solid black";
-      button.style.width = "22px";
-      button.style.height = "22px";
+      button.style.width = `${cellSize}px`;
+      button.style.height = `${cellSize}px`;
+      button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
+      button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
       button.onclick = () => {
         if (timer === "stop") {
           board[i][j] = !board[i][j];
@@ -164,3 +182,495 @@ function progressBoard() {
   generationChange(generationFigure + 1);
   renderBoard();
 }
+
+//以下パターンデータ
+//(注)minBoardSizeは、パターンが余裕をもって変形できるために必要なボードのサイズを表し、パターン自体より大きい。
+
+const patterns = {
+  //振動子, Oscillators
+  pulsar: {
+    //周期３
+    names: {
+      en: "Pulsar",
+      ja: "パルサー",
+    },
+    minBoardSize: 20,
+    shape: [
+      [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+      [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0],
+      [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0],
+    ],
+  },
+  pentadecathlon: {
+    //周期１５
+    names: {
+      en: "Pentadecathlon",
+      ja: "ペンタデカスロン",
+    },
+    minBoardSize: 20,
+    shape: [
+      [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+      [1, 1, 0, 1, 1, 1, 1, 0, 1, 1],
+      [0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+    ],
+  },
+  galaxy: {
+    //周期８
+    names: {
+      en: "Galaxy",
+      ja: "銀河",
+    },
+    minBoardSize: 20,
+    shape: [
+      [1, 1, 1, 1, 1, 1, 0, 1, 1],
+      [1, 1, 1, 1, 1, 1, 0, 1, 1],
+      [0, 0, 0, 0, 0, 0, 0, 1, 1],
+      [1, 1, 0, 0, 0, 0, 0, 1, 1],
+      [1, 1, 0, 0, 0, 0, 0, 1, 1],
+      [1, 1, 0, 0, 0, 0, 0, 1, 1],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0],
+      [1, 1, 0, 1, 1, 1, 1, 1, 1],
+      [1, 1, 0, 1, 1, 1, 1, 1, 1],
+    ],
+  },
+  octagon: {
+    //周期５
+    names: {
+      en: "Octagon",
+      ja: "八角形",
+    },
+    minBoardSize: 20,
+    shape: [
+      [0, 0, 0, 1, 1, 0, 0, 0],
+      [0, 0, 1, 0, 0, 1, 0, 0],
+      [0, 1, 0, 0, 0, 0, 1, 0],
+      [1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1],
+      [0, 1, 0, 0, 0, 0, 1, 0],
+      [0, 0, 1, 0, 0, 1, 0, 0],
+      [0, 0, 0, 1, 1, 0, 0, 0],
+    ],
+  },
+  figureEight: {
+    //周期８
+    names: {
+      en: "Figure eight",
+      ja: "８の字",
+    },
+    minBoardSize: 20,
+    shape: [
+      [1, 1, 1, 0, 0, 0],
+      [1, 1, 1, 0, 0, 0],
+      [1, 1, 1, 0, 0, 0],
+      [0, 0, 0, 1, 1, 1],
+      [0, 0, 0, 1, 1, 1],
+      [0, 0, 0, 1, 1, 1],
+    ],
+  },
+  tumbler: {
+    //周期１４
+    names: {
+      en: "Tumbler",
+      ja: "タンブラー",
+    },
+    minBoardSize: 20,
+    shape: [
+      [0, 1, 1, 0, 1, 1, 0],
+      [0, 1, 1, 0, 1, 1, 0],
+      [0, 0, 1, 0, 1, 0, 0],
+      [1, 0, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 1, 0, 1],
+      [1, 1, 0, 0, 0, 1, 1],
+    ],
+  },
+  barberPole: {
+    //周期２
+    names: {
+      en: "Barber's pole",
+      ja: "床屋の看板",
+    },
+    minBoardSize: 20,
+    shape: [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ],
+  },
+  clock: {
+    //周期４
+    names: {
+      en: "Clock",
+      ja: "時計",
+    },
+    minBoardSize: 20,
+    shape: [
+      [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
+      [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1],
+      [0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1],
+      [1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
+      [1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+    ],
+  },
+
+  //移動物体, Spaceships
+  glider: {
+    names: {
+      en: "Glider",
+      ja: "グライダー",
+    },
+    minBoardSize: 20,
+    shape: [
+      [0, 1, 0],
+      [0, 0, 1],
+      [1, 1, 1],
+    ],
+  },
+  lightweightSpaceship: {
+    names: {
+      en: "Lightweight Spaceship",
+      ja: "軽量級宇宙船",
+    },
+    minBoardSize: 20,
+    shape: [
+      [0, 1, 0, 0, 1],
+      [1, 0, 0, 0, 0],
+      [1, 0, 0, 0, 1],
+      [1, 1, 1, 1, 0],
+    ],
+  },
+  middleweightSpaceship: {
+    names: {
+      en: "Middleweight Spaceship",
+      ja: "中量級宇宙船",
+    },
+    minBoardSize: 20,
+    shape: [
+      [0, 0, 0, 1, 0, 0],
+      [0, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0],
+      [1, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 0],
+    ],
+  },
+  heavyweightSpaceship: {
+    names: {
+      en: "Heavyweight Spaceship",
+      ja: "重量級宇宙船",
+    },
+    minBoardSize: 20,
+    shape: [
+      [0, 0, 0, 1, 1, 0, 0],
+      [0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0],
+      [1, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 0],
+    ],
+  },
+  shuttle: {
+    names: {
+      en: "Shuttle",
+      ja: "シャトル",
+    },
+    minBoardSize: 30,
+    shape: [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+      [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+      [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ],
+  },
+  Pufferfish: {
+    names: {
+      en: "Pufferfish",
+      ja: "パファーフィッシュ",
+    },
+    minBoardSize: 40,
+    shape: [
+      [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0],
+      [0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0],
+      [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+      [0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+      [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+      [1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1],
+      [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    ],
+  },
+
+  //繁殖型, Breeders
+  gosperGliderGun: {
+    names: {
+      en: "Gosper Glider Gun",
+      ja: "グライダー銃",
+    },
+    minBoardSize: 40,
+    shape: [
+      [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+      ],
+      [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+      ],
+      [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 1,
+      ],
+      [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 1,
+      ],
+      [
+        1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+      ],
+      [
+        1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+      ],
+      [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+      ],
+      [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+      ],
+      [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+      ],
+    ],
+  },
+  Max: {
+    names: {
+      en: "Max",
+      ja: "マックス",
+    },
+    minBoardSize: 60,
+    shape: [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0],
+      [1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0],
+      [1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
+      [1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+      [0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0],
+      [1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1],
+      [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1],
+      [0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+      [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ],
+  },
+
+  //長寿型, Methuselah
+  Thunderbird: {
+    //寿命２４３
+    names: {
+      en: "Thunderbird",
+      ja: "サンダーバード",
+    },
+    minBoardSize: 60,
+    shape: [
+      [1, 1, 1],
+      [0, 0, 0],
+      [0, 1, 0],
+      [0, 1, 0],
+      [0, 1, 0],
+    ],
+  },
+  //寿命１２８
+  Herschel: {
+    names: {
+      en: "Herschel",
+      ja: "ハーシェル",
+    },
+    minBoardSize: 60,
+    shape: [
+      [1, 0, 0],
+      [1, 1, 1],
+      [1, 0, 1],
+      [0, 0, 1],
+    ],
+  },
+  //寿命１４８
+  BHeptomino: {
+    names: {
+      en: "B-Heptomino",
+      ja: "Bヘプトミノ",
+    },
+    minBoardSize: 60,
+    shape: [
+      [1, 0, 1, 1],
+      [1, 1, 1, 0],
+      [0, 1, 0, 0],
+    ],
+  },
+  //寿命１３０
+  DieHard: {
+    names: {
+      en: "Die Hard",
+      ja: "ダイハード",
+    },
+    minBoardSize: 60,
+    shape: [
+      [0, 0, 0, 0, 0, 0, 1, 0],
+      [1, 1, 0, 0, 0, 0, 0, 0],
+      [0, 1, 0, 0, 0, 1, 1, 1],
+    ],
+  },
+  /*↓minBoardSizeが大きすぎるので保留
+  //寿命１１０３
+  RPentomino: {
+    names: {
+      en: "R-Pentomino",
+      ja: "Rペントミノ"
+    },
+    minBoardSize: 150,
+    shape: [
+      [0, 1, 1],
+      [1, 1, 0],
+      [0, 1, 0]
+    ]
+  },
+  Acorn: {
+    //寿命５２０６
+    names: {
+      en: "Acorn",
+      ja: "どんぐり"
+    },
+    minBoardSize: 300,
+    shape: [
+      [0, 1, 0, 0, 0, 0, 0],
+      [0, 0, 0, 1, 0, 0, 0],
+      [1, 1, 0, 0, 1, 1, 1]
+    ]
+  }
+  */
+};
+
+function placePattern(patternKey) {
+  const newBoard = Array.from({ length: boardSize }, () =>
+    Array.from({ length: boardSize }, () => false),
+  );
+  const patternData = patterns[patternKey];
+  const patternShape = patternData.shape;
+  const patternHeight = patternShape.length;
+  const patternWidth = patternShape[0].length;
+  //↓パターンがボードの中央に来るよう、パターンの右上のセルの位置(startrow,startCol)を調整
+  const startRow = Math.floor((boardSize - patternHeight) / 2);
+  const startCol = Math.floor((boardSize - patternWidth) / 2);
+  for (let r = 0; r < patternHeight; r++) {
+    for (let c = 0; c < patternWidth; c++) {
+      const boardRow = startRow + r;
+      const boardCol = startCol + c;
+      newBoard[boardRow][boardCol] = patternShape[r][c] === 1;
+    }
+  }
+  board = newBoard;
+  renderBoard();
+  generationChange(0);
+  stop();
+}
+
+function createPatternButtons() {
+  patternButtonContainer.innerHTML = "";
+  for (const patternKey in patterns) {
+    const patternData = patterns[patternKey];
+    const button = document.createElement("button");
+    button.textContent = patternData.names["ja"];
+    button.dataset.patternKey = patternKey; // data-pattern-key属性にキーを保存
+    button.onclick = () => {
+      placePattern(patternKey);
+    };
+    patternButtonContainer.appendChild(button);
+  }
+}
+createPatternButtons();
+
+function updatePatternButtons() {
+  const buttons = patternButtonContainer.getElementsByTagName("button");
+  //↓ボードに収まるパターンのみクリック可能にする
+  for (const button of buttons) {
+    const patternKey = button.dataset.patternKey; // data-pattern-key 属性からキーを取得
+    const patternData = patterns[patternKey];
+    const requiredSize = patternData.minBoardSize || 0;
+    if (boardSize < requiredSize) {
+      button.disabled = true;
+      button.title = `このパターンには ${requiredSize}x${requiredSize} 以上の盤面が必要です`;
+    } else {
+      button.disabled = false;
+      button.title = "";
+    }
+  }
+}
+updatePatternButtons();
+
+sizeChangeButton.onclick = () => {
+  const newSize = parseInt(sizeInput.value, 10);
+  if (isNaN(newSize) || newSize < boardSizeMin || boardSizeMax < newSize) {
+    alert(`サイズは ${boardSizeMin} から ${boardSizeMax} の間で入力してください。`);
+    sizeInput.value = boardSize;
+    return;
+  }
+  boardSize = newSize;
+  cellSize = Math.floor(defaultCellSize * (defaultBoardSize / newSize));
+  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+  renderBoard();
+  generationChange(0);
+  stop();
+  updatePatternButtons();
+};
