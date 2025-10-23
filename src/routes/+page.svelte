@@ -1,8 +1,8 @@
 <script lang="ts">
-  import * as icons from "$lib/icons/index.js";
+  import * as icons from "$lib/icons/index.ts";
   import lghtml from "../life-game/life-game.html?raw";
   import lgjs from "../life-game/life-game.js?raw";
-  import PlayandPause from "../life-game/LifeGameFunctions/PlayAndPause.js?raw";
+  import PlayandPause from "../life-game/play-pause.js?raw";
 
   let code = $state(lgjs);
 
