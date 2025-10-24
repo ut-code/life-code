@@ -1,5 +1,5 @@
 {
   "name": "worker-name",
   "compatibility_date": "2025-10-23",
-  "main": "lib/index.ts",
+  "main": "src/lib/index.ts",
 }
