@@ -19,9 +19,21 @@
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
   let isProgress = $state(false);
+  let drawerOpen = $state(false);
+  let languageOpen = $state(false);
+  let resetModalOpen = $state(false);
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
+  <button
+    class="btn btn-sm btn-ghost btn-circle bg-[#E0E0E0] mx-5 w-8 rounded border-none"
+    onclick={() => {
+      drawerOpen = !drawerOpen;
+    }}
+  >
+    <img src={icons.bars_3} alt="settings" />
+  </button>
+
   <div class="mx-5 avatar w-8 rounded">
     <img src={icons.utcode} alt="ut.code();_Logo" />
   </div>
@@ -54,6 +66,53 @@
       <img class="size-6" src={icons.CodeBracket} alt="Code Bracket" />
     </div>
   </label>
+</div>
+
+<div class="drawer z-50">
+  <input type="checkbox" class="drawer-toggle" bind:checked={drawerOpen} />
+
+  <div class="drawer-side">
+    <label class="drawer-overlay" onclick={() => (drawerOpen = false)}></label>
+    <div class="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+      <h2 class="text-xl font-bold mb-4">Settings</h2>
+      <ul>
+        <li>
+          <button class="text-left w-full" onclick={() => (languageOpen = !languageOpen)}>
+            Language
+          </button>
+          <ul class="ml-4" class:hidden={!languageOpen}>
+            <li><button class="text-left">Japanese</button></li>
+            <li><button class="text-left">English</button></li>
+          </ul>
+        </li>
+        <li><button class="text-left">empty</button></li>
+        <li>
+          <button class="text-left text-red-500" onclick={() => (resetModalOpen = true)}
+            >Reset</button
+          >
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<input type="checkbox" class="modal-toggle" bind:checked={resetModalOpen} />
+<div class="modal" class:modal-open={resetModalOpen}>
+  <div class="modal-box">
+    <h3 class="font-bold text-lg">リセット確認</h3>
+    <p class="py-4">本当にリセットしますか？この操作は取り消せません。</p>
+    <div class="modal-action">
+      <button class="btn" onclick={() => (resetModalOpen = false)}>キャンセル</button>
+      <button
+        class="btn btn-error"
+        onclick={() => {
+          // ここにリセット処理を記述
+          console.log("Reset executed");
+          resetModalOpen = false;
+        }}>リセット</button
+      >
+    </div>
+  </div>
 </div>
 
 <div class="flex h-screen box-border">
