@@ -22,6 +22,7 @@
   let drawerOpen = $state(false);
   let languageOpen = $state(false);
   let resetModalOpen = $state(false);
+  let bottomDrawerOpen = $state(false);
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -81,7 +82,7 @@
             Language
           </button>
           <ul class="ml-4" class:hidden={!languageOpen}>
-            <li><button class="text-left">Japanese</button></li>
+            <li><button class="text-left">日本語</button></li>
             <li><button class="text-left">English</button></li>
           </ul>
         </li>
@@ -93,6 +94,24 @@
         </li>
       </ul>
     </div>
+  </div>
+</div>
+
+<button
+  class="btn fixed bottom-0 left-0 z-50 rounded-none"
+  onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
+>
+  {bottomDrawerOpen ? "▼" : "▲ テンプレート"}
+</button>
+
+<div
+  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300"
+  class:translate-y-full={!bottomDrawerOpen}
+  class:translate-y-0={bottomDrawerOpen}
+>
+  <div class="bg-base-200 shadow-lg p-4 h-64 w-full">
+    <h2 class="text-xl font-bold mb-4">下からのバー</h2>
+    <p>ここにコンテンツ</p>
   </div>
 </div>
 
