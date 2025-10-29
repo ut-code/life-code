@@ -44,7 +44,6 @@ const generation = document.getElementById("generation"); //世代を表す文�
 const randomButton = document.getElementById("randombutton");
 const resetButton = document.getElementById("resetbutton");
 const sizeChangeButton = document.getElementById("sizeChangeButton");
-const patternButtonContainer = document.getElementById("pattern-button-container");
 //サイズ入力欄
 const sizeInput = document.getElementById("sizeInput");
 const sizeLabel = document.getElementById("sizeLabel");

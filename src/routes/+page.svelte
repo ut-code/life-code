@@ -4,8 +4,8 @@
   import lgjs from "../life-game/life-game.js?raw";
   import PlayandPause from "../life-game/play-pause.js?raw";
   import placetemplate from "../life-game/place_template.js?raw";
-  // @ts-ignore
-  import patterns from "../life-game/life-game_temprate.js";
+  // @ts-expect-error -- for jsfile import
+  import patterns from "../life-game/life-game_template.js";
   import { onMount } from "svelte";
 
   let code = $state(lgjs);
@@ -124,7 +124,7 @@
 >
   <div class="bg-base-200 shadow-lg p-4 h-48 w-full overflow-x-auto">
     <div class="flex gap-4">
-      {#each Object.keys(patterns) as patternName}
+      {#each Object.keys(patterns) as patternName (patternName)}
         <div class="text-center flex-shrink-0">
           <p class="font-bold mb-2">{patterns[patternName].names.ja}</p>
           <button
