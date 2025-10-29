@@ -3,6 +3,10 @@
   import lghtml from "../life-game/life-game.html?raw";
   import lgjs from "../life-game/life-game.js?raw";
   import PlayandPause from "../life-game/play-pause.js?raw";
+  import placetemplate from "../life-game/place_template.js?raw";
+  // @ts-ignore
+  import patterns from "../life-game/life-game_temprate.js";
+  import { onMount } from "svelte";
 
   let code = $state(lgjs);
 
@@ -12,6 +16,7 @@
       `<script>
       \n${lgjs}\n
       \n${PlayandPause}\n
+      \n${placetemplate}\n
       <\/script>`,
     ),
   );
@@ -23,6 +28,14 @@
   let languageOpen = $state(false);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
+
+  onMount(() => {
+    window.addEventListener("message", (event) => {
+      if (event.data.type === "patternError") {
+        alert(event.data.message);
+      }
+    });
+  });
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -105,13 +118,33 @@
 </button>
 
 <div
-  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300"
+  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-black"
   class:translate-y-full={!bottomDrawerOpen}
   class:translate-y-0={bottomDrawerOpen}
 >
-  <div class="bg-base-200 shadow-lg p-4 h-64 w-full">
-    <h2 class="text-xl font-bold mb-4">下からのバー</h2>
-    <p>ここにコンテンツ</p>
+  <div class="bg-base-200 shadow-lg p-4 h-64 w-full overflow-x-auto">
+    <div class="flex gap-4">
+      {#each Object.keys(patterns) as patternName}
+        <div class="text-center flex-shrink-0">
+          <p class="font-bold mb-2">{patterns[patternName].names.ja}</p>
+          <button
+            class="btn overflow-hidden p-0 w-24 h-24"
+            onclick={() => {
+              preview_iframe?.contentWindow?.postMessage(
+                { type: "setPattern", pattern: patterns[patternName] },
+                "*",
+              );
+            }}
+          >
+            <img
+              src={patterns[patternName].image}
+              alt={patterns[patternName].names.ja}
+              class="w-full h-full object-cover rounded"
+            />
+          </button>
+        </div>
+      {/each}
+    </div>
   </div>
 </div>
 
