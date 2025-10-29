@@ -122,7 +122,7 @@
   class:translate-y-full={!bottomDrawerOpen}
   class:translate-y-0={bottomDrawerOpen}
 >
-  <div class="bg-base-200 shadow-lg p-4 h-64 w-full overflow-x-auto">
+  <div class="bg-base-200 shadow-lg p-4 h-48 w-full overflow-x-auto">
     <div class="flex gap-4">
       {#each Object.keys(patterns) as patternName}
         <div class="text-center flex-shrink-0">
