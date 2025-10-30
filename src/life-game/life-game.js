@@ -1,6 +1,7 @@
 "use strict";
 
 let timer = "stop";
+let timerId = 0;
 let generationFigure = 0;
 
 //定数
@@ -158,6 +159,26 @@ function progressBoard() {
   generationChange(generationFigure + 1);
   renderBoard();
 }
+
+//イベント
+
+on.play = () => {
+  timer = "start";
+  timerId = setInterval(progressBoard, 1000);
+};
+
+on.pause = () => {
+  timer = "stop";
+  clearInterval(timerId);
+};
+
+on.load_board = (boardTemplate) => {
+  board = boardTemplate;
+};
+
+on.resize = (newBoardSize) => {
+  boardSize = newBoardSize;
+};
 
 //以下パターンデータ
 //(注)minBoardSizeは、パターンが余裕をもって変形できるために必要なボードのサイズを表し、パターン自体より大きい。

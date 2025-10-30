@@ -2,7 +2,7 @@
   import * as icons from "$lib/icons/index.ts";
   import lghtml from "../life-game/life-game.html?raw";
   import lgjs from "../life-game/life-game.js?raw";
-  import PlayandPause from "../life-game/play-pause.js?raw";
+  import event from "../life-game/event.js?raw";
 
   let code = $state(lgjs);
 
@@ -10,8 +10,8 @@
     lghtml.replace(
       /<script src="\.\/life-game\.js"><\/script>/,
       `<script>
+      \n${event}\n
       \n${lgjs}\n
-      \n${PlayandPause}\n
       <\/script>`,
     ),
   );
@@ -19,6 +19,10 @@
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
   let isProgress = $state(false);
+
+  function sendEvent(event: string, message?: unknown) {
+    preview_iframe?.contentWindow?.postMessage({ type: event, date: message }, "*");
+  }
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -35,7 +39,8 @@
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5"
     onclick={() => {
-      preview_iframe?.contentWindow?.postMessage({ type: isProgress ? "pause" : "play" }, "*");
+      const eventName = isProgress ? "pause" : "play";
+      sendEvent(eventName);
       isProgress = !isProgress;
     }}
   >
