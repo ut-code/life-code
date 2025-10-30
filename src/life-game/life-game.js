@@ -1,6 +1,7 @@
 "use strict";
 
 let timer = "stop";
+let timerId = 0;
 let generationFigure = 0;
 
 //定数
