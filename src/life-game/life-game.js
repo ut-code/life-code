@@ -159,6 +159,26 @@ function progressBoard() {
   renderBoard();
 }
 
+//イベント
+
+on.play = () => {
+  timer = "start";
+  timerId = setInterval(progressBoard, 1000);
+};
+
+on.pause = () => {
+  timer = "stop";
+  clearInterval(timerId);
+};
+
+on.load_board = (boardTemplate) => {
+  board = boardTemplate;
+};
+
+on.resize = (newBoardSize) => {
+  boardSize = newBoardSize;
+};
+
 //以下パターンデータ
 //(注)minBoardSizeは、パターンが余裕をもって変形できるために必要なボードのサイズを表し、パターン自体より大きい。
 
