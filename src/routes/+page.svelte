@@ -20,8 +20,8 @@
   let preview_iframe: HTMLIFrameElement | undefined = $state();
   let isProgress = $state(false);
 
-  function sendEvent(event: unknown, message?: unknown) {
-    preview_iframe?.contentWindow?.postMessage({ type: event, date: message ? message : "*" });
+  function sendEvent(event: string, message?: unknown) {
+    preview_iframe?.contentWindow?.postMessage({ type: event, date: message }, "*");
   }
 </script>
 
