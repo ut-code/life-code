@@ -58,27 +58,6 @@
 
   <div class="font-semibold text-black text-[20px]">Life code</div>
 
-  <div class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-20">
-    <img class="size-6" src={icons.LeftArrow} alt="Left Arrow" />
-  </div>
-
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5"
-    onclick={() => {
-      const eventName = isProgress ? "pause" : "play";
-      sendEvent(eventName);
-      isProgress = !isProgress;
-    }}
-  >
-    <input type="checkbox" bind:checked={isProgress} />
-    <img class="size-6 swap-on" src={icons.Pause} alt="Pause" />
-    <img class="size-6 swap-off" src={icons.Play} alt="Play" />
-  </button>
-
-  <div class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5">
-    <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
-  </div>
-
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-auto"
     onclick={() => {
@@ -117,6 +96,7 @@
                 { type: "setPattern", pattern: patterns[patternName] },
                 "*",
               );
+              bottomDrawerOpen = false;
             }}
           >
             <img
@@ -184,4 +164,29 @@
   >
     {bottomDrawerOpen ? "▼" : "▲ テンプレート"}
   </button>
+
+  <div
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 -ml-15 bottom-1"
+  >
+    <img class="size-6" src={icons.LeftArrow} alt="Left Arrow" />
+  </div>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 bottom-1"
+    onclick={() => {
+      const eventName = isProgress ? "pause" : "play";
+      sendEvent(eventName);
+      isProgress = !isProgress;
+    }}
+  >
+    <input type="checkbox" bind:checked={isProgress} />
+    <img class="size-6 swap-on" src={icons.Pause} alt="Pause" />
+    <img class="size-6 swap-off" src={icons.Play} alt="Play" />
+  </button>
+
+  <div
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 ml-15 bottom-1"
+  >
+    <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
+  </div>
 </div>
