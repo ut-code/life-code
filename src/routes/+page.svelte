@@ -74,51 +74,29 @@
     <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
   </div>
 
-  <label class="swap ml-auto mr-5">
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-auto"
+    onclick={() => {
+      resetModalOpen = true;
+    }}
+  >
+    <img class="size-6" src={icons.reset} alt="Reset" />
+  </button>
+
+  <label class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap mx-5">
     <input type="checkbox" bind:checked={showEditor} />
     <div class="text-black">
       <img class="size-6" src={icons.CodeBracket} alt="Code Bracket" />
     </div>
   </label>
-</div>
 
-<div class="drawer z-50">
-  <input type="checkbox" class="drawer-toggle" bind:checked={drawerOpen} />
-
-  <div class="drawer-side">
-    <label class="drawer-overlay" onclick={() => (drawerOpen = false)}></label>
-    <div class="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
-      <h2 class="text-xl font-bold mb-4">Settings</h2>
-      <ul>
-        <li>
-          <button class="text-left w-full" onclick={() => (languageOpen = !languageOpen)}>
-            Language
-          </button>
-          <ul class="ml-4" class:hidden={!languageOpen}>
-            <li><button class="text-left">日本語</button></li>
-            <li><button class="text-left">English</button></li>
-          </ul>
-        </li>
-        <li><button class="text-left">empty</button></li>
-        <li>
-          <button class="text-left text-red-500" onclick={() => (resetModalOpen = true)}
-            >Reset</button
-          >
-        </li>
-      </ul>
-    </div>
+  <div class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] mx-5">
+    <img class="size-6" src={icons.language} alt="Language" />
   </div>
 </div>
 
-<button
-  class="btn fixed bottom-0 left-0 z-50 rounded-none"
-  onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
->
-  {bottomDrawerOpen ? "▼" : "▲ テンプレート"}
-</button>
-
 <div
-  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-black"
+  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-black pb-16"
   class:translate-y-full={!bottomDrawerOpen}
   class:translate-y-0={bottomDrawerOpen}
 >
@@ -192,4 +170,13 @@
     <textarea bind:value={code} class="w-full h-full border-none p-4 font-mono bg-black text-[#0f0]"
     ></textarea>
   </div>
+</div>
+
+<div class="bg-[#E0E0E0] shadow-sm fixed bottom-0 left-0 right-0 z-50 h-12 p-0">
+  <button
+    class="btn rounded-none h-12 justify-start"
+    onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
+  >
+    {bottomDrawerOpen ? "▼" : "▲ テンプレート"}
+  </button>
 </div>

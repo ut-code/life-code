@@ -5,3 +5,5 @@ export { default as Pause } from "./Pause.svg";
 export { default as CodeBracket } from "./CodeBracket.svg";
 export { default as utcode } from "./utcode.svg";
 export { default as bars_3 } from "./bars_3.svg";
+export { default as language } from "./language.svg";
+export { default as reset } from "./reset.svg";
