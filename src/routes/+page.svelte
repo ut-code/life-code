@@ -173,6 +173,24 @@
     第 {generationFigure} 世代
   </div>
 
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-10 text-black"
+    onclick={() => {
+      sendEvent("boardreset");
+    }}
+  >
+    Reset
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+    onclick={() => {
+      sendEvent("boardrandom");
+    }}
+  >
+    Random
+  </button>
+
   <div
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 -ml-15 bottom-1"
   >

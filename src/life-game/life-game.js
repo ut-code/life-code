@@ -92,24 +92,6 @@ function renderBoard() {
 renderBoard();
 progressBoard();
 
-randomButton.onclick = () => {
-  //白黒ランダムにBoardを変更
-  board = Array.from({ length: boardSize }, () =>
-    Array.from({ length: boardSize }, () => Math.random() > 0.5),
-  );
-  renderBoard();
-  generationChange(0);
-  stop();
-};
-
-resetButton.onclick = () => {
-  //すべて白にBoardを変更
-  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
-  renderBoard();
-  generationChange(0);
-  stop();
-};
-
 function generationChange(num) {
   //現在の世代を表すgenerationFigureを変更し、文章も変更
   generationFigure = num;
@@ -186,6 +168,24 @@ on.load_board = (boardTemplate) => {
 
 on.resize = (newBoardSize) => {
   boardSize = newBoardSize;
+};
+
+on.boardreset = () => {
+  //すべて白にBoardを変更
+  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+  renderBoard();
+  generationChange(0);
+  stop();
+};
+
+on.boardrandom = () => {
+  //白黒ランダムにBoardを変更
+  board = Array.from({ length: boardSize }, () =>
+    Array.from({ length: boardSize }, () => Math.random() > 0.5),
+  );
+  renderBoard();
+  generationChange(0);
+  stop();
 };
 
 sizeChangeButton.onclick = () => {
