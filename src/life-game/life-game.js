@@ -113,7 +113,13 @@ resetButton.onclick = () => {
 function generationChange(num) {
   //現在の世代を表すgenerationFigureを変更し、文章も変更
   generationFigure = num;
-  generation.textContent = "第" + generationFigure + "世代";
+  window.parent.postMessage(
+    {
+      type: "generation_change",
+      data: generationFigure,
+    },
+    "*",
+  );
 }
 
 function progressBoard() {

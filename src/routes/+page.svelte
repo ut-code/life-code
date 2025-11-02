@@ -28,16 +28,21 @@
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
 
+  let generationFigure = $state(0);
+
   onMount(() => {
     window.addEventListener("message", (event) => {
       if (event.data.type === "patternError") {
         alert(event.data.message);
       }
+      if (event.data.type === "generation_change") {
+        generationFigure = event.data.data;
+      }
     });
   });
 
   function sendEvent(event: string, message?: unknown) {
-    preview_iframe?.contentWindow?.postMessage({ type: event, date: message }, "*");
+    preview_iframe?.contentWindow?.postMessage({ type: event, data: message }, "*");
   }
 </script>
 
@@ -156,13 +161,17 @@
   </div>
 </div>
 
-<div class="bg-[#E0E0E0] shadow-sm fixed bottom-0 left-0 right-0 z-50 h-12 p-0">
+<div class="bg-[#E0E0E0] shadow-sm fixed bottom-0 left-0 right-0 z-50 h-12 p-0 flex items-center">
   <button
     class="btn rounded-none h-12 justify-start"
     onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
   >
     {bottomDrawerOpen ? "▼" : "▲ テンプレート"}
   </button>
+
+  <div class="font-bold text-black ml-20">
+    第 {generationFigure} 世代
+  </div>
 
   <div
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 -ml-15 bottom-1"
