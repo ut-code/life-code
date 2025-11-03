@@ -1,4 +1,4 @@
-import * as patternImages from "./patterns_img";
+import * as patternImages from "./patterns_img/index.ts";
 
 const patterns = {
   //振動子, Oscillators
