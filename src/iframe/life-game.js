@@ -4,40 +4,23 @@ let timer = "stop";
 let timerId = 0;
 let generationFigure = 0;
 
-//定数
-const defaultBoardSize = 20;
-const defaultCellSize = 22; //px
-const boardSizeMax = 100;
-const boardSizeMin = 10;
-const defaultLiveAroundMax = 3;
-const defaultLiveAroundMin = 2;
-const defaultDeadAroundMax = 3;
-const defaultDeadAroundMin = 3;
-
 //変数設定
-let boardSize = defaultBoardSize;
-let cellSize = defaultCellSize;
-let livearoundMax = defaultLiveAroundMax;
-let livearoundMin = defaultLiveAroundMin;
-let deadaroundMax = defaultDeadAroundMax;
-let deadaroundMin = defaultDeadAroundMin;
+let boardSize = 20;
+const CELL_SIZE = 22;
+const BOARD_MIN = 100;
+const BOARD_MAX = 10;
 
-function liveCellJudge(around) {
-  //黒いセルの判定を行う関数
-  if (livearoundMin <= around && around <= livearoundMax) {
+// around: 周囲の生きたセル数 self: 自身が生きているかどうか
+function isNextAlive(around, self) {
+  // 自身が生きている & 周囲が 2 か 3 で生存
+  if (self && 2 <= around && around <= 3) {
     return true;
-  } else {
-    return false;
   }
-}
-
-function deadCellJudge(around) {
-  //白いセルの判定を行う関数
-  if (deadaroundMin <= around && around <= deadaroundMax) {
+  // 自身が死んでいる & 周囲が 3 で誕生
+  if (!self && around === 3) {
     return true;
-  } else {
-    return false;
   }
+  return false;
 }
 
 const generation = document.getElementById("generation"); //世代を表す文（第+数字+世代)
@@ -50,10 +33,10 @@ const sizeInput = document.getElementById("sizeInput");
 const sizeLabel = document.getElementById("sizeLabel");
 
 // サイズ入力欄の設定
-sizeInput.min = boardSizeMin;
-sizeInput.max = boardSizeMax;
+sizeInput.min = BOARD_MAX;
+sizeInput.max = BOARD_MIN;
 sizeInput.value = defaultBoardSize;
-sizeLabel.textContent = `(${boardSizeMin}〜${boardSizeMax})`;
+sizeLabel.textContent = `(${BOARD_MAX}〜${BOARD_MIN})`;
 
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
@@ -71,8 +54,8 @@ function renderBoard() {
       const button = document.createElement("button");
       button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
       button.style.border = "0.5px solid black";
-      button.style.width = `${cellSize}px`;
-      button.style.height = `${cellSize}px`;
+      button.style.width = `${CELL_SIZE}px`;
+      button.style.height = `${CELL_SIZE}px`;
       button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
       button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
       button.onclick = () => {
@@ -150,11 +133,7 @@ function progressBoard() {
         }
       }
       //↑周囲のマスに黒マスが何個あるかを計算(aroundに格納)
-      if (board[i][j]) {
-        newBoard[i][j] = liveCellJudge(around);
-      } else {
-        newBoard[i][j] = deadCellJudge(around);
-      }
+      newBoard[i][j] = isNextAlive(around, board[i][j]);
     }
   }
   board = newBoard;
@@ -184,13 +163,13 @@ on.resize = (newBoardSize) => {
 
 sizeChangeButton.onclick = () => {
   const newSize = parseInt(sizeInput.value, 10);
-  if (isNaN(newSize) || newSize < boardSizeMin || boardSizeMax < newSize) {
-    alert(`サイズは ${boardSizeMin} から ${boardSizeMax} の間で入力してください。`);
+  if (isNaN(newSize) || newSize < BOARD_MAX || BOARD_MIN < newSize) {
+    alert(`サイズは ${BOARD_MAX} から ${BOARD_MIN} の間で入力してください。`);
     sizeInput.value = boardSize;
     return;
   }
   boardSize = newSize;
-  cellSize = Math.floor(defaultCellSize * (defaultBoardSize / newSize));
+  CELL_SIZE = Math.floor(defaultCellSize * (defaultBoardSize / newSize));
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
