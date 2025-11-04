@@ -147,7 +147,7 @@
   </div>
 </div>
 
-<div class="flex h-screen box-border">
+<div class="flex box-border h-screen" style="height: calc(100vh - 4rem - 3rem);">
   <div
     class={[
       "flex overflow-hidden bg-[rgb(202,202,202)] shrink-0 transition-[flex-basis] duration-300 ease-in-out",
@@ -159,7 +159,7 @@
       srcdoc={previewDoc}
       title="Preview"
       sandbox="allow-scripts"
-      class="w-[90%] h-[90%] rounded-lg m-auto shadow-lg"
+      class="w-[80%] h-[90%] rounded-lg mx-auto my-5 shadow-lg"
     ></iframe>
   </div>
 
