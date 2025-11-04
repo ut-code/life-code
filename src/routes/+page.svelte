@@ -159,7 +159,7 @@
       srcdoc={previewDoc}
       title="Preview"
       sandbox="allow-scripts"
-      class="w-[90%] h-[80%] rounded-lg m-auto shadow-lg"
+      class="w-[90%] h-[90%] rounded-lg m-auto shadow-lg"
     ></iframe>
   </div>
 
@@ -195,7 +195,7 @@
       sendEvent("sizechange", sizeInputValue.toString());
     }}
   >
-    Change board size
+    Change
   </button>
 
   <div
@@ -224,7 +224,7 @@
   </div>
 
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-80 text-black"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-100 text-black"
     onclick={() => {
       sendEvent("boardreset");
     }}
