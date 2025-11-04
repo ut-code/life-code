@@ -1,21 +1,21 @@
 <script lang="ts">
-  import * as icons from "$lib/icons/index.ts";
-  import lghtml from "../life-game/life-game.html?raw";
-  import lgjs from "../life-game/life-game.js?raw";
-  import placetemplate from "../life-game/place_template.js?raw";
-  // @ts-expect-error -- for jsfile import
-  import patterns from "../life-game/life-game_template.js";
-  import { onMount } from "svelte";
-  import event from "../life-game/event.js?raw";
+  import lifeGameHTML from "@/iframe/life-game.html?raw";
+  import lifeGameJS from "@/iframe/life-game.js?raw";
+  import placetemplate from "@/iframe/place_template.js?raw";
+  import event from "@/iframe/event.js?raw";
 
-  let code = $state(lgjs);
+  import * as icons from "$lib/icons/index.ts";
+  import patterns from "$lib/board-templates";
+  import { onMount } from "svelte";
+
+  let code = $state(lifeGameJS);
 
   let previewDoc = $derived(
-    lghtml.replace(
+    lifeGameHTML.replace(
       /<script src="\.\/life-game\.js"><\/script>/,
       `<script>
       \n${event}\n
-      \n${lgjs}\n
+      \n${lifeGameJS}\n
       \n${placetemplate}\n
       <\/script>`,
     ),
@@ -103,7 +103,7 @@
 >
   <div class="bg-base-200 shadow-lg p-4 h-48 w-full overflow-x-auto">
     <div class="flex gap-4">
-      {#each Object.keys(patterns) as patternName (patternName)}
+      {#each Object.keys(patterns) as (keyof typeof patterns)[] as patternName (patternName)}
         <div class="text-center flex-shrink-0">
           <p class="font-bold mb-2">{patterns[patternName].names.ja}</p>
           <button
