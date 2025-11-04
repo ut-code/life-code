@@ -6,7 +6,7 @@ let generationFigure = 0;
 
 //定数
 const defaultBoardSize = 20;
-const defaultCellSize = 22; //px
+const defaultCellSize = 30; //px
 const boardSizeMax = 100;
 const boardSizeMin = 10;
 const defaultLiveAroundMax = 3;
@@ -39,21 +39,6 @@ function deadCellJudge(around) {
     return false;
   }
 }
-
-const generation = document.getElementById("generation"); //世代を表す文（第+数字+世代)
-//BUTTON
-const randomButton = document.getElementById("randombutton");
-const resetButton = document.getElementById("resetbutton");
-const sizeChangeButton = document.getElementById("sizeChangeButton");
-//サイズ入力欄
-const sizeInput = document.getElementById("sizeInput");
-const sizeLabel = document.getElementById("sizeLabel");
-
-// サイズ入力欄の設定
-sizeInput.min = boardSizeMin;
-sizeInput.max = boardSizeMax;
-sizeInput.value = defaultBoardSize;
-sizeLabel.textContent = `(${boardSizeMin}〜${boardSizeMax})`;
 
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
@@ -160,6 +145,12 @@ on.play = () => {
 on.pause = () => {
   timer = "stop";
   clearInterval(timerId);
+  window.parent.postMessage(
+    {
+      type: "pause",
+    },
+    "*",
+  );
 };
 
 on.load_board = (boardTemplate) => {
@@ -175,7 +166,7 @@ on.boardreset = () => {
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
-  stop();
+  on.pause();
 };
 
 on.boardrandom = () => {
@@ -185,14 +176,20 @@ on.boardrandom = () => {
   );
   renderBoard();
   generationChange(0);
-  stop();
+  on.pause();
 };
 
-sizeChangeButton.onclick = () => {
-  const newSize = parseInt(sizeInput.value, 10);
+on.sizechange = (newSizenum) => {
+  const newSize = parseInt(newSizenum, 10);
   if (isNaN(newSize) || newSize < boardSizeMin || boardSizeMax < newSize) {
-    alert(`サイズは ${boardSizeMin} から ${boardSizeMax} の間で入力してください。`);
-    sizeInput.value = boardSize;
+    window.parent.postMessage(
+      {
+        type: "sizeError",
+        message: `サイズは ${boardSizeMin} から ${boardSizeMax} の間で入力してください。`,
+      },
+      "*",
+    );
+    newSizenum = boardSize;
     return;
   }
   boardSize = newSize;
@@ -200,6 +197,5 @@ sizeChangeButton.onclick = () => {
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
-  stop();
-  updatePatternButtons();
+  on.pause();
 };

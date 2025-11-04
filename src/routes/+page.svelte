@@ -29,16 +29,29 @@
   let bottomDrawerOpen = $state(false);
 
   let generationFigure = $state(0);
+  let sizeInputValue = $state(20);
 
   onMount(() => {
-    window.addEventListener("message", (event) => {
+    const handleMessage = (event: MessageEvent) => {
       if (event.data.type === "patternError") {
+        alert(event.data.message);
+      }
+      if (event.data.type === "sizeError") {
         alert(event.data.message);
       }
       if (event.data.type === "generation_change") {
         generationFigure = event.data.data;
       }
-    });
+      if (event.data.type === "pause") {
+        isProgress = false;
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
   });
 
   function sendEvent(event: string, message?: unknown) {
@@ -169,26 +182,20 @@
     {bottomDrawerOpen ? "▼" : "▲ テンプレート"}
   </button>
 
-  <div class="font-bold text-black ml-20">
+  <div class="font-bold text-black ml-10">
     第 {generationFigure} 世代
   </div>
 
-  <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-10 text-black"
-    onclick={() => {
-      sendEvent("boardreset");
-    }}
-  >
-    Reset
-  </button>
+  <p class="ml-10 text-black">ボードのサイズ(10~100):</p>
+  <input type="number" bind:value={sizeInputValue} class="w-10 text-black bg-white ml-2" />
 
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black ml-2"
     onclick={() => {
-      sendEvent("boardrandom");
+      sendEvent("sizechange", sizeInputValue.toString());
     }}
   >
-    Random
+    Change board size
   </button>
 
   <div
@@ -215,4 +222,22 @@
   >
     <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
   </div>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-80 text-black"
+    onclick={() => {
+      sendEvent("boardreset");
+    }}
+  >
+    Reset
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+    onclick={() => {
+      sendEvent("boardrandom");
+    }}
+  >
+    Random
+  </button>
 </div>
