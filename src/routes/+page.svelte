@@ -24,7 +24,6 @@
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
   let isProgress = $state(false);
-  let drawerOpen = $state(false);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
 
