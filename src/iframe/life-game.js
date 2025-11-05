@@ -127,12 +127,6 @@ on.play = () => {
 on.pause = () => {
   timer = "stop";
   clearInterval(timerId);
-  window.parent.postMessage(
-    {
-      type: "pause",
-    },
-    "*",
-  );
 };
 
 on.load_board = (boardTemplate) => {

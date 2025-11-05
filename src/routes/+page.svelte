@@ -192,6 +192,7 @@
   <button
     class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black ml-2"
     onclick={() => {
+      isProgress = false;
       sendEvent("sizechange", sizeInputValue.toString());
     }}
   >
@@ -226,6 +227,7 @@
   <button
     class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-100 text-black"
     onclick={() => {
+      isProgress = false;
       sendEvent("boardreset");
     }}
   >
@@ -235,6 +237,7 @@
   <button
     class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
     onclick={() => {
+      isProgress = false;
       sendEvent("boardrandom");
     }}
   >
