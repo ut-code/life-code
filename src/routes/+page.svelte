@@ -36,14 +36,8 @@
       if (event.data.type === "patternError") {
         alert(event.data.message);
       }
-      if (event.data.type === "sizeError") {
-        alert(event.data.message);
-      }
       if (event.data.type === "generation_change") {
         generationFigure = event.data.data;
-      }
-      if (event.data.type === "pause") {
-        isProgress = false;
       }
     };
 
@@ -60,20 +54,11 @@
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
-  <button
-    class="btn btn-sm btn-ghost btn-circle bg-[#E0E0E0] mx-5 w-8 rounded border-none"
-    onclick={() => {
-      drawerOpen = !drawerOpen;
-    }}
-  >
-    <img src={icons.bars_3} alt="settings" />
-  </button>
-
-  <div class="mx-5 avatar w-8 rounded">
+  <div class="ml-15 avatar w-8 rounded">
     <img src={icons.utcode} alt="ut.code();_Logo" />
   </div>
 
-  <div class="font-semibold text-black text-[20px]">Life code</div>
+  <div class="font-semibold text-black text-[20px] ml-5">Life code</div>
 
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-auto"
@@ -193,6 +178,10 @@
     class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black ml-2"
     onclick={() => {
       isProgress = false;
+      if (isNaN(sizeInputValue) || sizeInputValue < 10 || sizeInputValue > 100) {
+        alert("サイズは10から100の間で指定してください。");
+        return;
+      }
       sendEvent("sizechange", sizeInputValue.toString());
     }}
   >

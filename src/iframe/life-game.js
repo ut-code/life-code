@@ -10,8 +10,6 @@ const defaultCellSize = 30;
 //変数設定
 let boardSize = 20;
 let CELL_SIZE = 30;
-const BOARD_MIN = 10;
-const BOARD_MAX = 100;
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
@@ -157,16 +155,6 @@ on.boardrandom = () => {
 
 on.sizechange = (newSizenum) => {
   const newSize = parseInt(newSizenum, 10);
-  if (isNaN(newSize) || newSize < BOARD_MIN || BOARD_MAX < newSize) {
-    window.parent.postMessage(
-      {
-        type: "sizeError",
-        message: `サイズは ${BOARD_MIN} から ${BOARD_MAX} の間で入力してください。`,
-      },
-      "*",
-    );
-    return;
-  }
   boardSize = newSize;
   CELL_SIZE = Math.floor(defaultCellSize * (defaultBoardSize / newSize));
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
