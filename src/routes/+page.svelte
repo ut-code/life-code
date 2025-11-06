@@ -24,7 +24,7 @@
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
   let isProgress = $state(false);
-  let timer = 1000;
+  let intervalMs = 1000;
   let drawerOpen = $state(false);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
@@ -193,8 +193,8 @@
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-2"
     onclick={() => {
-      sendEvent("timer_change", timer / 2);
-      timer = timer / 2;
+      intervalMs = intervalMs / 2;
+      sendEvent("timer_change", intervalMs);
     }}
   >
     x2
@@ -203,8 +203,8 @@
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-2"
     onclick={() => {
-      sendEvent("timer_change", timer * 2);
-      timer = timer * 2;
+      intervalMs = intervalMs * 2;
+      sendEvent("timer_change", intervalMs);
     }}
   >
     x0.5
@@ -213,10 +213,10 @@
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-2"
     onclick={() => {
-      sendEvent("timer_change", 1000);
-      timer = 1000;
+      intervalMs = 1000;
+      sendEvent("timer_change", intervalMs);
     }}
   >
-    Timer Reset
+    Reset Timer
   </button>
 </div>

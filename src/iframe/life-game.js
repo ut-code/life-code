@@ -164,9 +164,9 @@ on.resize = (newBoardSize) => {
   boardSize = newBoardSize;
 };
 
-on.timer_change = (s) => {
-  timerTime = s;
-  if (timer == "start") {
+on.timer_change = (ms) => {
+  timerTime = ms;
+  if (timer === "start") {
     clearInterval(timerId);
     timerId = setInterval(progressBoard, timerTime);
   }
