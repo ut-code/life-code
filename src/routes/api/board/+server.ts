@@ -1,7 +1,5 @@
-import { PrismaClient } from "../../../../generated/prisma/client";
 import { json } from "@sveltejs/kit";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma.server.ts";
 
 // POSTリクエスト（＝保存）の処理
 export async function POST({ request }) {
