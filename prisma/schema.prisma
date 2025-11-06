@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  output   = "../node_modules/@prisma/generated"
   engineType = "client"           // no Rust engine
 }
 
