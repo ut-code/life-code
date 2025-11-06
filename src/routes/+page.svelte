@@ -28,6 +28,7 @@
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
 
+  let intervalMs = $state(1000);
   let generationFigure = $state(0);
   let sizeInputValue = $state(20);
 
@@ -252,5 +253,34 @@
     }}
   >
     Apply Code
+  </button>
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
+    onclick={() => {
+      intervalMs = intervalMs / 2;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    x2
+  </button>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
+    onclick={() => {
+      intervalMs = intervalMs * 2;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    x0.5
+  </button>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
+    onclick={() => {
+      intervalMs = 1000;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    Reset Timer
   </button>
 </div>
