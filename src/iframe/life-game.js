@@ -3,10 +3,13 @@
 let timer = "stop";
 let timerId = 0;
 let generationFigure = 0;
+let timerTime = 1000;
 
 //変数設定
-let boardSize = 20;
-const CELL_SIZE = 22;
+const defaultBoardSize = 20;
+const defaultCellSize = 22;
+let boardSize = defaultBoardSize;
+let CELL_SIZE = defaultCellSize;
 const BOARD_MIN = 100;
 const BOARD_MAX = 10;
 
@@ -145,7 +148,7 @@ function progressBoard() {
 
 on.play = () => {
   timer = "start";
-  timerId = setInterval(progressBoard, 1000);
+  timerId = setInterval(progressBoard, timerTime);
 };
 
 on.pause = () => {
@@ -159,6 +162,14 @@ on.load_board = (boardTemplate) => {
 
 on.resize = (newBoardSize) => {
   boardSize = newBoardSize;
+};
+
+on.timer_change = (ms) => {
+  timerTime = ms;
+  if (timer === "start") {
+    clearInterval(timerId);
+    timerId = setInterval(progressBoard, timerTime);
+  }
 };
 
 sizeChangeButton.onclick = () => {

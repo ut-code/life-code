@@ -24,6 +24,7 @@
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
   let isProgress = $state(false);
+  let intervalMs = 1000;
   let drawerOpen = $state(false);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
@@ -37,7 +38,7 @@
   });
 
   function sendEvent(event: string, message?: unknown) {
-    preview_iframe?.contentWindow?.postMessage({ type: event, date: message }, "*");
+    preview_iframe?.contentWindow?.postMessage({ type: event, data: message }, "*");
   }
 </script>
 
@@ -188,4 +189,34 @@
   >
     <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
   </div>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-2"
+    onclick={() => {
+      intervalMs = intervalMs / 2;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    x2
+  </button>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-2"
+    onclick={() => {
+      intervalMs = intervalMs * 2;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    x0.5
+  </button>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-2"
+    onclick={() => {
+      intervalMs = 1000;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    Reset Timer
+  </button>
 </div>
