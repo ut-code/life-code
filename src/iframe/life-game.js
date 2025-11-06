@@ -192,27 +192,7 @@ sizeChangeButton.onclick = () => {
 
 saveButton.onclick = async () => {
   console.log("保存ボタンが押されました");
-  try {
-    // Phase 1 で作ったAPI（/api/board）に、
-    // 'POST' メソッドで現在の盤面(board)をJSON形式で送信
-    const response = await fetch("/api/board", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(board), //
-    });
-
-    if (!response.ok) {
-      // サーバーがエラーを返した場合
-      throw new Error("サーバーとの通信に失敗しました。");
-    }
-
-    alert("盤面を保存しました！");
-  } catch (err) {
-    console.error("保存エラー:", err);
-    alert("保存に失敗しました。");
-  }
+  window.parent.postMessage({ type: "save_board", data: board }, "*");
 };
 
 /**
@@ -220,39 +200,20 @@ saveButton.onclick = async () => {
  */
 loadButton.onclick = async () => {
   console.log("読込ボタンが押されました");
-  try {
-    // Phase 1 で作ったAPI（/api/board）に、
-    // 'GET' メソッド（デフォルト）でデータを要求
-    const response = await fetch("/api/board");
+  window.parent.postMessage({ type: "request:load_board" }, "*");
+};
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        // Phase 1 のAPIで、データが1件もない場合に404を返すようにしたため
-        alert("保存されているデータがありません。");
-      } else {
-        throw new Error("サーバーとの通信に失敗しました。");
-      }
-      return; // 処理を中断
-    }
+on.load_board = (loadedBoard) => {
+  console.log("on.load_board");
+  //
+  // 取得したデータで、現在の盤面(board)を上書きする
+  //
+  board = loadedBoard;
 
-    // サーバーから返ってきたJSONデータを取得
-    const loadedBoard = await response.json();
-
-    //
-    // 取得したデータで、現在の盤面(board)を上書きする
-    //
-    board = loadedBoard;
-
-    //
-    // 画面を更新し、ゲームの状態をリセットする
-    //
-    renderBoard(); // 新しい盤面を画面に描画
-    generationChange(0); // 世代カウントをリセット
-    stop(); //
-
-    alert("盤面を読み込みました！");
-  } catch (err) {
-    console.error("読込エラー:", err);
-    alert("読み込みに失敗しました。");
-  }
+  //
+  // 画面を更新し、ゲームの状態をリセットする
+  //
+  renderBoard(); // 新しい盤面を画面に描画
+  generationChange(0); // 世代カウントをリセット
+  stop(); //
 };

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../../../../generated/prisma/client";
 import { json } from "@sveltejs/kit";
 
 const prisma = new PrismaClient();
