@@ -8,14 +8,15 @@
   import patterns from "$lib/board-templates";
   import { onMount } from "svelte";
 
-  let code = $state(lifeGameJS);
+  let editingcode = $state(lifeGameJS);
+  let appliedCode = $state(lifeGameJS);
 
   let previewDoc = $derived(
     lifeGameHTML.replace(
       /<script src="\.\/life-game\.js"><\/script>/,
       `<script>
       \n${event}\n
-      \n${lifeGameJS}\n
+      \n${appliedCode}\n
       \n${placetemplate}\n
       <\/script>`,
     ),
@@ -37,6 +38,10 @@
       }
       if (event.data.type === "generation_change") {
         generationFigure = event.data.data;
+      }
+      if (event.data.type === "stateupdate") {
+        generationFigure = event.data.data.generationFigure;
+        sizeInputValue = event.data.data.boardSize;
       }
     };
 
@@ -144,6 +149,12 @@
       title="Preview"
       sandbox="allow-scripts"
       class="w-[80%] h-[90%] rounded-lg mx-auto my-5 shadow-lg"
+      onload={() => {
+        setTimeout(() => {
+          sendEvent("stateupdate");
+          console.log("generationFigure onload:", generationFigure);
+        }, 50);
+      }}
     ></iframe>
   </div>
 
@@ -153,7 +164,9 @@
       showEditor ? "basis-[40%] opacity-100" : "basis-0 opacity-0",
     ]}
   >
-    <textarea bind:value={code} class="w-full h-full border-none p-4 font-mono bg-black text-[#0f0]"
+    <textarea
+      bind:value={editingcode}
+      class="w-full h-full border-none p-4 font-mono bg-black text-[#0f0]"
     ></textarea>
   </div>
 </div>
@@ -230,5 +243,14 @@
     }}
   >
     Random
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-5 text-black"
+    onclick={() => {
+      appliedCode = editingcode;
+    }}
+  >
+    Apply Code
   </button>
 </div>

@@ -162,3 +162,19 @@ on.sizechange = (newSizenum) => {
   generationChange(0);
   on.pause();
 };
+
+on.stateupdate = () => {
+  window.parent.postMessage(
+    {
+      type: "stateupdate",
+      data: {
+        generationFigure: generationFigure,
+        boardSize: boardSize,
+      },
+    },
+    "*",
+  );
+  console.log("generationFigure:", generationFigure, "boardSize:", boardSize);
+};
+
+on.sizechange(boardSize);
