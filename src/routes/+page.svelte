@@ -3,7 +3,6 @@
   import lifeGameJS from "@/iframe/life-game.js?raw";
   import placetemplate from "@/iframe/place_template.js?raw";
   import event from "@/iframe/event.js?raw";
-  import * as events from "svelte/events";
 
   import * as icons from "$lib/icons/index.ts";
   import patterns from "$lib/board-templates";
