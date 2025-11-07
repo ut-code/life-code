@@ -7,6 +7,7 @@
   import * as icons from "$lib/icons/index.ts";
   import patterns from "$lib/board-templates";
   import { onMount } from "svelte";
+  import { loadBoard, saveBoard } from "./api.ts";
 
   let code = $state(lifeGameJS);
 
@@ -40,6 +41,33 @@
   function sendEvent(event: string, message?: unknown) {
     preview_iframe?.contentWindow?.postMessage({ type: event, data: message }, "*");
   }
+
+  onMount(() => {
+    const handler = async (event: MessageEvent<unknown>) => {
+      console.log("handler call");
+      const data = event.data as
+        | { type: "unknown event" }
+        | { type: "save_board"; data: boolean[][] }
+        | { type: "request:load_board" };
+      if (data.type === "save_board") {
+        console.log("board saved!");
+        await saveBoard(data.data);
+        return;
+      }
+
+      if (data.type === "request:load_board") {
+        console.log("loaded board");
+        const board = await loadBoard();
+        if (board) {
+          sendEvent("load_board", board);
+        }
+        return;
+      }
+    };
+
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  });
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">

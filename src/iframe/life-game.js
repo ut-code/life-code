@@ -31,6 +31,8 @@ const generation = document.getElementById("generation"); //世代を表す文�
 const randomButton = document.getElementById("randombutton");
 const resetButton = document.getElementById("resetbutton");
 const sizeChangeButton = document.getElementById("sizeChangeButton");
+const saveButton = document.getElementById("saveButton");
+const loadButton = document.getElementById("loadButton");
 //サイズ入力欄
 const sizeInput = document.getElementById("sizeInput");
 const sizeLabel = document.getElementById("sizeLabel");
@@ -186,4 +188,20 @@ sizeChangeButton.onclick = () => {
   generationChange(0);
   stop();
   updatePatternButtons();
+};
+
+saveButton.onclick = async () => {
+  window.parent.postMessage({ type: "save_board", data: board }, "*");
+};
+
+loadButton.onclick = async () => {
+  window.parent.postMessage({ type: "request:load_board" }, "*");
+};
+
+on.load_board = (loadedBoard) => {
+  console.log("on.load_board");
+  board = loadedBoard;
+  renderBoard();
+  generationChange(0);
+  stop();
 };
