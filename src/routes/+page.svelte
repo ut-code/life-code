@@ -9,14 +9,15 @@
   import { onMount } from "svelte";
   import { loadBoard, saveBoard } from "./api.ts";
 
-  let code = $state(lifeGameJS);
+  let editingcode = $state(lifeGameJS);
+  let appliedCode = $state(lifeGameJS);
 
   let previewDoc = $derived(
     lifeGameHTML.replace(
       /<script src="\.\/life-game\.js"><\/script>/,
       `<script>
       \n${event}\n
-      \n${lifeGameJS}\n
+      \n${appliedCode}\n
       \n${placetemplate}\n
       <\/script>`,
     ),
@@ -25,17 +26,32 @@
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
   let isProgress = $state(false);
-  let intervalMs = 1000;
-  let drawerOpen = $state(false);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
 
+  let intervalMs = $state(1000);
+  let generationFigure = $state(0);
+  let sizeInputValue = $state(20);
+
   onMount(() => {
-    window.addEventListener("message", (event) => {
+    const handleMessage = (event: MessageEvent) => {
       if (event.data.type === "patternError") {
         alert(event.data.message);
       }
-    });
+      if (event.data.type === "generation_change") {
+        generationFigure = event.data.data;
+      }
+      if (event.data.type === "stateupdate") {
+        generationFigure = event.data.data.generationFigure;
+        sizeInputValue = event.data.data.boardSize;
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
   });
 
   function sendEvent(event: string, message?: unknown) {
@@ -71,20 +87,11 @@
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
-  <button
-    class="btn btn-sm btn-ghost btn-circle bg-[#E0E0E0] mx-5 w-8 rounded border-none"
-    onclick={() => {
-      drawerOpen = !drawerOpen;
-    }}
-  >
-    <img src={icons.bars_3} alt="settings" />
-  </button>
-
-  <div class="mx-5 avatar w-8 rounded">
+  <div class="ml-15 avatar w-8 rounded">
     <img src={icons.utcode} alt="ut.code();_Logo" />
   </div>
 
-  <div class="font-semibold text-black text-[20px]">Life code</div>
+  <div class="font-semibold text-black text-[20px] ml-5">Life code</div>
 
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-auto"
@@ -158,7 +165,7 @@
   </div>
 </div>
 
-<div class="flex h-screen box-border">
+<div class="flex box-border h-screen" style="height: calc(100vh - 4rem - 3rem);">
   <div
     class={[
       "flex overflow-hidden bg-[rgb(202,202,202)] shrink-0 transition-[flex-basis] duration-300 ease-in-out",
@@ -170,7 +177,13 @@
       srcdoc={previewDoc}
       title="Preview"
       sandbox="allow-scripts"
-      class="w-[90%] h-[80%] rounded-lg m-auto shadow-lg"
+      class="w-[80%] h-[90%] rounded-lg mx-auto my-5 shadow-lg"
+      onload={() => {
+        setTimeout(() => {
+          sendEvent("stateupdate");
+          console.log("generationFigure onload:", generationFigure);
+        }, 50);
+      }}
     ></iframe>
   </div>
 
@@ -180,17 +193,40 @@
       showEditor ? "basis-[40%] opacity-100" : "basis-0 opacity-0",
     ]}
   >
-    <textarea bind:value={code} class="w-full h-full border-none p-4 font-mono bg-black text-[#0f0]"
+    <textarea
+      bind:value={editingcode}
+      class="w-full h-full border-none p-4 font-mono bg-black text-[#0f0]"
     ></textarea>
   </div>
 </div>
 
-<div class="bg-[#E0E0E0] shadow-sm fixed bottom-0 left-0 right-0 z-50 h-12 p-0">
+<div class="bg-[#E0E0E0] shadow-sm fixed bottom-0 left-0 right-0 z-50 h-12 p-0 flex items-center">
   <button
     class="btn rounded-none h-12 justify-start"
     onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
   >
     {bottomDrawerOpen ? "▼" : "▲ テンプレート"}
+  </button>
+
+  <div class="font-bold text-black ml-10">
+    第 {generationFigure} 世代
+  </div>
+
+  <p class="ml-10 text-black">ボードのサイズ(10~100):</p>
+  <input type="number" bind:value={sizeInputValue} class="w-10 text-black bg-white ml-2" />
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black ml-2"
+    onclick={() => {
+      isProgress = false;
+      if (isNaN(sizeInputValue) || sizeInputValue < 10 || sizeInputValue > 100) {
+        alert("サイズは10から100の間で指定してください。");
+        return;
+      }
+      sendEvent("sizechange", sizeInputValue.toString());
+    }}
+  >
+    Change
   </button>
 
   <div
@@ -219,7 +255,35 @@
   </div>
 
   <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-2"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-100 text-black"
+    onclick={() => {
+      isProgress = false;
+      sendEvent("boardreset");
+    }}
+  >
+    Reset
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+    onclick={() => {
+      isProgress = false;
+      sendEvent("boardrandom");
+    }}
+  >
+    Random
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-5 text-black"
+    onclick={() => {
+      appliedCode = editingcode;
+    }}
+  >
+    Apply Code
+  </button>
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
     onclick={() => {
       intervalMs = intervalMs / 2;
       sendEvent("timer_change", intervalMs);
@@ -229,7 +293,7 @@
   </button>
 
   <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-2"
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
     onclick={() => {
       intervalMs = intervalMs * 2;
       sendEvent("timer_change", intervalMs);
@@ -239,7 +303,7 @@
   </button>
 
   <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-2"
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
     onclick={() => {
       intervalMs = 1000;
       sendEvent("timer_change", intervalMs);

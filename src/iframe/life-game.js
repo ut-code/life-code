@@ -5,13 +5,12 @@ let timerId = 0;
 let generationFigure = 0;
 let timerTime = 1000;
 
-//変数設定
 const defaultBoardSize = 20;
-const defaultCellSize = 22;
-let boardSize = defaultBoardSize;
-let CELL_SIZE = defaultCellSize;
-const BOARD_MIN = 100;
-const BOARD_MAX = 10;
+const defaultCellSize = 30;
+
+//変数設定
+let boardSize = 20;
+let CELL_SIZE = 30;
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
@@ -26,22 +25,8 @@ function isNextAlive(around, self) {
   return false;
 }
 
-const generation = document.getElementById("generation"); //世代を表す文（第+数字+世代)
-//BUTTON
-const randomButton = document.getElementById("randombutton");
-const resetButton = document.getElementById("resetbutton");
-const sizeChangeButton = document.getElementById("sizeChangeButton");
 const saveButton = document.getElementById("saveButton");
 const loadButton = document.getElementById("loadButton");
-//サイズ入力欄
-const sizeInput = document.getElementById("sizeInput");
-const sizeLabel = document.getElementById("sizeLabel");
-
-// サイズ入力欄の設定
-sizeInput.min = BOARD_MAX;
-sizeInput.max = BOARD_MIN;
-sizeInput.value = defaultBoardSize;
-sizeLabel.textContent = `(${BOARD_MAX}〜${BOARD_MIN})`;
 
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
@@ -80,28 +65,16 @@ function renderBoard() {
 renderBoard();
 progressBoard();
 
-randomButton.onclick = () => {
-  //白黒ランダムにBoardを変更
-  board = Array.from({ length: boardSize }, () =>
-    Array.from({ length: boardSize }, () => Math.random() > 0.5),
-  );
-  renderBoard();
-  generationChange(0);
-  stop();
-};
-
-resetButton.onclick = () => {
-  //すべて白にBoardを変更
-  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
-  renderBoard();
-  generationChange(0);
-  stop();
-};
-
 function generationChange(num) {
   //現在の世代を表すgenerationFigureを変更し、文章も変更
   generationFigure = num;
-  generation.textContent = "第" + generationFigure + "世代";
+  window.parent.postMessage(
+    {
+      type: "generation_change",
+      data: generationFigure,
+    },
+    "*",
+  );
 }
 
 function progressBoard() {
@@ -166,6 +139,34 @@ on.resize = (newBoardSize) => {
   boardSize = newBoardSize;
 };
 
+on.boardreset = () => {
+  //すべて白にBoardを変更
+  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+  renderBoard();
+  generationChange(0);
+  on.pause();
+};
+
+on.boardrandom = () => {
+  //白黒ランダムにBoardを変更
+  board = Array.from({ length: boardSize }, () =>
+    Array.from({ length: boardSize }, () => Math.random() > 0.5),
+  );
+  renderBoard();
+  generationChange(0);
+  on.pause();
+};
+
+on.sizechange = (newSizenum) => {
+  const newSize = parseInt(newSizenum, 10);
+  boardSize = newSize;
+  CELL_SIZE = Math.floor(defaultCellSize * (defaultBoardSize / newSize));
+  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+  renderBoard();
+  generationChange(0);
+  on.pause();
+};
+
 on.timer_change = (ms) => {
   timerTime = ms;
   if (timer === "start") {
@@ -174,21 +175,21 @@ on.timer_change = (ms) => {
   }
 };
 
-sizeChangeButton.onclick = () => {
-  const newSize = parseInt(sizeInput.value, 10);
-  if (isNaN(newSize) || newSize < BOARD_MAX || BOARD_MIN < newSize) {
-    alert(`サイズは ${BOARD_MAX} から ${BOARD_MIN} の間で入力してください。`);
-    sizeInput.value = boardSize;
-    return;
-  }
-  boardSize = newSize;
-  CELL_SIZE = Math.floor(defaultCellSize * (defaultBoardSize / newSize));
-  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
-  renderBoard();
-  generationChange(0);
-  stop();
-  updatePatternButtons();
+on.stateupdate = () => {
+  window.parent.postMessage(
+    {
+      type: "stateupdate",
+      data: {
+        generationFigure: generationFigure,
+        boardSize: boardSize,
+      },
+    },
+    "*",
+  );
+  console.log("generationFigure:", generationFigure, "boardSize:", boardSize);
 };
+
+on.sizechange(boardSize);
 
 saveButton.onclick = async () => {
   window.parent.postMessage({ type: "save_board", data: board }, "*");
