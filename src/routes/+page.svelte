@@ -60,7 +60,6 @@
         const board = await loadBoard();
         if (board) {
           sendEvent("load_board", board);
-          alert("盤面を読み込みました！");
         }
         return;
       }

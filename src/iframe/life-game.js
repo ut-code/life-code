@@ -191,29 +191,17 @@ sizeChangeButton.onclick = () => {
 };
 
 saveButton.onclick = async () => {
-  console.log("保存ボタンが押されました");
   window.parent.postMessage({ type: "save_board", data: board }, "*");
 };
 
-/**
- * 「DBから読込」ボタンが押された時の処理
- */
 loadButton.onclick = async () => {
-  console.log("読込ボタンが押されました");
   window.parent.postMessage({ type: "request:load_board" }, "*");
 };
 
 on.load_board = (loadedBoard) => {
   console.log("on.load_board");
-  //
-  // 取得したデータで、現在の盤面(board)を上書きする
-  //
   board = loadedBoard;
-
-  //
-  // 画面を更新し、ゲームの状態をリセットする
-  //
-  renderBoard(); // 新しい盤面を画面に描画
-  generationChange(0); // 世代カウントをリセット
-  stop(); //
+  renderBoard();
+  generationChange(0);
+  stop();
 };
