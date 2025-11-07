@@ -131,10 +131,6 @@ on.pause = () => {
   clearInterval(timerId);
 };
 
-on.load_board = (boardTemplate) => {
-  board = boardTemplate;
-};
-
 on.resize = (newBoardSize) => {
   boardSize = newBoardSize;
 };
@@ -191,18 +187,17 @@ on.stateupdate = () => {
 
 on.sizechange(boardSize);
 
-saveButton.onclick = async () => {
+on.save_board = async () => {
   window.parent.postMessage({ type: "save_board", data: board }, "*");
 };
 
-loadButton.onclick = async () => {
+on.load_board = async () => {
   window.parent.postMessage({ type: "request:load_board" }, "*");
 };
 
-on.load_board = (loadedBoard) => {
-  console.log("on.load_board");
-  board = loadedBoard;
+on.apply_board = (newBoard) => {
+  board = newBoard;
   renderBoard();
   generationChange(0);
-  stop();
+  on.pause();
 };

@@ -60,22 +60,19 @@
 
   onMount(() => {
     const handler = async (event: MessageEvent<unknown>) => {
-      console.log("handler call");
       const data = event.data as
         | { type: "unknown event" }
         | { type: "save_board"; data: boolean[][] }
         | { type: "request:load_board" };
       if (data.type === "save_board") {
-        console.log("board saved!");
         await saveBoard(data.data);
         return;
       }
 
       if (data.type === "request:load_board") {
-        console.log("loaded board");
         const board = await loadBoard();
         if (board) {
-          sendEvent("load_board", board);
+          sendEvent("apply_board", board);
         }
         return;
       }
@@ -255,7 +252,7 @@
   </div>
 
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-100 text-black"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-50 text-black"
     onclick={() => {
       isProgress = false;
       sendEvent("boardreset");
@@ -272,6 +269,26 @@
     }}
   >
     Random
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+    onclick={() => {
+      isProgress = false;
+      sendEvent("save_board");
+    }}
+  >
+    Save
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+    onclick={() => {
+      isProgress = false;
+      sendEvent("load_board");
+    }}
+  >
+    Load
   </button>
 
   <button
