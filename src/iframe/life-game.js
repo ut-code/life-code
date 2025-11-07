@@ -25,6 +25,9 @@ function isNextAlive(around, self) {
   return false;
 }
 
+const saveButton = document.getElementById("saveButton");
+const loadButton = document.getElementById("loadButton");
+
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById("game-board");
@@ -187,3 +190,19 @@ on.stateupdate = () => {
 };
 
 on.sizechange(boardSize);
+
+saveButton.onclick = async () => {
+  window.parent.postMessage({ type: "save_board", data: board }, "*");
+};
+
+loadButton.onclick = async () => {
+  window.parent.postMessage({ type: "request:load_board" }, "*");
+};
+
+on.load_board = (loadedBoard) => {
+  console.log("on.load_board");
+  board = loadedBoard;
+  renderBoard();
+  generationChange(0);
+  stop();
+};
