@@ -150,13 +150,14 @@
 <div class="modal" class:modal-open={resetModalOpen}>
   <div class="modal-box">
     <h3 class="font-bold text-lg">リセット確認</h3>
-    <p class="py-4">本当にリセットしますか？この操作は取り消せません。</p>
+    <p class="py-4">本当にコードをリセットしますか？この操作は取り消せません。</p>
     <div class="modal-action">
       <button class="btn" onclick={() => (resetModalOpen = false)}>キャンセル</button>
       <button
         class="btn btn-error"
         onclick={() => {
-          // ここにリセット処理を記述
+          appliedCode = lifeGameJS;
+          editingcode = lifeGameJS;
           console.log("Reset executed");
           resetModalOpen = false;
         }}>リセット</button
