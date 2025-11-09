@@ -1,8 +1,22 @@
 import { json } from "@sveltejs/kit";
 import { prisma } from "@/lib/prisma.server.ts";
+import * as v from "valibot";
+
+const BoardSchema = v.object({
+  board: v.array(v.array(v.boolean())),
+  name: v.pipe(v.string(), v.minLength(1, "盤面名は必須です。")),
+});
 
 export async function POST({ request }) {
-  const { board, name } = await request.json();
+  let body;
+  try {
+    body = v.parse(BoardSchema, await request.json());
+  } catch (error) {
+    console.error("Request validation failed:", error);
+    return json({ message: "無効なリクエストデータです。" }, { status: 400 });
+  }
+
+  const { board, name } = body;
 
   const newState = await prisma.boardState.create({
     data: {
