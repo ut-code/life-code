@@ -25,9 +25,6 @@ function isNextAlive(around, self) {
   return false;
 }
 
-const saveButton = document.getElementById("saveButton");
-const loadButton = document.getElementById("loadButton");
-
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById("game-board");
