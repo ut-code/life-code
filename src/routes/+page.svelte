@@ -1,7 +1,6 @@
 <script lang="ts">
   import lifeGameHTML from "@/iframe/life-game.html?raw";
   import lifeGameJS from "@/iframe/life-game.js?raw";
-  import placetemplate from "@/iframe/place_template.js?raw";
   import event from "@/iframe/event.js?raw";
 
   import * as icons from "$lib/icons/index.ts";
@@ -18,7 +17,6 @@
       `<script>
       \n${event}\n
       \n${appliedCode}\n
-      \n${placetemplate}\n
       <\/script>`,
     ),
   );
@@ -31,19 +29,16 @@
 
   let intervalMs = $state(1000);
   let generationFigure = $state(0);
-  let sizeInputValue = $state(20);
+  let sizeValue = $state(20);
 
   onMount(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === "patternError") {
-        alert(event.data.message);
-      }
       if (event.data.type === "generation_change") {
         generationFigure = event.data.data;
       }
-      if (event.data.type === "stateupdate") {
+      if (event.data.type === "Sync") {
         generationFigure = event.data.data.generationFigure;
-        sizeInputValue = event.data.data.boardSize;
+        sizeValue = event.data.data.boardSize;
       }
     };
 
@@ -127,11 +122,35 @@
           <button
             class="btn overflow-hidden p-0 w-24 h-24"
             onclick={() => {
-              preview_iframe?.contentWindow?.postMessage(
-                { type: "setPattern", pattern: patterns[patternName] },
-                "*",
+              sendEvent("requestSync");
+
+              const newBoard = Array.from({ length: sizeValue }, () =>
+                Array.from({ length: sizeValue }, () => false),
               );
+              const patternData = patterns[patternName];
+              const patternShape = patternData.shape;
+              const patternHeight = patternShape.length;
+              const patternWidth = patternShape[0].length;
+
+              if (sizeValue < (patternData.minBoardSize || 0)) {
+                alert(
+                  `このパターンには ${patternData.minBoardSize}x${patternData.minBoardSize} 以上の盤面が必要です`,
+                );
+                return;
+              }
+              // パターンがボードの中央に来るよう、パターンの左上のセルの位置(startRow, startCol)を調整
+              const startRow = Math.floor((sizeValue - patternHeight) / 2);
+              const startCol = Math.floor((sizeValue - patternWidth) / 2);
+
+              for (let r = 0; r < patternHeight; r++) {
+                for (let c = 0; c < patternWidth; c++) {
+                  const boardRow = startRow + r;
+                  const boardCol = startCol + c;
+                  newBoard[boardRow][boardCol] = patternShape[r][c] === 1;
+                }
+              }
               bottomDrawerOpen = false;
+              sendEvent("placetemplate", newBoard);
             }}
           >
             <img
@@ -213,6 +232,36 @@
     第 {generationFigure} 世代
   </div>
 
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
+    onclick={() => {
+      intervalMs = intervalMs * 2;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    x0.5
+  </button>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
+    onclick={() => {
+      intervalMs = 1000;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    x1
+  </button>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
+    onclick={() => {
+      intervalMs = intervalMs / 2;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    x2
+  </button>
+
   <div
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 -ml-15 bottom-1"
   >
@@ -265,34 +314,5 @@
     }}
   >
     Apply Code
-  </button>
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
-    onclick={() => {
-      intervalMs = intervalMs / 2;
-      sendEvent("timer_change", intervalMs);
-    }}
-  >
-    x2
-  </button>
-
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
-    onclick={() => {
-      intervalMs = intervalMs * 2;
-      sendEvent("timer_change", intervalMs);
-    }}
-  >
-    x0.5
-  </button>
-
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
-    onclick={() => {
-      intervalMs = 1000;
-      sendEvent("timer_change", intervalMs);
-    }}
-  >
-    Reset Timer
   </button>
 </div>

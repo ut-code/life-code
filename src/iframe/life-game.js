@@ -165,17 +165,25 @@ on.timer_change = (ms) => {
   }
 };
 
-on.stateupdate = () => {
+on.requestSync = () => {
   window.parent.postMessage(
     {
-      type: "stateupdate",
+      type: "Sync",
       data: {
         generationFigure: generationFigure,
+        boardSize: boardSize,
       },
     },
     "*",
   );
-  console.log("generationFigure:", generationFigure);
+  console.log("generationFigure:", generationFigure, "boardSize:", boardSize);
+};
+
+on.placetemplate = (newBoard) => {
+  board = newBoard;
+  renderBoard();
+  generationChange(0);
+  stop();
 };
 
 on.sizechange(boardSize);
