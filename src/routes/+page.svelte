@@ -33,9 +33,9 @@
   let generationFigure = $state(0);
   let sizeInputValue = $state(20);
 
-  let saveModalOpen = $state(false);
+  type SaveState = { saving: false } | { saving: true; boardData: boolean[][] };
+  let saveState: SaveState = $state({ saving: false });
   let boardNameInput = $state("");
-  let boardToSave: boolean[][] | undefined = $state(undefined);
 
   onMount(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -69,8 +69,8 @@
         | { type: "save_board"; data: boolean[][] }
         | { type: "request:load_board" };
       if (data.type === "save_board") {
-        boardToSave = data.data;
-        saveModalOpen = true;
+        saveState = { saving: true, boardData: data.data };
+        boardNameInput = "";
         return;
       }
 
@@ -88,15 +88,14 @@
   });
 
   async function handleSave() {
-    if (!boardToSave) return;
+    if (!saveState.saving) return;
 
     const name = boardNameInput.trim() === "" ? "Unnamed Board" : boardNameInput.trim();
 
-    await saveBoard({ board: boardToSave, name: name });
+    await saveBoard({ board: saveState.boardData, name: name });
 
-    saveModalOpen = false;
+    saveState = { saving: false };
     boardNameInput = "";
-    boardToSave = undefined;
   }
 </script>
 
@@ -160,8 +159,8 @@
   </div>
 </div>
 
-<input type="checkbox" class="modal-toggle" bind:checked={saveModalOpen} />
-<div class="modal" class:modal-open={saveModalOpen}>
+<input type="checkbox" class="modal-toggle" bind:checked={saveState.saving} />
+<div class="modal" class:modal-open={saveState.saving}>
   <div class="modal-box">
     <h3 class="font-bold text-lg">盤面を保存</h3>
     <p class="py-4">保存する盤面に名前を付けてください（任意）。</p>
@@ -172,8 +171,10 @@
       bind:value={boardNameInput}
     />
     <div class="modal-action">
-      <button class="btn" onclick={() => (saveModalOpen = false)}>キャンセル</button>
-      <button class="btn btn-primary" onclick={handleSave} disabled={!boardToSave}> 保存 </button>
+      <button class="btn" onclick={() => (saveState = { saving: false })}>キャンセル</button>
+      <button class="btn btn-primary" onclick={handleSave} disabled={!saveState.saving}>
+        保存
+      </button>
     </div>
   </div>
 </div>
