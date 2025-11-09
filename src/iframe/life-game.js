@@ -188,10 +188,6 @@ on.save_board = async () => {
   window.parent.postMessage({ type: "save_board", data: board }, "*");
 };
 
-on.load_board = async () => {
-  window.parent.postMessage({ type: "request:load_board" }, "*");
-};
-
 on.apply_board = (newBoard) => {
   board = newBoard;
   renderBoard();

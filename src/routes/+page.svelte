@@ -66,20 +66,10 @@
     const handler = async (event: MessageEvent<unknown>) => {
       const data = event.data as
         | { type: "unknown event" }
-        | { type: "save_board"; data: boolean[][] }
-        | { type: "request:load_board" };
+        | { type: "save_board"; data: boolean[][] };
       if (data.type === "save_board") {
         saveState = { saving: true, boardData: data.data };
         boardNameInput = "";
-        return;
-      }
-
-      if (data.type === "request:load_board") {
-        const board = await loadBoard();
-        if (board) {
-          sendEvent("apply_board", board);
-          sendEvent("pause");
-        }
         return;
       }
     };
@@ -97,6 +87,14 @@
 
     saveState = { saving: false };
     boardNameInput = "";
+  }
+
+  async function handleLoad() {
+    const board = await loadBoard();
+    if (board) {
+      sendEvent("apply_board", board);
+    }
+    return;
   }
 </script>
 
@@ -322,7 +320,8 @@
     class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
     onclick={() => {
       isProgress = false;
-      sendEvent("load_board");
+      sendEvent("pause");
+      handleLoad();
     }}
   >
     Load
