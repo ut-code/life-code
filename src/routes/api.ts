@@ -1,11 +1,11 @@
-export async function saveBoard(board: boolean[][]) {
+export async function saveBoard(data: { board: boolean[][]; name: string }) {
   try {
     const response = await fetch("/api/board", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(board),
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {

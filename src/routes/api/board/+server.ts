@@ -2,11 +2,12 @@ import { json } from "@sveltejs/kit";
 import { prisma } from "@/lib/prisma.server.ts";
 
 export async function POST({ request }) {
-  const boardData = await request.json();
+  const { board, name } = await request.json();
 
   const newState = await prisma.boardState.create({
     data: {
-      boardData: boardData,
+      boardData: board,
+      boardName: name,
     },
   });
 

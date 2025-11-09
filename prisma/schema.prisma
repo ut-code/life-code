@@ -19,4 +19,5 @@ model BoardState {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   boardData Json
+  boardName String
 }

@@ -33,6 +33,10 @@
   let generationFigure = $state(0);
   let sizeInputValue = $state(20);
 
+  let saveModalOpen = $state(false);
+  let boardNameInput = $state("");
+  let boardToSave: boolean[][] | undefined = $state(undefined);
+
   onMount(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === "patternError") {
@@ -65,7 +69,8 @@
         | { type: "save_board"; data: boolean[][] }
         | { type: "request:load_board" };
       if (data.type === "save_board") {
-        await saveBoard(data.data);
+        boardToSave = data.data;
+        saveModalOpen = true;
         return;
       }
 
@@ -81,6 +86,18 @@
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
   });
+
+  async function handleSave() {
+    if (!boardToSave) return;
+
+    const name = boardNameInput.trim() === "" ? "Unnamed Board" : boardNameInput.trim();
+
+    await saveBoard({ board: boardToSave, name: name });
+
+    saveModalOpen = false;
+    boardNameInput = "";
+    boardToSave = undefined;
+  }
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -139,6 +156,24 @@
           </button>
         </div>
       {/each}
+    </div>
+  </div>
+</div>
+
+<input type="checkbox" class="modal-toggle" bind:checked={saveModalOpen} />
+<div class="modal" class:modal-open={saveModalOpen}>
+  <div class="modal-box">
+    <h3 class="font-bold text-lg">盤面を保存</h3>
+    <p class="py-4">保存する盤面に名前を付けてください（任意）。</p>
+    <input
+      type="text"
+      placeholder="盤面名を入力"
+      class="input input-bordered w-full max-w-xs"
+      bind:value={boardNameInput}
+    />
+    <div class="modal-action">
+      <button class="btn" onclick={() => (saveModalOpen = false)}>キャンセル</button>
+      <button class="btn btn-primary" onclick={handleSave} disabled={!boardToSave}> 保存 </button>
     </div>
   </div>
 </div>
