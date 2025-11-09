@@ -196,5 +196,4 @@ on.apply_board = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
-  on.pause();
 };

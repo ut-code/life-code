@@ -78,6 +78,7 @@
         const board = await loadBoard();
         if (board) {
           sendEvent("apply_board", board);
+          sendEvent("pause");
         }
         return;
       }
