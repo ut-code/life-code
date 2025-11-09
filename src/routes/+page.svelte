@@ -213,23 +213,6 @@
     第 {generationFigure} 世代
   </div>
 
-  <p class="ml-10 text-black">ボードのサイズ(10~100):</p>
-  <input type="number" bind:value={sizeInputValue} class="w-10 text-black bg-white ml-2" />
-
-  <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black ml-2"
-    onclick={() => {
-      isProgress = false;
-      if (isNaN(sizeInputValue) || sizeInputValue < 10 || sizeInputValue > 100) {
-        alert("サイズは10から100の間で指定してください。");
-        return;
-      }
-      sendEvent("sizechange", sizeInputValue.toString());
-    }}
-  >
-    Change
-  </button>
-
   <div
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 -ml-15 bottom-1"
   >

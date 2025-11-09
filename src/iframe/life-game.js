@@ -157,16 +157,6 @@ on.boardrandom = () => {
   on.pause();
 };
 
-on.sizechange = (newSizenum) => {
-  const newSize = parseInt(newSizenum, 10);
-  boardSize = newSize;
-  CELL_SIZE = Math.floor(defaultCellSize * (defaultBoardSize / newSize));
-  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
-  renderBoard();
-  generationChange(0);
-  on.pause();
-};
-
 on.timer_change = (ms) => {
   timerTime = ms;
   if (timer === "start") {
@@ -181,12 +171,11 @@ on.stateupdate = () => {
       type: "stateupdate",
       data: {
         generationFigure: generationFigure,
-        boardSize: boardSize,
       },
     },
     "*",
   );
-  console.log("generationFigure:", generationFigure, "boardSize:", boardSize);
+  console.log("generationFigure:", generationFigure);
 };
 
 on.sizechange(boardSize);
