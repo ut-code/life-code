@@ -7,3 +7,5 @@ export { default as utcode } from "./utcode.svg";
 export { default as bars_3 } from "./bars_3.svg";
 export { default as language } from "./language.svg";
 export { default as reset } from "./reset.svg";
+export { default as accelerate } from "./accelerate.svg";
+export { default as decelerate } from "./decelerate.svg";

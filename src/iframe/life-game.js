@@ -139,6 +139,16 @@ on.resize = (newBoardSize) => {
   boardSize = newBoardSize;
 };
 
+on.sizechange = (newSizenum) => {
+  const newSize = parseInt(newSizenum, 10);
+  boardSize = newSize;
+  CELL_SIZE = Math.floor(defaultCellSize * (defaultBoardSize / newSize));
+  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+  renderBoard();
+  generationChange(0);
+  on.pause();
+};
+
 on.boardreset = () => {
   //すべて白にBoardを変更
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));

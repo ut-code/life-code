@@ -233,13 +233,13 @@
   </div>
 
   <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-20"
     onclick={() => {
       intervalMs = intervalMs * 2;
       sendEvent("timer_change", intervalMs);
     }}
   >
-    x0.5
+    <img class="size-6" src={icons.decelerate} alt="decelerate" />
   </button>
 
   <button
@@ -259,8 +259,12 @@
       sendEvent("timer_change", intervalMs);
     }}
   >
-    x2
+    <img class="size-6" src={icons.accelerate} alt="accelerate" />
   </button>
+
+  <div class="font-bold text-black ml-5">
+    現在の速度: x{1000 / intervalMs}
+  </div>
 
   <div
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 -ml-15 bottom-1"
@@ -288,17 +292,17 @@
   </div>
 
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-100 text-black"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-114 bottom-1"
     onclick={() => {
       isProgress = false;
       sendEvent("boardreset");
     }}
   >
-    Reset
+    Board Reset
   </button>
 
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-90 bottom-1"
     onclick={() => {
       isProgress = false;
       sendEvent("boardrandom");
@@ -308,7 +312,7 @@
   </button>
 
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-5 text-black"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-5 text-black fixed right-20 bottom-1"
     onclick={() => {
       appliedCode = editingcode;
     }}
