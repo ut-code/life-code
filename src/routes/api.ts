@@ -1,4 +1,4 @@
-export async function saveBoard(data: { board: boolean[][]; name: string }) {
+export async function saveBoard(data: { board: boolean[][]; name: string }, isJapanese: boolean) {
   try {
     const response = await fetch("/api/board", {
       method: "POST",
@@ -9,25 +9,46 @@ export async function saveBoard(data: { board: boolean[][]; name: string }) {
     });
 
     if (!response.ok) {
-      throw new Error("サーバーとの通信に失敗しました。");
+      if (isJapanese) {
+        throw new Error("サーバーとの通信に失敗しました。");
+      } else {
+        throw new Error("Failed to communicate with the server.");
+      }
     }
 
-    alert("盤面を保存しました！");
+    if (isJapanese) {
+      alert("盤面を保存しました！");
+    } else {
+      alert("Board saved!");
+    }
   } catch (err) {
-    console.error("保存エラー:", err);
-    alert("保存に失敗しました。");
+    if (isJapanese) {
+      console.error("保存エラー:", err);
+      alert("保存に失敗しました。");
+    } else {
+      console.error("Save Error:", err);
+      alert("Failed to save.");
+    }
   }
 }
 
-export async function loadBoard(): Promise<boolean[][] | undefined> {
+export async function loadBoard(isJapanese: boolean): Promise<boolean[][] | undefined> {
   try {
     const response = await fetch("/api/board");
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw new Error("保存されているデータがありません。");
+        if (isJapanese) {
+          throw new Error("保存されているデータがありません。");
+        } else {
+          throw new Error("There is no saved data.");
+        }
       } else {
-        throw new Error("サーバーとの通信に失敗しました。");
+        if (isJapanese) {
+          throw new Error("サーバーとの通信に失敗しました。");
+        } else {
+          throw new Error("Failed to communicate with the server.");
+        }
       }
     }
 
@@ -35,7 +56,12 @@ export async function loadBoard(): Promise<boolean[][] | undefined> {
 
     return loadedBoard as boolean[][]; // TODO: add proper types
   } catch (err) {
-    console.error("読込エラー:", err);
-    alert("読み込みに失敗しました。");
+    if (isJapanese) {
+      console.error("読込エラー:", err);
+      alert("読み込みに失敗しました。");
+    } else {
+      console.error("Load error", err);
+      alert("Failed to load.");
+    }
   }
 }
