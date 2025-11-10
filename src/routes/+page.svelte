@@ -45,18 +45,25 @@
 
   function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
     switch (event.data.type) {
-      case "generation_change":
+      case "generation_change": {
         generationFigure = event.data.data as number;
         break;
-      case "sync":
+      }
+      case "sync": {
         const data = event.data.data as { generationFigure: number; boardSize: number };
         generationFigure = data.generationFigure;
         sizeValue = data.boardSize;
         break;
-      case "save_board":
+      }
+      case "save_board": {
         saveState = { saving: true, boardData: event.data.data as boolean[][] };
         boardNameInput = "";
         break;
+      }
+      default: {
+        event.data.type satisfies never;
+        break;
+      }
     }
   }
 
