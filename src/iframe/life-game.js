@@ -5,12 +5,12 @@ let timerId = 0;
 let generationFigure = 0;
 let timerTime = 1000;
 
-const defaultBoardSize = 20;
-const defaultCellSize = 30;
+const DEFAULT_BOARD_SIZE = 20;
+const DEFAULT_CELL_SIZE = 30;
 
 //変数設定
 let boardSize = 20;
-let CELL_SIZE = 30;
+let cellSize = 30;
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
@@ -41,8 +41,8 @@ function renderBoard() {
       const button = document.createElement("button");
       button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
       button.style.border = "0.5px solid black";
-      button.style.width = `${CELL_SIZE}px`;
-      button.style.height = `${CELL_SIZE}px`;
+      button.style.width = `${cellSize}px`;
+      button.style.height = `${cellSize}px`;
       button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
       button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
       button.onclick = () => {
@@ -141,7 +141,7 @@ on.resize = (newBoardSize) => {
 on.sizechange = (newSizenum) => {
   const newSize = parseInt(newSizenum, 10);
   boardSize = newSize;
-  CELL_SIZE = Math.floor(defaultCellSize * (defaultBoardSize / newSize));
+  cellSize = Math.floor(DEFAULT_CELL_SIZE * (DEFAULT_BOARD_SIZE / newSize));
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
