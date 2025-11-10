@@ -24,6 +24,7 @@
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
   let isProgress = $state(false);
+  let japanese = $state(true);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
 
@@ -78,14 +79,14 @@
 
     const name = boardNameInput.trim() === "" ? "Unnamed Board" : boardNameInput.trim();
 
-    await saveBoard({ board: saveState.boardData, name: name });
+    await saveBoard({ board: saveState.boardData, name: name, japanese: japanese });
 
     saveState = { saving: false };
     boardNameInput = "";
   }
 
   async function handleLoad() {
-    const board = await loadBoard();
+    const board = await loadBoard(japanese);
     if (board) {
       sendEvent("apply_board", board);
     }
@@ -116,9 +117,14 @@
     </div>
   </label>
 
-  <div class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] mx-5">
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] mx-5"
+    onclick={() => {
+      japanese = !japanese;
+    }}
+  >
     <img class="size-6" src={icons.language} alt="Language" />
-  </div>
+  </button>
 </div>
 
 <div
@@ -145,9 +151,16 @@
               const patternWidth = patternShape[0].length;
 
               if (sizeValue < (patternData.minBoardSize || 0)) {
-                alert(
-                  `このパターンには ${patternData.minBoardSize}x${patternData.minBoardSize} 以上の盤面が必要です`,
-                );
+                if (japanese) {
+                  alert(
+                    `このパターンには ${patternData.minBoardSize}x${patternData.minBoardSize} 以上の盤面が必要です`,
+                  );
+                } else {
+                  alert(
+                    `This pattern requires a board size of at least ${patternData.minBoardSize}x${patternData.minBoardSize}.`,
+                  );
+                }
+
                 return;
               }
               // パターンがボードの中央に来るよう、パターンの左上のセルの位置(startRow, startCol)を調整
@@ -180,18 +193,24 @@
 <input type="checkbox" class="modal-toggle" bind:checked={saveState.saving} />
 <div class="modal" class:modal-open={saveState.saving}>
   <div class="modal-box">
-    <h3 class="font-bold text-lg">盤面を保存</h3>
-    <p class="py-4">保存する盤面に名前を付けてください（任意）。</p>
+    <h3 class="font-bold text-lg">{japanese ? "盤面を保存" : "Save board"}</h3>
+    <p class="py-4">
+      {japanese
+        ? "保存する盤面に名前を付けてください（任意）。"
+        : "Please name the board you wish to save (optional)."}
+    </p>
     <input
       type="text"
-      placeholder="盤面名を入力"
+      placeholder={japanese ? "盤面名を入力" : "Enter board name"}
       class="input input-bordered w-full max-w-xs"
       bind:value={boardNameInput}
     />
     <div class="modal-action">
-      <button class="btn" onclick={() => (saveState = { saving: false })}>キャンセル</button>
+      <button class="btn" onclick={() => (saveState = { saving: false })}
+        >{japanese ? "キャンセル" : "Cancel"}</button
+      >
       <button class="btn btn-primary" onclick={handleSave} disabled={!saveState.saving}>
-        保存
+        {japanese ? "保存" : "Save"}
       </button>
     </div>
   </div>
@@ -200,10 +219,16 @@
 <input type="checkbox" class="modal-toggle" bind:checked={resetModalOpen} />
 <div class="modal" class:modal-open={resetModalOpen}>
   <div class="modal-box">
-    <h3 class="font-bold text-lg">リセット確認</h3>
-    <p class="py-4">本当にコードをリセットしますか？この操作は取り消せません。</p>
+    <h3 class="font-bold text-lg">{japanese ? "リセット確認" : "Reset confirmation"}</h3>
+    <p class="py-4">
+      {japanese
+        ? "本当にコードをリセットしますか？この操作は取り消せません。"
+        : "Are you sure you want to reset the code? This action cannot be undone."}
+    </p>
     <div class="modal-action">
-      <button class="btn" onclick={() => (resetModalOpen = false)}>キャンセル</button>
+      <button class="btn" onclick={() => (resetModalOpen = false)}
+        >{japanese ? "キャンセル" : "Cancel"}</button
+      >
       <button
         class="btn btn-error"
         onclick={() => {
@@ -211,7 +236,7 @@
           editingcode = lifeGameJS;
           console.log("Reset executed");
           resetModalOpen = false;
-        }}>リセット</button
+        }}>{japanese ? "リセット" : "Reset"}</button
       >
     </div>
   </div>
@@ -257,11 +282,13 @@
     class="btn rounded-none h-12 justify-start"
     onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
   >
-    {bottomDrawerOpen ? "▼" : "▲ テンプレート"}
+    {bottomDrawerOpen ? "▼" : japanese ? "▲ テンプレート" : "▲ Template"}
   </button>
 
   <div class="font-bold text-black ml-10">
-    第 {generationFigure} 世代
+    {japanese ? "第" : "Generation"}
+    {generationFigure}
+    {japanese ? "世代" : ""}
   </div>
 
   <button
@@ -295,7 +322,7 @@
   </button>
 
   <div class="font-bold text-black ml-5">
-    現在の速度: x{1000 / intervalMs}
+    {japanese ? "現在の速度" : "Current speed"}: x{1000 / intervalMs}
   </div>
 
   <div
@@ -323,7 +350,7 @@
     <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
   </div>
 
-  <div class="font-bold text-black absolute right-143">Board:</div>
+  <div class="font-bold text-black absolute right-143">{japanese ? "盤面" : "Board"}:</div>
 
   <button
     class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-125 bottom-1"
@@ -332,7 +359,7 @@
       sendEvent("save_board");
     }}
   >
-    Save
+    {japanese ? "保存" : "Save"}
   </button>
 
   <button
@@ -343,7 +370,7 @@
       handleLoad();
     }}
   >
-    Load
+    {japanese ? "ロード" : "Load"}
   </button>
 
   <button
@@ -353,7 +380,7 @@
       sendEvent("boardreset");
     }}
   >
-    Reset
+    {japanese ? "リセット" : "Reset"}
   </button>
 
   <button
@@ -363,7 +390,7 @@
       sendEvent("boardrandom");
     }}
   >
-    Random
+    {japanese ? "ランダム" : "Random"}
   </button>
 
   <button
@@ -372,6 +399,6 @@
       appliedCode = editingcode;
     }}
   >
-    Apply Code
+    {japanese ? "コードを適用" : "Apply Code"}
   </button>
 </div>
