@@ -1,7 +1,6 @@
 <script lang="ts">
   import lifeGameHTML from "@/iframe/life-game.html?raw";
   import lifeGameJS from "@/iframe/life-game.js?raw";
-  import placetemplate from "@/iframe/place_template.js?raw";
   import event from "@/iframe/event.js?raw";
 
   import * as icons from "$lib/icons/index.ts";
@@ -18,7 +17,6 @@
       `<script>
       \n${event}\n
       \n${appliedCode}\n
-      \n${placetemplate}\n
       <\/script>`,
     ),
   );
@@ -31,7 +29,7 @@
 
   let intervalMs = $state(1000);
   let generationFigure = $state(0);
-  let sizeInputValue = $state(20);
+  let sizeValue = $state(20);
 
   type SaveState = { saving: false } | { saving: true; boardData: boolean[][] };
   let saveState: SaveState = $state({ saving: false });
@@ -39,15 +37,12 @@
 
   onMount(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === "patternError") {
-        alert(event.data.message);
-      }
       if (event.data.type === "generation_change") {
         generationFigure = event.data.data;
       }
-      if (event.data.type === "stateupdate") {
+      if (event.data.type === "Sync") {
         generationFigure = event.data.data.generationFigure;
-        sizeInputValue = event.data.data.boardSize;
+        sizeValue = event.data.data.boardSize;
       }
     };
 
@@ -139,11 +134,35 @@
           <button
             class="btn overflow-hidden p-0 w-24 h-24"
             onclick={() => {
-              preview_iframe?.contentWindow?.postMessage(
-                { type: "setPattern", pattern: patterns[patternName] },
-                "*",
+              sendEvent("requestSync");
+
+              const newBoard = Array.from({ length: sizeValue }, () =>
+                Array.from({ length: sizeValue }, () => false),
               );
+              const patternData = patterns[patternName];
+              const patternShape = patternData.shape;
+              const patternHeight = patternShape.length;
+              const patternWidth = patternShape[0].length;
+
+              if (sizeValue < (patternData.minBoardSize || 0)) {
+                alert(
+                  `このパターンには ${patternData.minBoardSize}x${patternData.minBoardSize} 以上の盤面が必要です`,
+                );
+                return;
+              }
+              // パターンがボードの中央に来るよう、パターンの左上のセルの位置(startRow, startCol)を調整
+              const startRow = Math.floor((sizeValue - patternHeight) / 2);
+              const startCol = Math.floor((sizeValue - patternWidth) / 2);
+
+              for (let r = 0; r < patternHeight; r++) {
+                for (let c = 0; c < patternWidth; c++) {
+                  const boardRow = startRow + r;
+                  const boardCol = startCol + c;
+                  newBoard[boardRow][boardCol] = patternShape[r][c] === 1;
+                }
+              }
               bottomDrawerOpen = false;
+              sendEvent("placetemplate", newBoard);
             }}
           >
             <img
@@ -245,22 +264,39 @@
     第 {generationFigure} 世代
   </div>
 
-  <p class="ml-10 text-black">ボードのサイズ(10~100):</p>
-  <input type="number" bind:value={sizeInputValue} class="w-10 text-black bg-white ml-2" />
-
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black ml-2"
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-20"
     onclick={() => {
-      isProgress = false;
-      if (isNaN(sizeInputValue) || sizeInputValue < 10 || sizeInputValue > 100) {
-        alert("サイズは10から100の間で指定してください。");
-        return;
-      }
-      sendEvent("sizechange", sizeInputValue.toString());
+      intervalMs = intervalMs * 2;
+      sendEvent("timer_change", intervalMs);
     }}
   >
-    Change
+    <img class="size-6" src={icons.decelerate} alt="decelerate" />
   </button>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
+    onclick={() => {
+      intervalMs = 1000;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    x1
+  </button>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
+    onclick={() => {
+      intervalMs = intervalMs / 2;
+      sendEvent("timer_change", intervalMs);
+    }}
+  >
+    <img class="size-6" src={icons.accelerate} alt="accelerate" />
+  </button>
+
+  <div class="font-bold text-black ml-5">
+    現在の速度: x{1000 / intervalMs}
+  </div>
 
   <div
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 -ml-15 bottom-1"
@@ -287,28 +323,10 @@
     <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
   </div>
 
-  <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-50 text-black"
-    onclick={() => {
-      isProgress = false;
-      sendEvent("boardreset");
-    }}
-  >
-    Reset
-  </button>
+  <div class="font-bold text-black absolute right-143">Board:</div>
 
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
-    onclick={() => {
-      isProgress = false;
-      sendEvent("boardrandom");
-    }}
-  >
-    Random
-  </button>
-
-  <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-125 bottom-1"
     onclick={() => {
       isProgress = false;
       sendEvent("save_board");
@@ -318,7 +336,7 @@
   </button>
 
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-109 bottom-1"
     onclick={() => {
       isProgress = false;
       sendEvent("pause");
@@ -329,40 +347,31 @@
   </button>
 
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-5 text-black"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-92 bottom-1"
+    onclick={() => {
+      isProgress = false;
+      sendEvent("boardreset");
+    }}
+  >
+    Reset
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-70 bottom-1"
+    onclick={() => {
+      isProgress = false;
+      sendEvent("boardrandom");
+    }}
+  >
+    Random
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-5 text-black fixed right-20 bottom-1"
     onclick={() => {
       appliedCode = editingcode;
     }}
   >
     Apply Code
-  </button>
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
-    onclick={() => {
-      intervalMs = intervalMs / 2;
-      sendEvent("timer_change", intervalMs);
-    }}
-  >
-    x2
-  </button>
-
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
-    onclick={() => {
-      intervalMs = intervalMs * 2;
-      sendEvent("timer_change", intervalMs);
-    }}
-  >
-    x0.5
-  </button>
-
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
-    onclick={() => {
-      intervalMs = 1000;
-      sendEvent("timer_change", intervalMs);
-    }}
-  >
-    Reset Timer
   </button>
 </div>

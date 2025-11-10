@@ -116,6 +116,13 @@ function progressBoard() {
   renderBoard();
 }
 
+const resetTimer = () => {
+  if (timer !== "stop") {
+    timer = "stop";
+    clearInterval(timerId);
+  }
+};
+
 //イベント
 
 on.play = () => {
@@ -124,30 +131,11 @@ on.play = () => {
 };
 
 on.pause = () => {
-  timer = "stop";
-  clearInterval(timerId);
+  resetTimer();
 };
 
 on.resize = (newBoardSize) => {
   boardSize = newBoardSize;
-};
-
-on.boardreset = () => {
-  //すべて白にBoardを変更
-  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
-  renderBoard();
-  generationChange(0);
-  on.pause();
-};
-
-on.boardrandom = () => {
-  //白黒ランダムにBoardを変更
-  board = Array.from({ length: boardSize }, () =>
-    Array.from({ length: boardSize }, () => Math.random() > 0.5),
-  );
-  renderBoard();
-  generationChange(0);
-  on.pause();
 };
 
 on.sizechange = (newSizenum) => {
@@ -157,7 +145,25 @@ on.sizechange = (newSizenum) => {
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
-  on.pause();
+  resetTimer();
+};
+
+on.boardreset = () => {
+  //すべて白にBoardを変更
+  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+  renderBoard();
+  generationChange(0);
+  resetTimer();
+};
+
+on.boardrandom = () => {
+  //白黒ランダムにBoardを変更
+  board = Array.from({ length: boardSize }, () =>
+    Array.from({ length: boardSize }, () => Math.random() > 0.5),
+  );
+  renderBoard();
+  generationChange(0);
+  resetTimer();
 };
 
 on.timer_change = (ms) => {
@@ -168,10 +174,10 @@ on.timer_change = (ms) => {
   }
 };
 
-on.stateupdate = () => {
+on.requestSync = () => {
   window.parent.postMessage(
     {
-      type: "stateupdate",
+      type: "Sync",
       data: {
         generationFigure: generationFigure,
         boardSize: boardSize,
@@ -180,6 +186,14 @@ on.stateupdate = () => {
     "*",
   );
   console.log("generationFigure:", generationFigure, "boardSize:", boardSize);
+};
+
+on.placetemplate = (newBoard) => {
+  board = newBoard;
+  renderBoard();
+  generationChange(0);
+  resetTimer();
+  stop();
 };
 
 on.sizechange(boardSize);
@@ -192,4 +206,6 @@ on.apply_board = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
+  resetTimer();
+  stop();
 };
