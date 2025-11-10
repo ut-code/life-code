@@ -117,8 +117,10 @@ function progressBoard() {
 }
 
 const resetTimer = () => {
-  timer = "stop";
-  clearInterval(timerId);
+  if (timer !== "stop") {
+    timer = "stop";
+    clearInterval(timerId);
+  }
 };
 
 //イベント
