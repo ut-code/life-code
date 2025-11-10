@@ -119,6 +119,11 @@ function progressBoard() {
   renderBoard();
 }
 
+const resetTimer = () => {
+  timer = "stop";
+  clearInterval(timerId);
+};
+
 //イベント
 
 on.play = () => {
@@ -127,8 +132,7 @@ on.play = () => {
 };
 
 on.pause = () => {
-  timer = "stop";
-  clearInterval(timerId);
+  resetTimer();
 };
 
 on.load_board = (boardTemplate) => {
@@ -146,7 +150,7 @@ on.sizechange = (newSizenum) => {
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
-  on.pause();
+  resetTimer();
 };
 
 on.boardreset = () => {
@@ -154,7 +158,7 @@ on.boardreset = () => {
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
-  on.pause();
+  resetTimer();
 };
 
 on.boardrandom = () => {
@@ -164,7 +168,7 @@ on.boardrandom = () => {
   );
   renderBoard();
   generationChange(0);
-  on.pause();
+  resetTimer();
 };
 
 on.timer_change = (ms) => {
@@ -193,6 +197,7 @@ on.placetemplate = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
+  resetTimer();
   stop();
 };
 
@@ -211,5 +216,6 @@ on.load_board = (loadedBoard) => {
   board = loadedBoard;
   renderBoard();
   generationChange(0);
+  resetTimer();
   stop();
 };

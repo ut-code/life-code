@@ -298,7 +298,7 @@
       sendEvent("boardreset");
     }}
   >
-    Board Reset
+    Reset board
   </button>
 
   <button
