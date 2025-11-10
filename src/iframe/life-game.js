@@ -28,7 +28,6 @@ function isNextAlive(around, self) {
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById("game-board");
-table.style.borderCollapse = "collapse";
 function renderBoard() {
   //盤面をBoardに従って変更する関数(Boardを変更したら必ず実行する)
   table.innerHTML = "";
@@ -116,12 +115,12 @@ function progressBoard() {
   renderBoard();
 }
 
-const resetTimer = () => {
+function resetTimer() {
   if (timer !== "stop") {
     timer = "stop";
     clearInterval(timerId);
   }
-};
+}
 
 //イベント
 
@@ -134,12 +133,7 @@ on.pause = () => {
   resetTimer();
 };
 
-on.resize = (newBoardSize) => {
-  boardSize = newBoardSize;
-};
-
-on.sizechange = (newSizenum) => {
-  const newSize = parseInt(newSizenum, 10);
+on.board_resize = (newSize) => {
   boardSize = newSize;
   cellSize = Math.floor(DEFAULT_CELL_SIZE * (DEFAULT_BOARD_SIZE / newSize));
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
@@ -148,7 +142,7 @@ on.sizechange = (newSizenum) => {
   resetTimer();
 };
 
-on.boardreset = () => {
+on.board_reset = () => {
   //すべて白にBoardを変更
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
@@ -156,7 +150,7 @@ on.boardreset = () => {
   resetTimer();
 };
 
-on.boardrandom = () => {
+on.board_randomize = () => {
   //白黒ランダムにBoardを変更
   board = Array.from({ length: boardSize }, () =>
     Array.from({ length: boardSize }, () => Math.random() > 0.5),
@@ -174,10 +168,10 @@ on.timer_change = (ms) => {
   }
 };
 
-on.requestSync = () => {
+on.request_sync = () => {
   window.parent.postMessage(
     {
-      type: "Sync",
+      type: "sync",
       data: {
         generationFigure: generationFigure,
         boardSize: boardSize,
@@ -188,15 +182,13 @@ on.requestSync = () => {
   console.log("generationFigure:", generationFigure, "boardSize:", boardSize);
 };
 
-on.placetemplate = (newBoard) => {
+on.place_template = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
   resetTimer();
   stop();
 };
-
-on.sizechange(boardSize);
 
 on.save_board = async () => {
   window.parent.postMessage({ type: "save_board", data: board }, "*");

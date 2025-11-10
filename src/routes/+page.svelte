@@ -1,25 +1,16 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import event from "@/iframe/event.js?raw";
   import lifeGameHTML from "@/iframe/life-game.html?raw";
   import lifeGameJS from "@/iframe/life-game.js?raw";
-  import event from "@/iframe/event.js?raw";
-
-  import * as icons from "$lib/icons/index.ts";
   import patterns from "$lib/board-templates";
-  import { onMount } from "svelte";
+  import * as icons from "$lib/icons/index.ts";
   import { loadBoard, saveBoard } from "./api.ts";
 
-  let editingcode = $state(lifeGameJS);
+  let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
 
-  let previewDoc = $derived(
-    lifeGameHTML.replace(
-      /<script src="\.\/life-game\.js"><\/script>/,
-      `<script>
-      \n${event}\n
-      \n${appliedCode}\n
-      <\/script>`,
-    ),
-  );
+  const previewDoc = $derived(lifeGameHTML.replace('"@JAVASCRIPT@";', `${event}\n${appliedCode}`));
 
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
@@ -36,43 +27,49 @@
   let saveState: SaveState = $state({ saving: false });
   let boardNameInput = $state("");
 
+  type OngoingEvent =
+    | "play"
+    | "pause"
+    | "state_update"
+    | "timer_change"
+    | "board_reset"
+    | "board_randomize"
+    | "place_template"
+    | "save_board"
+    | "apply_board"
+    | "request_sync"
+    // unused events
+    | "board_resize";
+
+  type IncomingEvent = "generation_change" | "sync" | "save_board";
+
+  function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
+    switch (event.data.type) {
+      case "generation_change":
+        generationFigure = event.data.data as number;
+        break;
+      case "sync":
+        const data = event.data.data as { generationFigure: number; boardSize: number };
+        generationFigure = data.generationFigure;
+        sizeValue = data.boardSize;
+        break;
+      case "save_board":
+        saveState = { saving: true, boardData: event.data.data as boolean[][] };
+        boardNameInput = "";
+        break;
+    }
+  }
+
   onMount(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === "generation_change") {
-        generationFigure = event.data.data;
-      }
-      if (event.data.type === "Sync") {
-        generationFigure = event.data.data.generationFigure;
-        sizeValue = event.data.data.boardSize;
-      }
-    };
-
     window.addEventListener("message", handleMessage);
-
     return () => {
       window.removeEventListener("message", handleMessage);
     };
   });
 
-  function sendEvent(event: string, message?: unknown) {
+  function sendEvent(event: OngoingEvent, message?: unknown) {
     preview_iframe?.contentWindow?.postMessage({ type: event, data: message }, "*");
   }
-
-  onMount(() => {
-    const handler = async (event: MessageEvent<unknown>) => {
-      const data = event.data as
-        | { type: "unknown event" }
-        | { type: "save_board"; data: boolean[][] };
-      if (data.type === "save_board") {
-        saveState = { saving: true, boardData: data.data };
-        boardNameInput = "";
-        return;
-      }
-    };
-
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
-  });
 
   async function handleSave() {
     if (!saveState.saving) return;
@@ -142,7 +139,7 @@
           <button
             class="btn overflow-hidden p-0 w-24 h-24"
             onclick={() => {
-              sendEvent("requestSync");
+              sendEvent("request_sync");
 
               const newBoard = Array.from({ length: sizeValue }, () =>
                 Array.from({ length: sizeValue }, () => false),
@@ -177,7 +174,7 @@
                 }
               }
               bottomDrawerOpen = false;
-              sendEvent("placetemplate", newBoard);
+              sendEvent("place_template", newBoard);
             }}
           >
             <img
@@ -234,9 +231,9 @@
       <button
         class="btn btn-error"
         onclick={() => {
+          // reset code (not board)
           appliedCode = lifeGameJS;
-          editingcode = lifeGameJS;
-          console.log("Reset executed");
+          editingCode = lifeGameJS;
           resetModalOpen = false;
         }}>{isJapanese ? "リセット" : "Reset"}</button
       >
@@ -259,7 +256,7 @@
       class="w-[80%] h-[90%] rounded-lg mx-auto my-5 shadow-lg"
       onload={() => {
         setTimeout(() => {
-          sendEvent("stateupdate");
+          sendEvent("state_update");
           console.log("generationFigure onload:", generationFigure);
         }, 50);
       }}
@@ -273,7 +270,7 @@
     ]}
   >
     <textarea
-      bind:value={editingcode}
+      bind:value={editingCode}
       class="w-full h-full border-none p-4 font-mono bg-black text-[#0f0]"
     ></textarea>
   </div>
@@ -391,7 +388,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        sendEvent("boardreset");
+        sendEvent("board_reset");
       }}
     >
       {isJapanese ? "リセット" : "Reset"}
@@ -401,7 +398,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        sendEvent("boardrandom");
+        sendEvent("board_randomize");
       }}
     >
       {isJapanese ? "ランダム" : "Random"}
@@ -413,7 +410,7 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        appliedCode = editingcode;
+        appliedCode = editingCode;
       }}
     >
       {isJapanese ? "コードを適用" : "Apply Code"}
