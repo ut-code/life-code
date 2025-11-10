@@ -1,4 +1,4 @@
-export async function saveBoard(data: { board: boolean[][]; name: string; japanese: boolean }) {
+export async function saveBoard(data: { board: boolean[][]; name: string }, isJapanese: boolean) {
   try {
     const response = await fetch("/api/board", {
       method: "POST",
@@ -9,20 +9,20 @@ export async function saveBoard(data: { board: boolean[][]; name: string; japane
     });
 
     if (!response.ok) {
-      if (data.japanese) {
+      if (isJapanese) {
         throw new Error("サーバーとの通信に失敗しました。");
       } else {
         throw new Error("Failed to communicate with the server.");
       }
     }
 
-    if (data.japanese) {
+    if (isJapanese) {
       alert("盤面を保存しました！");
     } else {
       alert("Board saved!");
     }
   } catch (err) {
-    if (data.japanese) {
+    if (isJapanese) {
       console.error("保存エラー:", err);
       alert("保存に失敗しました。");
     } else {
@@ -32,19 +32,19 @@ export async function saveBoard(data: { board: boolean[][]; name: string; japane
   }
 }
 
-export async function loadBoard(japanese: boolean): Promise<boolean[][] | undefined> {
+export async function loadBoard(isJapanese: boolean): Promise<boolean[][] | undefined> {
   try {
     const response = await fetch("/api/board");
 
     if (!response.ok) {
       if (response.status === 404) {
-        if (japanese) {
+        if (isJapanese) {
           throw new Error("保存されているデータがありません。");
         } else {
           throw new Error("There is no saved data.");
         }
       } else {
-        if (japanese) {
+        if (isJapanese) {
           throw new Error("サーバーとの通信に失敗しました。");
         } else {
           throw new Error("Failed to communicate with the server.");
@@ -56,7 +56,7 @@ export async function loadBoard(japanese: boolean): Promise<boolean[][] | undefi
 
     return loadedBoard as boolean[][]; // TODO: add proper types
   } catch (err) {
-    if (japanese) {
+    if (isJapanese) {
       console.error("読込エラー:", err);
       alert("読み込みに失敗しました。");
     } else {

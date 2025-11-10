@@ -24,7 +24,7 @@
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
   let isProgress = $state(false);
-  let japanese = $state(true);
+  let isJapanese = $state(true);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
 
@@ -79,14 +79,14 @@
 
     const name = boardNameInput.trim() === "" ? "Unnamed Board" : boardNameInput.trim();
 
-    await saveBoard({ board: saveState.boardData, name: name, japanese: japanese });
+    await saveBoard({ board: saveState.boardData, name: name }, isJapanese);
 
     saveState = { saving: false };
     boardNameInput = "";
   }
 
   async function handleLoad() {
-    const board = await loadBoard(japanese);
+    const board = await loadBoard(isJapanese);
     if (board) {
       sendEvent("apply_board", board);
     }
@@ -120,7 +120,7 @@
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] mx-5"
     onclick={() => {
-      japanese = !japanese;
+      isJapanese = !isJapanese;
     }}
   >
     <img class="size-6" src={icons.language} alt="Language" />
@@ -137,7 +137,7 @@
       {#each Object.keys(patterns) as (keyof typeof patterns)[] as patternName (patternName)}
         <div class="text-center flex-shrink-0">
           <p class="font-bold mb-2">
-            {japanese ? patterns[patternName].names.ja : patterns[patternName].names.en}
+            {isJapanese ? patterns[patternName].names.ja : patterns[patternName].names.en}
           </p>
           <button
             class="btn overflow-hidden p-0 w-24 h-24"
@@ -153,7 +153,7 @@
               const patternWidth = patternShape[0].length;
 
               if (sizeValue < (patternData.minBoardSize || 0)) {
-                if (japanese) {
+                if (isJapanese) {
                   alert(
                     `このパターンには ${patternData.minBoardSize}x${patternData.minBoardSize} 以上の盤面が必要です`,
                   );
@@ -195,24 +195,24 @@
 <input type="checkbox" class="modal-toggle" bind:checked={saveState.saving} />
 <div class="modal" class:modal-open={saveState.saving}>
   <div class="modal-box">
-    <h3 class="font-bold text-lg">{japanese ? "盤面を保存" : "Save board"}</h3>
+    <h3 class="font-bold text-lg">{isJapanese ? "盤面を保存" : "Save board"}</h3>
     <p class="py-4">
-      {japanese
+      {isJapanese
         ? "保存する盤面に名前を付けてください（任意）。"
         : "Please name the board you wish to save (optional)."}
     </p>
     <input
       type="text"
-      placeholder={japanese ? "盤面名を入力" : "Enter board name"}
+      placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
       class="input input-bordered w-full max-w-xs"
       bind:value={boardNameInput}
     />
     <div class="modal-action">
       <button class="btn" onclick={() => (saveState = { saving: false })}
-        >{japanese ? "キャンセル" : "Cancel"}</button
+        >{isJapanese ? "キャンセル" : "Cancel"}</button
       >
       <button class="btn btn-primary" onclick={handleSave} disabled={!saveState.saving}>
-        {japanese ? "保存" : "Save"}
+        {isJapanese ? "保存" : "Save"}
       </button>
     </div>
   </div>
@@ -221,15 +221,15 @@
 <input type="checkbox" class="modal-toggle" bind:checked={resetModalOpen} />
 <div class="modal" class:modal-open={resetModalOpen}>
   <div class="modal-box">
-    <h3 class="font-bold text-lg">{japanese ? "リセット確認" : "Reset confirmation"}</h3>
+    <h3 class="font-bold text-lg">{isJapanese ? "リセット確認" : "Reset confirmation"}</h3>
     <p class="py-4">
-      {japanese
+      {isJapanese
         ? "本当にコードをリセットしますか？この操作は取り消せません。"
         : "Are you sure you want to reset the code? This action cannot be undone."}
     </p>
     <div class="modal-action">
       <button class="btn" onclick={() => (resetModalOpen = false)}
-        >{japanese ? "キャンセル" : "Cancel"}</button
+        >{isJapanese ? "キャンセル" : "Cancel"}</button
       >
       <button
         class="btn btn-error"
@@ -238,7 +238,7 @@
           editingcode = lifeGameJS;
           console.log("Reset executed");
           resetModalOpen = false;
-        }}>{japanese ? "リセット" : "Reset"}</button
+        }}>{isJapanese ? "リセット" : "Reset"}</button
       >
     </div>
   </div>
@@ -288,13 +288,17 @@
       class="btn rounded-none h-12 justify-start"
       onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
     >
-      {bottomDrawerOpen ? "▼" : japanese ? "▲ テンプレート" : "▲ Template"}
+      {#if bottomDrawerOpen}
+        ▼
+      {:else if isJapanese}
+        ▲ テンプレート
+      {:else}
+        ▲ Template
+      {/if}
     </button>
 
     <div class="font-bold text-black ml-4">
-      {japanese ? "第" : "Generation"}
-      {generationFigure}
-      {japanese ? "世代" : ""}
+      {isJapanese ? "第" + generationFigure + "世代" : "Generation" + generationFigure}
     </div>
   </div>
 
@@ -331,7 +335,7 @@
     </button>
 
     <div class="font-bold text-black ml-2">
-      {japanese ? "現在の速度" : "Current speed"}: x{1000 / intervalMs}
+      {isJapanese ? "現在の速度" : "Current speed"}: x{1000 / intervalMs}
     </div>
 
     <div class="w-px bg-gray-400 h-6 mx-4"></div>
@@ -361,7 +365,7 @@
 
   <!-- Right Section -->
   <div class="flex items-center gap-x-2">
-    <div class="font-bold text-black">{japanese ? "盤面" : "Board"}:</div>
+    <div class="font-bold text-black">{isJapanese ? "盤面" : "Board"}:</div>
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
@@ -369,7 +373,7 @@
         sendEvent("save_board");
       }}
     >
-      {japanese ? "保存" : "Save"}
+      {isJapanese ? "保存" : "Save"}
     </button>
 
     <button
@@ -380,7 +384,7 @@
         handleLoad();
       }}
     >
-      {japanese ? "ロード" : "Load"}
+      {isJapanese ? "ロード" : "Load"}
     </button>
 
     <button
@@ -390,7 +394,7 @@
         sendEvent("boardreset");
       }}
     >
-      {japanese ? "リセット" : "Reset"}
+      {isJapanese ? "リセット" : "Reset"}
     </button>
 
     <button
@@ -400,7 +404,7 @@
         sendEvent("boardrandom");
       }}
     >
-      {japanese ? "ランダム" : "Random"}
+      {isJapanese ? "ランダム" : "Random"}
     </button>
 
     <div class="w-px bg-gray-400 h-6 mx-2"></div>
@@ -412,7 +416,7 @@
         appliedCode = editingcode;
       }}
     >
-      {japanese ? "コードを適用" : "Apply Code"}
+      {isJapanese ? "コードを適用" : "Apply Code"}
     </button>
   </div>
 </div>
