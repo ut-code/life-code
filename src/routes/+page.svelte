@@ -136,7 +136,9 @@
     <div class="flex gap-4">
       {#each Object.keys(patterns) as (keyof typeof patterns)[] as patternName (patternName)}
         <div class="text-center flex-shrink-0">
-          <p class="font-bold mb-2">{patterns[patternName].names.ja}</p>
+          <p class="font-bold mb-2">
+            {japanese ? patterns[patternName].names.ja : patterns[patternName].names.en}
+          </p>
           <button
             class="btn overflow-hidden p-0 w-24 h-24"
             onclick={() => {
@@ -277,128 +279,140 @@
   </div>
 </div>
 
-<div class="bg-[#E0E0E0] shadow-sm fixed bottom-0 left-0 right-0 z-50 h-12 p-0 flex items-center">
-  <button
-    class="btn rounded-none h-12 justify-start"
-    onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
-  >
-    {bottomDrawerOpen ? "▼" : japanese ? "▲ テンプレート" : "▲ Template"}
-  </button>
+<div
+  class="bg-[#E0E0E0] shadow-sm fixed bottom-0 left-0 right-0 z-50 h-12 p-0 flex items-center px-4"
+>
+  <!-- Left Section -->
+  <div class="flex items-center">
+    <button
+      class="btn rounded-none h-12 justify-start"
+      onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
+    >
+      {bottomDrawerOpen ? "▼" : japanese ? "▲ テンプレート" : "▲ Template"}
+    </button>
 
-  <div class="font-bold text-black ml-10">
-    {japanese ? "第" : "Generation"}
-    {generationFigure}
-    {japanese ? "世代" : ""}
+    <div class="font-bold text-black ml-4">
+      {japanese ? "第" : "Generation"}
+      {generationFigure}
+      {japanese ? "世代" : ""}
+    </div>
   </div>
 
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-20"
-    onclick={() => {
-      intervalMs = intervalMs * 2;
-      sendEvent("timer_change", intervalMs);
-    }}
-  >
-    <img class="size-6" src={icons.decelerate} alt="decelerate" />
-  </button>
+  <!-- Center Section -->
+  <div class="flex-1 flex justify-center items-center gap-x-2">
+    <button
+      class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
+      onclick={() => {
+        intervalMs = intervalMs * 2;
+        sendEvent("timer_change", intervalMs);
+      }}
+    >
+      <img class="size-6" src={icons.decelerate} alt="decelerate" />
+    </button>
 
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
-    onclick={() => {
-      intervalMs = 1000;
-      sendEvent("timer_change", intervalMs);
-    }}
-  >
-    x1
-  </button>
+    <button
+      class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
+      onclick={() => {
+        intervalMs = 1000;
+        sendEvent("timer_change", intervalMs);
+      }}
+    >
+      x1
+    </button>
 
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] text-black ml-2"
-    onclick={() => {
-      intervalMs = intervalMs / 2;
-      sendEvent("timer_change", intervalMs);
-    }}
-  >
-    <img class="size-6" src={icons.accelerate} alt="accelerate" />
-  </button>
+    <button
+      class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
+      onclick={() => {
+        intervalMs = intervalMs / 2;
+        sendEvent("timer_change", intervalMs);
+      }}
+    >
+      <img class="size-6" src={icons.accelerate} alt="accelerate" />
+    </button>
 
-  <div class="font-bold text-black ml-5">
-    {japanese ? "現在の速度" : "Current speed"}: x{1000 / intervalMs}
+    <div class="font-bold text-black ml-2">
+      {japanese ? "現在の速度" : "Current speed"}: x{1000 / intervalMs}
+    </div>
+
+    <div class="w-px bg-gray-400 h-6 mx-4"></div>
+    <!-- Separator -->
+
+    <button class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]">
+      <img class="size-6" src={icons.LeftArrow} alt="Left Arrow" />
+    </button>
+
+    <button
+      class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap"
+      onclick={() => {
+        const eventName = isProgress ? "pause" : "play";
+        sendEvent(eventName);
+        isProgress = !isProgress;
+      }}
+    >
+      <input type="checkbox" bind:checked={isProgress} />
+      <img class="size-6 swap-on" src={icons.Pause} alt="Pause" />
+      <img class="size-6 swap-off" src={icons.Play} alt="Play" />
+    </button>
+
+    <button class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]">
+      <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
+    </button>
   </div>
 
-  <div
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 -ml-15 bottom-1"
-  >
-    <img class="size-6" src={icons.LeftArrow} alt="Left Arrow" />
+  <!-- Right Section -->
+  <div class="flex items-center gap-x-2">
+    <div class="font-bold text-black">{japanese ? "盤面" : "Board"}:</div>
+    <button
+      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      onclick={() => {
+        isProgress = false;
+        sendEvent("save_board");
+      }}
+    >
+      {japanese ? "保存" : "Save"}
+    </button>
+
+    <button
+      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      onclick={() => {
+        isProgress = false;
+        sendEvent("pause");
+        handleLoad();
+      }}
+    >
+      {japanese ? "ロード" : "Load"}
+    </button>
+
+    <button
+      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      onclick={() => {
+        isProgress = false;
+        sendEvent("boardreset");
+      }}
+    >
+      {japanese ? "リセット" : "Reset"}
+    </button>
+
+    <button
+      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      onclick={() => {
+        isProgress = false;
+        sendEvent("boardrandom");
+      }}
+    >
+      {japanese ? "ランダム" : "Random"}
+    </button>
+
+    <div class="w-px bg-gray-400 h-6 mx-2"></div>
+    <!-- Separator -->
+
+    <button
+      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      onclick={() => {
+        appliedCode = editingcode;
+      }}
+    >
+      {japanese ? "コードを適用" : "Apply Code"}
+    </button>
   </div>
-
-  <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 bottom-1"
-    onclick={() => {
-      const eventName = isProgress ? "pause" : "play";
-      sendEvent(eventName);
-      isProgress = !isProgress;
-    }}
-  >
-    <input type="checkbox" bind:checked={isProgress} />
-    <img class="size-6 swap-on" src={icons.Pause} alt="Pause" />
-    <img class="size-6 swap-off" src={icons.Play} alt="Play" />
-  </button>
-
-  <div
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap fixed left-1/2 !-translate-x-1/2 ml-15 bottom-1"
-  >
-    <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
-  </div>
-
-  <div class="font-bold text-black absolute right-143">{japanese ? "盤面" : "Board"}:</div>
-
-  <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-125 bottom-1"
-    onclick={() => {
-      isProgress = false;
-      sendEvent("save_board");
-    }}
-  >
-    {japanese ? "保存" : "Save"}
-  </button>
-
-  <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-109 bottom-1"
-    onclick={() => {
-      isProgress = false;
-      sendEvent("pause");
-      handleLoad();
-    }}
-  >
-    {japanese ? "ロード" : "Load"}
-  </button>
-
-  <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-92 bottom-1"
-    onclick={() => {
-      isProgress = false;
-      sendEvent("boardreset");
-    }}
-  >
-    {japanese ? "リセット" : "Reset"}
-  </button>
-
-  <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-70 bottom-1"
-    onclick={() => {
-      isProgress = false;
-      sendEvent("boardrandom");
-    }}
-  >
-    {japanese ? "ランダム" : "Random"}
-  </button>
-
-  <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] ml-5 text-black fixed right-20 bottom-1"
-    onclick={() => {
-      appliedCode = editingcode;
-    }}
-  >
-    {japanese ? "コードを適用" : "Apply Code"}
-  </button>
 </div>
