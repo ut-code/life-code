@@ -31,6 +31,10 @@
   let generationFigure = $state(0);
   let sizeValue = $state(20);
 
+  type SaveState = { saving: false } | { saving: true; boardData: boolean[][] };
+  let saveState: SaveState = $state({ saving: false });
+  let boardNameInput = $state("");
+
   onMount(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === "generation_change") {
@@ -55,23 +59,12 @@
 
   onMount(() => {
     const handler = async (event: MessageEvent<unknown>) => {
-      console.log("handler call");
       const data = event.data as
         | { type: "unknown event" }
-        | { type: "save_board"; data: boolean[][] }
-        | { type: "request:load_board" };
+        | { type: "save_board"; data: boolean[][] };
       if (data.type === "save_board") {
-        console.log("board saved!");
-        await saveBoard(data.data);
-        return;
-      }
-
-      if (data.type === "request:load_board") {
-        console.log("loaded board");
-        const board = await loadBoard();
-        if (board) {
-          sendEvent("load_board", board);
-        }
+        saveState = { saving: true, boardData: data.data };
+        boardNameInput = "";
         return;
       }
     };
@@ -79,6 +72,25 @@
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
   });
+
+  async function handleSave() {
+    if (!saveState.saving) return;
+
+    const name = boardNameInput.trim() === "" ? "Unnamed Board" : boardNameInput.trim();
+
+    await saveBoard({ board: saveState.boardData, name: name });
+
+    saveState = { saving: false };
+    boardNameInput = "";
+  }
+
+  async function handleLoad() {
+    const board = await loadBoard();
+    if (board) {
+      sendEvent("apply_board", board);
+    }
+    return;
+  }
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -161,6 +173,26 @@
           </button>
         </div>
       {/each}
+    </div>
+  </div>
+</div>
+
+<input type="checkbox" class="modal-toggle" bind:checked={saveState.saving} />
+<div class="modal" class:modal-open={saveState.saving}>
+  <div class="modal-box">
+    <h3 class="font-bold text-lg">盤面を保存</h3>
+    <p class="py-4">保存する盤面に名前を付けてください（任意）。</p>
+    <input
+      type="text"
+      placeholder="盤面名を入力"
+      class="input input-bordered w-full max-w-xs"
+      bind:value={boardNameInput}
+    />
+    <div class="modal-action">
+      <button class="btn" onclick={() => (saveState = { saving: false })}>キャンセル</button>
+      <button class="btn btn-primary" onclick={handleSave} disabled={!saveState.saving}>
+        保存
+      </button>
     </div>
   </div>
 </div>
@@ -291,18 +323,41 @@
     <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
   </div>
 
+  <div class="font-bold text-black absolute right-143">Board:</div>
+
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-114 bottom-1"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-125 bottom-1"
+    onclick={() => {
+      isProgress = false;
+      sendEvent("save_board");
+    }}
+  >
+    Save
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-109 bottom-1"
+    onclick={() => {
+      isProgress = false;
+      sendEvent("pause");
+      handleLoad();
+    }}
+  >
+    Load
+  </button>
+
+  <button
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-92 bottom-1"
     onclick={() => {
       isProgress = false;
       sendEvent("boardreset");
     }}
   >
-    Reset board
+    Reset
   </button>
 
   <button
-    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-90 bottom-1"
+    class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black fixed right-70 bottom-1"
     onclick={() => {
       isProgress = false;
       sendEvent("boardrandom");

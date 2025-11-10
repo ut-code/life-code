@@ -25,9 +25,6 @@ function isNextAlive(around, self) {
   return false;
 }
 
-const saveButton = document.getElementById("saveButton");
-const loadButton = document.getElementById("loadButton");
-
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById("game-board");
@@ -135,10 +132,6 @@ on.pause = () => {
   resetTimer();
 };
 
-on.load_board = (boardTemplate) => {
-  board = boardTemplate;
-};
-
 on.resize = (newBoardSize) => {
   boardSize = newBoardSize;
 };
@@ -203,17 +196,12 @@ on.placetemplate = (newBoard) => {
 
 on.sizechange(boardSize);
 
-saveButton.onclick = async () => {
+on.save_board = async () => {
   window.parent.postMessage({ type: "save_board", data: board }, "*");
 };
 
-loadButton.onclick = async () => {
-  window.parent.postMessage({ type: "request:load_board" }, "*");
-};
-
-on.load_board = (loadedBoard) => {
-  console.log("on.load_board");
-  board = loadedBoard;
+on.apply_board = (newBoard) => {
+  board = newBoard;
   renderBoard();
   generationChange(0);
   resetTimer();

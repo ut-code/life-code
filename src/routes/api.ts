@@ -1,11 +1,11 @@
-export async function saveBoard(board: boolean[][]) {
+export async function saveBoard(data: { board: boolean[][]; name: string }) {
   try {
     const response = await fetch("/api/board", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(board),
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {
@@ -33,7 +33,6 @@ export async function loadBoard(): Promise<boolean[][] | undefined> {
 
     const loadedBoard = await response.json();
 
-    console.log("fetched board:", loadedBoard);
     return loadedBoard as boolean[][]; // TODO: add proper types
   } catch (err) {
     console.error("読込エラー:", err);
