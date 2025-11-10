@@ -374,6 +374,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        sendEvent("pause");
         sendEvent("save_board");
       }}
     >
