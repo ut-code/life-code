@@ -227,6 +227,12 @@
         placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
         class="input input-bordered w-full max-w-xs"
         bind:value={saveState.boardName}
+        onkeydown={(e) => {
+          if (e.key === "Enter" && !e.isComposing) {
+            e.preventDefault();
+            handleSave();
+          }
+        }}
       />
       <div class="modal-action">
         <button class="btn" onclick={() => (saveState = { saving: false })}
