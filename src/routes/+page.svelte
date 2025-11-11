@@ -23,9 +23,8 @@
   let generationFigure = $state(0);
   let sizeValue = $state(20);
 
-  type SaveState = { saving: false } | { saving: true; boardData: boolean[][] };
+  type SaveState = { saving: false } | { saving: true; boardData: boolean[][]; boardName: string };
   let saveState: SaveState = $state({ saving: false });
-  let boardNameInput = $state("");
 
   type LoadState =
     | { state: "closed" }
@@ -62,8 +61,7 @@
         break;
       }
       case "save_board": {
-        saveState = { saving: true, boardData: event.data.data as boolean[][] };
-        boardNameInput = "";
+        saveState = { saving: true, boardData: event.data.data as boolean[][], boardName: "" };
         break;
       }
       default: {
@@ -87,12 +85,11 @@
   async function handleSave() {
     if (!saveState.saving) return;
 
-    const name = boardNameInput.trim() === "" ? "Unnamed Board" : boardNameInput.trim();
+    const name = saveState.boardName.trim() === "" ? "Unnamed Board" : saveState.boardName.trim();
 
     await saveBoard({ board: saveState.boardData, name: name }, isJapanese);
 
     saveState = { saving: false };
-    boardNameInput = "";
   }
 
   async function handleLoad() {
@@ -219,25 +216,27 @@
 <div class="modal" class:modal-open={saveState.saving}>
   <div class="modal-box">
     <h3 class="font-bold text-lg">{isJapanese ? "盤面を保存" : "Save board"}</h3>
-    <p class="py-4">
-      {isJapanese
-        ? "保存する盤面に名前を付けてください（任意）。"
-        : "Please name the board you wish to save (optional)."}
-    </p>
-    <input
-      type="text"
-      placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
-      class="input input-bordered w-full max-w-xs"
-      bind:value={boardNameInput}
-    />
-    <div class="modal-action">
-      <button class="btn" onclick={() => (saveState = { saving: false })}
-        >{isJapanese ? "キャンセル" : "Cancel"}</button
-      >
-      <button class="btn btn-primary" onclick={handleSave} disabled={!saveState.saving}>
-        {isJapanese ? "保存" : "Save"}
-      </button>
-    </div>
+    {#if saveState.saving}
+      <p class="py-4">
+        {isJapanese
+          ? "保存する盤面に名前を付けてください（任意）。"
+          : "Please name the board you wish to save (optional)."}
+      </p>
+      <input
+        type="text"
+        placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
+        class="input input-bordered w-full max-w-xs"
+        bind:value={saveState.boardName}
+      />
+      <div class="modal-action">
+        <button class="btn" onclick={() => (saveState = { saving: false })}
+          >{isJapanese ? "キャンセル" : "Cancel"}</button
+        >
+        <button class="btn btn-primary" onclick={handleSave} disabled={!saveState.saving}>
+          {isJapanese ? "保存" : "Save"}
+        </button>
+      </div>
+    {/if}
   </div>
 </div>
 
