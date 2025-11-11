@@ -302,7 +302,7 @@
     </button>
 
     <div class="font-bold text-black ml-4">
-      {isJapanese ? "第" + generationFigure + "世代" : "Generation" + generationFigure}
+      {isJapanese ? "第" + generationFigure + "世代" : "Generation:" + generationFigure}
     </div>
   </div>
 
@@ -319,7 +319,7 @@
     </button>
 
     <button
-      class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
+      class="btn btn-ghost btn-circle text-black hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = 1000;
         sendEvent("timer_change", intervalMs);
