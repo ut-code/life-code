@@ -5,7 +5,7 @@
   import lifeGameJS from "@/iframe/life-game.js?raw";
   import patterns from "$lib/board-templates";
   import * as icons from "$lib/icons/index.ts";
-  import { loadBoard, saveBoard } from "./api.ts";
+  import { saveBoard, fetchBoardList, loadBoardById, type BoardListItem } from "./api.ts";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
@@ -23,9 +23,14 @@
   let generationFigure = $state(0);
   let sizeValue = $state(20);
 
-  type SaveState = { saving: false } | { saving: true; boardData: boolean[][] };
+  type SaveState = { saving: false } | { saving: true; boardData: boolean[][]; boardName: string };
   let saveState: SaveState = $state({ saving: false });
-  let boardNameInput = $state("");
+
+  type LoadState =
+    | { state: "closed" }
+    | { state: "loading" }
+    | { state: "list"; list: BoardListItem[] };
+  let loadState: LoadState = $state({ state: "closed" });
 
   type OngoingEvent =
     | "play"
@@ -56,8 +61,7 @@
         break;
       }
       case "save_board": {
-        saveState = { saving: true, boardData: event.data.data as boolean[][] };
-        boardNameInput = "";
+        saveState = { saving: true, boardData: event.data.data as boolean[][], boardName: "" };
         break;
       }
       default: {
@@ -81,20 +85,32 @@
   async function handleSave() {
     if (!saveState.saving) return;
 
-    const name = boardNameInput.trim() === "" ? "Unnamed Board" : boardNameInput.trim();
+    const name = saveState.boardName.trim() === "" ? "Unnamed Board" : saveState.boardName.trim();
 
     await saveBoard({ board: saveState.boardData, name: name }, isJapanese);
 
     saveState = { saving: false };
-    boardNameInput = "";
   }
 
   async function handleLoad() {
-    const board = await loadBoard(isJapanese);
+    loadState = { state: "loading" };
+
+    const list = await fetchBoardList(isJapanese);
+
+    if (list) {
+      loadState = { state: "list", list };
+    } else {
+      loadState = { state: "closed" };
+    }
+  }
+
+  async function selectBoard(id: number) {
+    loadState = { state: "closed" };
+
+    const board = await loadBoardById(id, isJapanese);
     if (board) {
       sendEvent("apply_board", board);
     }
-    return;
   }
 </script>
 
@@ -196,34 +212,87 @@
   </div>
 </div>
 
-<input type="checkbox" class="modal-toggle" bind:checked={saveState.saving} />
-<div class="modal" class:modal-open={saveState.saving}>
-  <div class="modal-box">
+<dialog class="modal" open={saveState.saving}>
+  <form method="dialog" class="modal-box">
     <h3 class="font-bold text-lg">{isJapanese ? "盤面を保存" : "Save board"}</h3>
-    <p class="py-4">
-      {isJapanese
-        ? "保存する盤面に名前を付けてください（任意）。"
-        : "Please name the board you wish to save (optional)."}
-    </p>
-    <input
-      type="text"
-      placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
-      class="input input-bordered w-full max-w-xs"
-      bind:value={boardNameInput}
-    />
+    {#if saveState.saving}
+      <p class="py-4">
+        {isJapanese
+          ? "保存する盤面に名前を付けてください（任意）。"
+          : "Please name the board you wish to save (optional)."}
+      </p>
+      <input
+        type="text"
+        placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
+        class="input input-bordered w-full max-w-xs"
+        bind:value={saveState.boardName}
+      />
+      <div class="modal-action">
+        <button type="button" class="btn" onclick={() => (saveState = { saving: false })}
+          >{isJapanese ? "キャンセル" : "Cancel"}</button
+        >
+        <button
+          type="submit"
+          class="btn btn-primary"
+          onclick={handleSave}
+          disabled={!saveState.saving}
+        >
+          {isJapanese ? "保存" : "Save"}
+        </button>
+      </div>
+    {/if}
+  </form>
+</dialog>
+
+<dialog class="modal" open={loadState.state !== "closed"}>
+  <div class="modal-box w-11/12 max-w-5xl">
+    <h3 class="font-bold text-lg">{isJapanese ? "盤面をロード" : "Load board"}</h3>
+
+    {#if loadState.state === "loading"}
+      <p class="py-4">
+        {isJapanese ? "保存されている盤面を読み込み中..." : "Loading saved boards..."}
+      </p>
+      <span class="loading loading-spinner loading-lg"></span>
+    {:else if loadState.state === "list" && loadState.list.length === 0}
+      <p class="py-4">
+        {isJapanese ? "保存されている盤面はありません。" : "No saved boards found."}
+      </p>
+    {:else if loadState.state === "list"}
+      <div class="overflow-x-auto h-96">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>{isJapanese ? "盤面名" : "Board Name"}</th>
+              <th>{isJapanese ? "保存日時" : "Saved At"}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each loadState.list as item (item.id)}
+              <tr class="hover:bg-base-300">
+                <td>{item.boardName}</td>
+                <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
+                <td class="text-right">
+                  <button class="btn btn-sm btn-primary" onclick={() => selectBoard(item.id)}>
+                    {isJapanese ? "ロード" : "Load"}
+                  </button>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
+
     <div class="modal-action">
-      <button class="btn" onclick={() => (saveState = { saving: false })}
-        >{isJapanese ? "キャンセル" : "Cancel"}</button
-      >
-      <button class="btn btn-primary" onclick={handleSave} disabled={!saveState.saving}>
-        {isJapanese ? "保存" : "Save"}
+      <button class="btn" onclick={() => (loadState = { state: "closed" })}>
+        {isJapanese ? "閉じる" : "Close"}
       </button>
     </div>
   </div>
-</div>
+</dialog>
 
-<input type="checkbox" class="modal-toggle" bind:checked={resetModalOpen} />
-<div class="modal" class:modal-open={resetModalOpen}>
+<dialog class="modal" open={resetModalOpen}>
   <div class="modal-box">
     <h3 class="font-bold text-lg">{isJapanese ? "リセット確認" : "Reset confirmation"}</h3>
     <p class="py-4">
@@ -246,7 +315,7 @@
       >
     </div>
   </div>
-</div>
+</dialog>
 
 <div class="flex box-border h-screen" style="height: calc(100vh - 4rem - 3rem);">
   <div
@@ -374,6 +443,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        sendEvent("pause");
         sendEvent("save_board");
       }}
     >
