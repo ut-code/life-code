@@ -28,17 +28,43 @@ export async function POST({ request }) {
   return json(newState, { status: 201 });
 }
 
-export async function GET() {
-  // データベースから一番「最後」に保存されたデータを1件だけ探す
-  const latestState = await prisma.boardState.findFirst({
-    orderBy: {
-      createdAt: "desc", // 作成日時(createdAt)の降順（desc）で並び替え
-    },
-  });
+export async function GET({ url }) {
+  const boardId = url.searchParams.get("id");
 
-  if (!latestState) {
-    return json({ message: "No state found" }, { status: 404 });
+  if (boardId) {
+    //IDが指定された場合、そのIDの盤面を返す
+    const id = parseInt(boardId, 10);
+    if (isNaN(id)) {
+      return json({ message: "無効なIDです。" }, { status: 400 });
+    }
+
+    const state = await prisma.boardState.findUnique({
+      where: { id: id },
+      select: { boardData: true },
+    });
+
+    if (!state) {
+      return json({ message: `ID: ${id} の盤面は見つかりません。` }, { status: 404 });
+    }
+
+    return json(state.boardData);
+  } else {
+    //IDが指定されなかった場合、全ての盤面のリストを返す
+    const allStates = await prisma.boardState.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        boardName: true,
+        createdAt: true,
+      },
+    });
+
+    if (!allStates || allStates.length === 0) {
+      return json({ message: "No state found" }, { status: 404 });
+    }
+
+    return json(allStates);
   }
-
-  return json(latestState.boardData);
 }

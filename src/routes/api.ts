@@ -32,7 +32,13 @@ export async function saveBoard(data: { board: boolean[][]; name: string }, isJa
   }
 }
 
-export async function loadBoard(isJapanese: boolean): Promise<boolean[][] | undefined> {
+export type BoardListItem = {
+  id: number;
+  boardName: string;
+  createdAt: string;
+};
+
+export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem[] | undefined> {
   try {
     const response = await fetch("/api/board");
 
@@ -52,9 +58,46 @@ export async function loadBoard(isJapanese: boolean): Promise<boolean[][] | unde
       }
     }
 
+    const boardList = await response.json();
+
+    return boardList as BoardListItem[];
+  } catch (err) {
+    if (isJapanese) {
+      console.error("読込エラー:", err);
+      alert("読み込みに失敗しました。");
+    } else {
+      console.error("Load error", err);
+      alert("Failed to load.");
+    }
+  }
+}
+
+export async function loadBoardById(
+  id: number,
+  isJapanese: boolean,
+): Promise<boolean[][] | undefined> {
+  try {
+    const response = await fetch(`/api/board?id=${id}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        if (isJapanese) {
+          throw new Error("指定されたIDのデータが見つかりません。");
+        } else {
+          throw new Error("The specified ID data was not found.");
+        }
+      } else {
+        if (isJapanese) {
+          throw new Error("サーバーとの通信に失敗しました。");
+        } else {
+          throw new Error("Failed to communicate with the server.");
+        }
+      }
+    }
+
     const loadedBoard = await response.json();
 
-    return loadedBoard as boolean[][]; // TODO: add proper types
+    return loadedBoard as boolean[][];
   } catch (err) {
     if (isJapanese) {
       console.error("読込エラー:", err);

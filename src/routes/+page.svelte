@@ -5,7 +5,7 @@
   import lifeGameJS from "@/iframe/life-game.js?raw";
   import patterns from "$lib/board-templates";
   import * as icons from "$lib/icons/index.ts";
-  import { loadBoard, saveBoard } from "./api.ts";
+  import { saveBoard, fetchBoardList, loadBoardById, type BoardListItem } from "./api.ts";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
@@ -26,6 +26,12 @@
   type SaveState = { saving: false } | { saving: true; boardData: boolean[][] };
   let saveState: SaveState = $state({ saving: false });
   let boardNameInput = $state("");
+
+  type LoadState =
+    | { state: "closed" }
+    | { state: "loading" }
+    | { state: "list"; list: BoardListItem[] };
+  let loadState: LoadState = $state({ state: "closed" });
 
   type OngoingEvent =
     | "play"
@@ -90,11 +96,24 @@
   }
 
   async function handleLoad() {
-    const board = await loadBoard(isJapanese);
+    loadState = { state: "loading" };
+
+    const list = await fetchBoardList(isJapanese);
+
+    if (list) {
+      loadState = { state: "list", list };
+    } else {
+      loadState = { state: "closed" };
+    }
+  }
+
+  async function selectBoard(id: number) {
+    loadState = { state: "closed" };
+
+    const board = await loadBoardById(id, isJapanese);
     if (board) {
       sendEvent("apply_board", board);
     }
-    return;
   }
 </script>
 
@@ -217,6 +236,55 @@
       >
       <button class="btn btn-primary" onclick={handleSave} disabled={!saveState.saving}>
         {isJapanese ? "保存" : "Save"}
+      </button>
+    </div>
+  </div>
+</div>
+
+<input type="checkbox" class="modal-toggle" checked={loadState.state !== "closed"} />
+<div class="modal" class:modal-open={loadState.state !== "closed"}>
+  <div class="modal-box w-11/12 max-w-5xl">
+    <h3 class="font-bold text-lg">{isJapanese ? "盤面をロード" : "Load board"}</h3>
+
+    {#if loadState.state === "loading"}
+      <p class="py-4">
+        {isJapanese ? "保存されている盤面を読み込み中..." : "Loading saved boards..."}
+      </p>
+      <span class="loading loading-spinner loading-lg"></span>
+    {:else if loadState.state === "list" && loadState.list.length === 0}
+      <p class="py-4">
+        {isJapanese ? "保存されている盤面はありません。" : "No saved boards found."}
+      </p>
+    {:else if loadState.state === "list"}
+      <div class="overflow-x-auto h-96">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>{isJapanese ? "盤面名" : "Board Name"}</th>
+              <th>{isJapanese ? "保存日時" : "Saved At"}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each loadState.list as item (item.id)}
+              <tr class="hover:bg-base-300">
+                <td>{item.boardName}</td>
+                <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
+                <td class="text-right">
+                  <button class="btn btn-sm btn-primary" onclick={() => selectBoard(item.id)}>
+                    {isJapanese ? "ロード" : "Load"}
+                  </button>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
+
+    <div class="modal-action">
+      <button class="btn" onclick={() => (loadState = { state: "closed" })}>
+        {isJapanese ? "閉じる" : "Close"}
       </button>
     </div>
   </div>
