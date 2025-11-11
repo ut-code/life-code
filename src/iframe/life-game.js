@@ -4,6 +4,8 @@ let timer = "stop";
 let timerId = 0;
 let generationFigure = 0;
 let timerTime = 1000;
+let isDragging = false;
+let dragMode = false; // true: 黒にする, false: 白にする
 
 const DEFAULT_BOARD_SIZE = 20;
 const DEFAULT_CELL_SIZE = 30;
@@ -44,11 +46,19 @@ function renderBoard() {
       button.style.height = `${cellSize}px`;
       button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
       button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
-      button.onclick = () => {
+      button.onmousedown = (e) => {
+        e.preventDefault();
         if (timer === "stop") {
+          isDragging = true;
           board[i][j] = !board[i][j];
-          renderBoard();
-          //クリックされたら色を反転して盤面を変更
+          dragMode = board[i][j];
+          button.style.backgroundColor = board[i][j] ? "black" : "white";
+        }
+      };
+      button.onmouseenter = () => {
+        if (isDragging && timer === "stop" && board[i][j] !== dragMode) {
+          board[i][j] = dragMode;
+          button.style.backgroundColor = board[i][j] ? "black" : "white";
         }
       };
       td.appendChild(button);
@@ -57,6 +67,10 @@ function renderBoard() {
     table.appendChild(tr);
   }
 }
+
+document.addEventListener("mouseup", () => {
+  isDragging = false;
+});
 
 renderBoard();
 progressBoard();
