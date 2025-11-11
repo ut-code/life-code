@@ -212,8 +212,7 @@
   </div>
 </div>
 
-<input type="checkbox" class="modal-toggle" bind:checked={saveState.saving} />
-<div class="modal" class:modal-open={saveState.saving}>
+<dialog class="modal" open={saveState.saving}>
   <div class="modal-box">
     <h3 class="font-bold text-lg">{isJapanese ? "盤面を保存" : "Save board"}</h3>
     {#if saveState.saving}
@@ -244,10 +243,9 @@
       </div>
     {/if}
   </div>
-</div>
+</dialog>
 
-<input type="checkbox" class="modal-toggle" checked={loadState.state !== "closed"} />
-<div class="modal" class:modal-open={loadState.state !== "closed"}>
+<dialog class="modal" open={loadState.state !== "closed"}>
   <div class="modal-box w-11/12 max-w-5xl">
     <h3 class="font-bold text-lg">{isJapanese ? "盤面をロード" : "Load board"}</h3>
 
@@ -293,10 +291,9 @@
       </button>
     </div>
   </div>
-</div>
+</dialog>
 
-<input type="checkbox" class="modal-toggle" bind:checked={resetModalOpen} />
-<div class="modal" class:modal-open={resetModalOpen}>
+<dialog class="modal" open={resetModalOpen}>
   <div class="modal-box">
     <h3 class="font-bold text-lg">{isJapanese ? "リセット確認" : "Reset confirmation"}</h3>
     <p class="py-4">
@@ -319,7 +316,7 @@
       >
     </div>
   </div>
-</div>
+</dialog>
 
 <div class="flex box-border h-screen" style="height: calc(100vh - 4rem - 3rem);">
   <div
