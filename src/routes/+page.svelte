@@ -213,7 +213,7 @@
 </div>
 
 <dialog class="modal" open={saveState.saving}>
-  <div class="modal-box">
+  <form method="dialog" class="modal-box">
     <h3 class="font-bold text-lg">{isJapanese ? "盤面を保存" : "Save board"}</h3>
     {#if saveState.saving}
       <p class="py-4">
@@ -226,23 +226,22 @@
         placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
         class="input input-bordered w-full max-w-xs"
         bind:value={saveState.boardName}
-        onkeydown={(e) => {
-          if (e.key === "Enter" && !e.isComposing) {
-            e.preventDefault();
-            handleSave();
-          }
-        }}
       />
       <div class="modal-action">
-        <button class="btn" onclick={() => (saveState = { saving: false })}
+        <button type="button" class="btn" onclick={() => (saveState = { saving: false })}
           >{isJapanese ? "キャンセル" : "Cancel"}</button
         >
-        <button class="btn btn-primary" onclick={handleSave} disabled={!saveState.saving}>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          onclick={handleSave}
+          disabled={!saveState.saving}
+        >
           {isJapanese ? "保存" : "Save"}
         </button>
       </div>
     {/if}
-  </div>
+  </form>
 </dialog>
 
 <dialog class="modal" open={loadState.state !== "closed"}>
