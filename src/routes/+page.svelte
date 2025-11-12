@@ -262,6 +262,7 @@
         <table class="table w-full">
           <thead>
             <tr>
+              <th class="pl-5">{isJapanese ? "プレビュー" : "Preview"}</th>
               <th>{isJapanese ? "盤面名" : "Board Name"}</th>
               <th>{isJapanese ? "保存日時" : "Saved At"}</th>
               <th></th>
@@ -270,6 +271,17 @@
           <tbody>
             {#each loadState.list as item (item.id)}
               <tr class="hover:bg-base-300">
+                <td>
+                  <div class="board-preview">
+                    {#each item.boardData as row, i (i)}
+                      <div class="preview-row">
+                        {#each row as cell, j (j)}
+                          <div class="preview-cell {cell ? 'alive' : ''}"></div>
+                        {/each}
+                      </div>
+                    {/each}
+                  </div>
+                </td>
                 <td>{item.boardName}</td>
                 <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
                 <td class="text-right">
@@ -494,3 +506,25 @@
     </button>
   </div>
 </div>
+
+<style>
+  .board-preview {
+    display: grid;
+    grid-template-columns: repeat(20, 3px);
+    grid-template-rows: repeat(20, 3px);
+    width: 60px;
+    height: 60px;
+    border: 1px solid #9ca3af;
+    background-color: white;
+  }
+  .preview-row {
+    display: contents;
+  }
+  .preview-cell {
+    width: 3px;
+    height: 3px;
+  }
+  .preview-cell.alive {
+    background-color: black;
+  }
+</style>

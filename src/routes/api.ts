@@ -36,6 +36,7 @@ export type BoardListItem = {
   id: number;
   boardName: string;
   createdAt: string;
+  boardData: boolean[][];
 };
 
 export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem[] | undefined> {

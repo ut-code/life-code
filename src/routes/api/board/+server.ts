@@ -58,6 +58,7 @@ export async function GET({ url }) {
         id: true,
         boardName: true,
         createdAt: true,
+        boardData: true,
       },
     });
 
