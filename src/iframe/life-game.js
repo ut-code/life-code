@@ -11,8 +11,8 @@ const DEFAULT_BOARD_SIZE = 20;
 const DEFAULT_CELL_SIZE = 30;
 
 //変数設定
-let boardSize = 20;
-let cellSize = 30;
+let boardSize = 20; //盤面の大きさ(20x20)
+let cellScale = 1.0; //セルの大きさの倍率
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
@@ -32,6 +32,7 @@ let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSi
 const table = document.getElementById("game-board");
 //盤面をBoardに従って変更する関数(Boardを変更したら必ず実行する)
 function renderBoard() {
+  const cellSize = Math.floor(cellScale * DEFAULT_CELL_SIZE * (DEFAULT_BOARD_SIZE / boardSize));
   // 初回の処理
   if (table.children.length === 0) {
     table.innerHTML = "";
@@ -73,10 +74,18 @@ function renderBoard() {
     for (let i = 0; i < boardSize; i++) {
       for (let j = 0; j < boardSize; j++) {
         const button = table.children[i].children[j].children[0];
+
         const shouldBeBlack = board[i][j];
         const isBlack = button.style.backgroundColor === "black";
         if (shouldBeBlack !== isBlack) {
           button.style.backgroundColor = shouldBeBlack ? "black" : "white";
+        }
+
+        const currentCellsize = button.style.width;
+        const expectedCellsize = `${cellSize}px`;
+        if (currentCellsize !== expectedCellsize) {
+          button.style.width = expectedCellsize;
+          button.style.height = expectedCellsize;
         }
       }
     }
@@ -159,15 +168,6 @@ on.play = () => {
 };
 
 on.pause = () => {
-  resetTimer();
-};
-
-on.board_resize = (newSize) => {
-  boardSize = newSize;
-  cellSize = Math.floor(DEFAULT_CELL_SIZE * (DEFAULT_BOARD_SIZE / newSize));
-  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
-  renderBoard();
-  generationChange(0);
   resetTimer();
 };
 

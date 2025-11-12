@@ -42,9 +42,7 @@
     | "place_template"
     | "save_board"
     | "apply_board"
-    | "request_sync"
-    // unused events
-    | "board_resize";
+    | "request_sync";
 
   type IncomingEvent = "generation_change" | "sync" | "save_board";
 
