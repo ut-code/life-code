@@ -117,6 +117,7 @@
 
     const board = await loadBoardById(id, isJapanese);
     if (board) {
+      sizeValue = board.length;
       sendEvent("apply_board", board);
     }
   }
