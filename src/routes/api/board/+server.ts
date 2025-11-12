@@ -5,6 +5,7 @@ import * as v from "valibot";
 const BoardSchema = v.object({
   board: v.array(v.array(v.boolean())),
   name: v.pipe(v.string(), v.minLength(1, "盤面名は必須です。")),
+  preview: v.array(v.array(v.boolean())),
 });
 
 export async function POST({ request }) {
@@ -16,12 +17,13 @@ export async function POST({ request }) {
     return json({ message: "無効なリクエストデータです。" }, { status: 400 });
   }
 
-  const { board, name } = body;
+  const { board, name, preview } = body;
 
   const newState = await prisma.boardState.create({
     data: {
       boardData: board,
       boardName: name,
+      boardPreview: preview,
     },
   });
 
@@ -58,7 +60,7 @@ export async function GET({ url }) {
         id: true,
         boardName: true,
         createdAt: true,
-        boardData: true,
+        boardPreview: true,
       },
     });
 

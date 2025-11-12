@@ -1,4 +1,7 @@
-export async function saveBoard(data: { board: boolean[][]; name: string }, isJapanese: boolean) {
+export async function saveBoard(
+  data: { board: boolean[][]; name: string; preview: boolean[][] },
+  isJapanese: boolean,
+) {
   try {
     const response = await fetch("/api/board", {
       method: "POST",
@@ -36,7 +39,7 @@ export type BoardListItem = {
   id: number;
   boardName: string;
   createdAt: string;
-  boardData: boolean[][];
+  boardPreview: boolean[][];
 };
 
 export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem[] | undefined> {

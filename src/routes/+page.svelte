@@ -6,6 +6,7 @@
   import patterns from "$lib/board-templates";
   import * as icons from "$lib/icons/index.ts";
   import { saveBoard, fetchBoardList, loadBoardById, type BoardListItem } from "./api.ts";
+  import { createPreview } from "$lib/board-preview";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
@@ -23,7 +24,9 @@
   let generationFigure = $state(0);
   let sizeValue = $state(20);
 
-  type SaveState = { saving: false } | { saving: true; boardData: boolean[][]; boardName: string };
+  type SaveState =
+    | { saving: false }
+    | { saving: true; boardData: boolean[][]; boardName: string; boardPreview: boolean[][] };
   let saveState: SaveState = $state({ saving: false });
 
   type LoadState =
@@ -61,7 +64,9 @@
         break;
       }
       case "save_board": {
-        saveState = { saving: true, boardData: event.data.data as boolean[][], boardName: "" };
+        const board = event.data.data as boolean[][];
+        const preview = createPreview(board);
+        saveState = { saving: true, boardData: board, boardName: "", boardPreview: preview };
         break;
       }
       default: {
@@ -87,7 +92,10 @@
 
     const name = saveState.boardName.trim() === "" ? "Unnamed Board" : saveState.boardName.trim();
 
-    await saveBoard({ board: saveState.boardData, name: name }, isJapanese);
+    await saveBoard(
+      { board: saveState.boardData, name: name, preview: saveState.boardPreview },
+      isJapanese,
+    );
 
     saveState = { saving: false };
   }
@@ -216,29 +224,47 @@
   <form method="dialog" class="modal-box">
     <h3 class="font-bold text-lg">{isJapanese ? "盤面を保存" : "Save board"}</h3>
     {#if saveState.saving}
-      <p class="py-4">
-        {isJapanese
-          ? "保存する盤面に名前を付けてください（任意）。"
-          : "Please name the board you wish to save (optional)."}
-      </p>
-      <input
-        type="text"
-        placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
-        class="input input-bordered w-full max-w-xs"
-        bind:value={saveState.boardName}
-      />
-      <div class="modal-action">
-        <button type="button" class="btn" onclick={() => (saveState = { saving: false })}
-          >{isJapanese ? "キャンセル" : "Cancel"}</button
-        >
-        <button
-          type="submit"
-          class="btn btn-primary"
-          onclick={handleSave}
-          disabled={!saveState.saving}
-        >
-          {isJapanese ? "保存" : "Save"}
-        </button>
+      <div class="flex flex-row gap-4 mt-4">
+        <div class="w-90 flex flex-col gap-4">
+          <p class="py-4">
+            {isJapanese
+              ? "保存する盤面に名前を付けてください（任意）。"
+              : "Please name the board you wish to save (optional)."}
+          </p>
+          <input
+            type="text"
+            placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
+            class="input input-bordered w-full max-w-xs"
+            bind:value={saveState.boardName}
+          />
+          <div class="modal-action">
+            <button type="button" class="btn" onclick={() => (saveState = { saving: false })}
+              >{isJapanese ? "キャンセル" : "Cancel"}</button
+            >
+            <button
+              type="submit"
+              class="btn btn-primary"
+              onclick={handleSave}
+              disabled={!saveState.saving}
+            >
+              {isJapanese ? "保存" : "Save"}
+            </button>
+          </div>
+        </div>
+        <div class="flex flex-col flex-shrink-0">
+          <div class="text-center text-sm mb-2">
+            {isJapanese ? "プレビュー" : "Preview"}
+          </div>
+          <div class="board-preview">
+            {#each saveState.boardPreview as row, i (i)}
+              <div class="preview-row">
+                {#each row as cell, j (j)}
+                  <div class="preview-cell {cell ? 'alive' : ''}"></div>
+                {/each}
+              </div>
+            {/each}
+          </div>
+        </div>
       </div>
     {/if}
   </form>
@@ -273,7 +299,7 @@
               <tr class="hover:bg-base-300">
                 <td>
                   <div class="board-preview">
-                    {#each item.boardData as row, i (i)}
+                    {#each item.boardPreview as row, i (i)}
                       <div class="preview-row">
                         {#each row as cell, j (j)}
                           <div class="preview-cell {cell ? 'alive' : ''}"></div>
