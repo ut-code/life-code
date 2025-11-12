@@ -30,41 +30,56 @@ function isNextAlive(around, self) {
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById("game-board");
+//盤面をBoardに従って変更する関数(Boardを変更したら必ず実行する)
 function renderBoard() {
-  //盤面をBoardに従って変更する関数(Boardを変更したら必ず実行する)
-  table.innerHTML = "";
-  for (let i = 0; i < boardSize; i++) {
-    const tr = document.createElement("tr");
-    tr.style.padding = "0";
-    for (let j = 0; j < boardSize; j++) {
-      const td = document.createElement("td");
-      td.style.padding = "0";
-      const button = document.createElement("button");
-      button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
-      button.style.border = "0.5px solid black";
-      button.style.width = `${cellSize}px`;
-      button.style.height = `${cellSize}px`;
-      button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
-      button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
-      button.onmousedown = (e) => {
-        e.preventDefault();
-        if (timer === "stop") {
-          isDragging = true;
-          board[i][j] = !board[i][j];
-          dragMode = board[i][j];
-          button.style.backgroundColor = board[i][j] ? "black" : "white";
-        }
-      };
-      button.onmouseenter = () => {
-        if (isDragging && timer === "stop" && board[i][j] !== dragMode) {
-          board[i][j] = dragMode;
-          button.style.backgroundColor = board[i][j] ? "black" : "white";
-        }
-      };
-      td.appendChild(button);
-      tr.appendChild(td);
+  // 初回の処理
+  if (table.children.length === 0) {
+    table.innerHTML = "";
+    for (let i = 0; i < boardSize; i++) {
+      const tr = document.createElement("tr");
+      tr.style.padding = "0";
+      for (let j = 0; j < boardSize; j++) {
+        const td = document.createElement("td");
+        td.style.padding = "0";
+        const button = document.createElement("button");
+        button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
+        button.style.border = "0.5px solid black";
+        button.style.width = `${cellSize}px`;
+        button.style.height = `${cellSize}px`;
+        button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
+        button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
+        button.onmousedown = (e) => {
+          e.preventDefault();
+          if (timer === "stop") {
+            isDragging = true;
+            board[i][j] = !board[i][j];
+            dragMode = board[i][j];
+            button.style.backgroundColor = board[i][j] ? "black" : "white";
+          }
+        };
+        button.onmouseenter = () => {
+          if (isDragging && timer === "stop" && board[i][j] !== dragMode) {
+            board[i][j] = dragMode;
+            button.style.backgroundColor = board[i][j] ? "black" : "white";
+          }
+        };
+        td.appendChild(button);
+        tr.appendChild(td);
+      }
+      table.appendChild(tr);
     }
-    table.appendChild(tr);
+  } else {
+    // ２回目以降の処理
+    for (let i = 0; i < boardSize; i++) {
+      for (let j = 0; j < boardSize; j++) {
+        const button = table.children[i].children[j].children[0];
+        const shouldBeBlack = board[i][j];
+        const isBlack = button.style.backgroundColor === "black";
+        if (shouldBeBlack !== isBlack) {
+          button.style.backgroundColor = shouldBeBlack ? "black" : "white";
+        }
+      }
+    }
   }
 }
 
