@@ -237,19 +237,6 @@
             class="input input-bordered w-full max-w-xs"
             bind:value={saveState.boardName}
           />
-          <div class="modal-action">
-            <button type="button" class="btn" onclick={() => (saveState = { saving: false })}
-              >{isJapanese ? "キャンセル" : "Cancel"}</button
-            >
-            <button
-              type="submit"
-              class="btn btn-primary"
-              onclick={handleSave}
-              disabled={!saveState.saving}
-            >
-              {isJapanese ? "保存" : "Save"}
-            </button>
-          </div>
         </div>
         <div class="flex flex-col flex-shrink-0">
           <div class="text-center text-sm mb-2">
@@ -265,6 +252,19 @@
             {/each}
           </div>
         </div>
+      </div>
+      <div class="modal-action">
+        <button type="button" class="btn" onclick={() => (saveState = { saving: false })}
+          >{isJapanese ? "キャンセル" : "Cancel"}</button
+        >
+        <button
+          type="submit"
+          class="btn btn-primary"
+          onclick={handleSave}
+          disabled={!saveState.saving}
+        >
+          {isJapanese ? "保存" : "Save"}
+        </button>
       </div>
     {/if}
   </form>
