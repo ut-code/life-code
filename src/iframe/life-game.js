@@ -6,7 +6,7 @@ let generationFigure = 0;
 let timerTime = 1000;
 let isDragging = false;
 let dragMode = false; // true: 黒にする, false: 白にする
-let isTemplate = false;
+let isPlacingTemplate = false;
 let patternShape = [];
 let patternHeight = 0;
 let patternWidth = 0;
@@ -52,17 +52,15 @@ function renderBoard() {
       button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
       button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
       button.onclick = () => {
-        if (isTemplate) {
+        if (isPlacingTemplate) {
           clearPreview();
-          isTemplate = false;
+          isPlacingTemplate = false;
           if (i + patternHeight < boardSize + 1 && j + patternWidth < boardSize + 1) {
             for (let r = 0; r < patternHeight; r++) {
               for (let c = 0; c < patternWidth; c++) {
                 const boardRow = i + r;
                 const boardCol = j + c;
-                if (patternShape[r][c] === 1) {
-                  board[boardRow][boardCol] = true;
-                }
+                board[boardRow][boardCol] = patternShape[r][c] === 1;
               }
             }
             renderBoard();
@@ -82,7 +80,7 @@ function renderBoard() {
       };
       button.onmousedown = (e) => {
         e.preventDefault();
-        if (timer === "stop" && !isTemplate) {
+        if (timer === "stop" && !isPlacingTemplate) {
           isDragging = true;
           board[i][j] = !board[i][j];
           dragMode = board[i][j];
@@ -90,11 +88,11 @@ function renderBoard() {
         }
       };
       button.onmouseenter = () => {
-        if (isDragging && timer === "stop" && board[i][j] !== dragMode && !isTemplate) {
+        if (isDragging && timer === "stop" && board[i][j] !== dragMode && !isPlacingTemplate) {
           board[i][j] = dragMode;
           button.style.backgroundColor = board[i][j] ? "black" : "white";
         }
-        if (isTemplate) {
+        if (isPlacingTemplate) {
           drawPreview(i, j);
         }
       };
@@ -106,7 +104,7 @@ function renderBoard() {
 }
 
 table.onmouseleave = () => {
-  if (isTemplate) {
+  if (isPlacingTemplate) {
     clearPreview();
   }
 };
@@ -268,7 +266,7 @@ on.place_template = (template) => {
   patternShape = template;
   patternHeight = patternShape.length;
   patternWidth = patternShape[0].length;
-  isTemplate = true;
+  isPlacingTemplate = true;
   table.style.cursor = "crosshair";
   stop();
 };
