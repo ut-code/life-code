@@ -1,9 +1,7 @@
 "use strict";
 
 let timer = "stop";
-let timerId = 0;
 let generationFigure = 0;
-let timerTime = 1000;
 let isDragging = false;
 let dragMode = false; // true: 黒にする, false: 白にする
 let isPlacingTemplate = false;
@@ -70,7 +68,6 @@ function renderBoard() {
             }
             rerender();
             generationChange(0);
-            resetTimer();
             stop();
           } else {
             window.parent.postMessage(
@@ -224,22 +221,18 @@ function progressBoard() {
   rerender();
 }
 
-function resetTimer() {
-  if (timer !== "stop") {
-    timer = "stop";
-    clearInterval(timerId);
-  }
-}
-
 //イベント
+
+on.progress = () => {
+  progressBoard();
+};
 
 on.play = () => {
   timer = "start";
-  timerId = setInterval(progressBoard, timerTime);
 };
 
 on.pause = () => {
-  resetTimer();
+  timer = "stop";
 };
 
 on.board_reset = () => {
@@ -247,7 +240,6 @@ on.board_reset = () => {
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
-  resetTimer();
 };
 
 on.board_randomize = () => {
@@ -257,15 +249,6 @@ on.board_randomize = () => {
   );
   renderBoard();
   generationChange(0);
-  resetTimer();
-};
-
-on.timer_change = (ms) => {
-  timerTime = ms;
-  if (timer === "start") {
-    clearInterval(timerId);
-    timerId = setInterval(progressBoard, timerTime);
-  }
 };
 
 on.request_sync = () => {
@@ -300,6 +283,5 @@ on.apply_board = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
-  resetTimer();
   stop();
 };

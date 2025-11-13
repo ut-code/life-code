@@ -19,6 +19,7 @@
   let isJapanese = $state(true);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
+  let timerId: number | NodeJS.Timeout = 0;
 
   let intervalMs = $state(1000);
   let generationFigure = $state(0);
@@ -39,13 +40,13 @@
     | "play"
     | "pause"
     | "state_update"
-    | "timer_change"
     | "board_reset"
     | "board_randomize"
     | "place_template"
     | "save_board"
     | "apply_board"
-    | "request_sync";
+    | "request_sync"
+    | "progress";
 
   type IncomingEvent = "generation_change" | "sync" | "Size shortage" | "save_board";
 
@@ -192,7 +193,6 @@
 
                 return;
               }
-              // パターンがボードの中央に来るよう、パターンの左上のセルの位置(startRow, startCol)を調整
               bottomDrawerOpen = false;
               sendEvent("place_template", patternShape);
             }}
@@ -408,7 +408,12 @@
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = intervalMs * 2;
-        sendEvent("timer_change", intervalMs);
+        if (isProgress) {
+          clearInterval(timerId);
+          timerId = setInterval(() => {
+            sendEvent("progress");
+          }, intervalMs);
+        }
       }}
     >
       <img class="size-6" src={icons.decelerate} alt="decelerate" />
@@ -418,7 +423,12 @@
       class="btn btn-ghost btn-circle text-black hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = 1000;
-        sendEvent("timer_change", intervalMs);
+        if (isProgress) {
+          clearInterval(timerId);
+          timerId = setInterval(() => {
+            sendEvent("progress");
+          }, intervalMs);
+        }
       }}
     >
       x1
@@ -428,7 +438,12 @@
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = intervalMs / 2;
-        sendEvent("timer_change", intervalMs);
+        if (isProgress) {
+          clearInterval(timerId);
+          timerId = setInterval(() => {
+            sendEvent("progress");
+          }, intervalMs);
+        }
       }}
     >
       <img class="size-6" src={icons.accelerate} alt="accelerate" />
@@ -448,8 +463,15 @@
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap"
       onclick={() => {
-        const eventName = isProgress ? "pause" : "play";
-        sendEvent(eventName);
+        if (isProgress) {
+          clearInterval(timerId);
+          sendEvent("pause");
+        } else {
+          timerId = setInterval(() => {
+            sendEvent("progress");
+          }, intervalMs);
+          sendEvent("play");
+        }
         isProgress = !isProgress;
       }}
     >
@@ -470,6 +492,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        clearInterval(timerId);
         sendEvent("pause");
         sendEvent("save_board");
       }}
@@ -481,6 +504,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        clearInterval(timerId);
         sendEvent("pause");
         handleLoad();
       }}
@@ -492,6 +516,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        clearInterval(timerId);
         sendEvent("board_reset");
       }}
     >
@@ -502,6 +527,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        clearInterval(timerId);
         sendEvent("board_randomize");
       }}
     >
@@ -515,6 +541,8 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         appliedCode = editingCode;
+        clearInterval(timerId);
+        isProgress = false;
       }}
     >
       {isJapanese ? "コードを適用" : "Apply Code"}
