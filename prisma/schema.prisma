@@ -20,4 +20,5 @@ model BoardState {
   createdAt DateTime @default(now())
   boardData Json
   boardName String
+  boardPreview Json
 }

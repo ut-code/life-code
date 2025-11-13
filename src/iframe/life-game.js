@@ -209,6 +209,7 @@ on.save_board = async () => {
 };
 
 on.apply_board = (newBoard) => {
+  boardSize = newBoard.length;
   board = newBoard;
   renderBoard();
   generationChange(0);

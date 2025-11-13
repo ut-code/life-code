@@ -6,6 +6,7 @@
   import patterns from "$lib/board-templates";
   import * as icons from "$lib/icons/index.ts";
   import { saveBoard, fetchBoardList, loadBoardById, type BoardListItem } from "./api.ts";
+  import { createPreview } from "$lib/board-preview";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
@@ -23,7 +24,9 @@
   let generationFigure = $state(0);
   let sizeValue = $state(20);
 
-  type SaveState = { saving: false } | { saving: true; boardData: boolean[][]; boardName: string };
+  type SaveState =
+    | { saving: false }
+    | { saving: true; boardData: boolean[][]; boardName: string; boardPreview: boolean[][] };
   let saveState: SaveState = $state({ saving: false });
 
   type LoadState =
@@ -61,7 +64,9 @@
         break;
       }
       case "save_board": {
-        saveState = { saving: true, boardData: event.data.data as boolean[][], boardName: "" };
+        const board = event.data.data as boolean[][];
+        const preview = createPreview(board);
+        saveState = { saving: true, boardData: board, boardName: "", boardPreview: preview };
         break;
       }
       default: {
@@ -109,6 +114,7 @@
 
     const board = await loadBoardById(id, isJapanese);
     if (board) {
+      sizeValue = board.length;
       sendEvent("apply_board", board);
     }
   }
@@ -216,17 +222,35 @@
   <form method="dialog" class="modal-box">
     <h3 class="font-bold text-lg">{isJapanese ? "盤面を保存" : "Save board"}</h3>
     {#if saveState.saving}
-      <p class="py-4">
-        {isJapanese
-          ? "保存する盤面に名前を付けてください（任意）。"
-          : "Please name the board you wish to save (optional)."}
-      </p>
-      <input
-        type="text"
-        placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
-        class="input input-bordered w-full max-w-xs"
-        bind:value={saveState.boardName}
-      />
+      <div class="flex flex-row gap-4 mt-4">
+        <div class="w-90 flex flex-col gap-4">
+          <p class="py-4">
+            {isJapanese
+              ? "保存する盤面に名前を付けてください（任意）。"
+              : "Please name the board you wish to save (optional)."}
+          </p>
+          <input
+            type="text"
+            placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
+            class="input input-bordered w-full max-w-xs"
+            bind:value={saveState.boardName}
+          />
+        </div>
+        <div class="flex flex-col flex-shrink-0">
+          <div class="text-center text-sm mb-2">
+            {isJapanese ? "プレビュー" : "Preview"}
+          </div>
+          <div class="board-preview">
+            {#each saveState.boardPreview as row, i (i)}
+              <div class="preview-row">
+                {#each row as cell, j (j)}
+                  <div class="preview-cell {cell ? 'alive' : ''}"></div>
+                {/each}
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
       <div class="modal-action">
         <button type="button" class="btn" onclick={() => (saveState = { saving: false })}
           >{isJapanese ? "キャンセル" : "Cancel"}</button
@@ -262,6 +286,7 @@
         <table class="table w-full">
           <thead>
             <tr>
+              <th class="pl-5">{isJapanese ? "プレビュー" : "Preview"}</th>
               <th>{isJapanese ? "盤面名" : "Board Name"}</th>
               <th>{isJapanese ? "保存日時" : "Saved At"}</th>
               <th></th>
@@ -270,6 +295,17 @@
           <tbody>
             {#each loadState.list as item (item.id)}
               <tr class="hover:bg-base-300">
+                <td>
+                  <div class="board-preview">
+                    {#each item.boardPreview as row, i (i)}
+                      <div class="preview-row">
+                        {#each row as cell, j (j)}
+                          <div class="preview-cell {cell ? 'alive' : ''}"></div>
+                        {/each}
+                      </div>
+                    {/each}
+                  </div>
+                </td>
                 <td>{item.boardName}</td>
                 <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
                 <td class="text-right">
@@ -494,3 +530,25 @@
     </button>
   </div>
 </div>
+
+<style>
+  .board-preview {
+    display: grid;
+    grid-template-columns: repeat(20, 3px);
+    grid-template-rows: repeat(20, 3px);
+    width: 60px;
+    height: 60px;
+    border: 1px solid #9ca3af;
+    background-color: white;
+  }
+  .preview-row {
+    display: contents;
+  }
+  .preview-cell {
+    width: 3px;
+    height: 3px;
+  }
+  .preview-cell.alive {
+    background-color: black;
+  }
+</style>
