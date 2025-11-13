@@ -12,12 +12,9 @@ let patternHeight = 0;
 let patternWidth = 0;
 let previewCells = [];
 
-const DEFAULT_BOARD_SIZE = 20;
-const DEFAULT_CELL_SIZE = 30;
-
 //変数設定
-let boardSize = 20;
-let cellSize = 30;
+let boardSize = 20; //盤面の大きさ(20x20)
+const cellSize = 600 / boardSize; //セルの大きさ(px)
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
@@ -32,11 +29,19 @@ function isNextAlive(around, self) {
   return false;
 }
 
+// cellの状態に応じた色を返す関数
+function getStyle(cell) {
+  // cellがtrueなら黒、falseなら白を返す
+  return cell ? "black" : "white";
+}
+
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById("game-board");
+
+//盤面をBoardに従って変更する関数達(Boardを変更したら実行する)
 function renderBoard() {
-  //盤面をBoardに従って変更する関数(Boardを変更したら必ず実行する)
+  // 初回の盤面生成
   table.innerHTML = "";
   for (let i = 0; i < boardSize; i++) {
     const tr = document.createElement("tr");
@@ -63,7 +68,7 @@ function renderBoard() {
                 board[boardRow][boardCol] = patternShape[r][c] === 1;
               }
             }
-            renderBoard();
+            rerender();
             generationChange(0);
             resetTimer();
             stop();
@@ -134,6 +139,30 @@ function clearPreview() {
   previewCells = [];
 }
 
+function rerender() {
+  // ２回目以降の盤面生成
+  for (let i = 0; i < boardSize; i++) {
+    for (let j = 0; j < boardSize; j++) {
+      const button = table.children[i].children[j].children[0];
+
+      // 色の更新
+      const currentCellColor = button.style.backgroundColor;
+      const expectedCellColor = getStyle(board[i][j]);
+      if (currentCellColor !== expectedCellColor) {
+        button.style.backgroundColor = expectedCellColor;
+      }
+
+      // セルサイズの更新
+      const currentCellsize = button.style.width;
+      const expectedCellsize = `${cellSize}px`;
+      if (currentCellsize !== expectedCellsize) {
+        button.style.width = expectedCellsize;
+        button.style.height = expectedCellsize;
+      }
+    }
+  }
+}
+
 document.addEventListener("mouseup", () => {
   isDragging = false;
 });
@@ -192,7 +221,7 @@ function progressBoard() {
   }
   board = newBoard;
   generationChange(generationFigure + 1);
-  renderBoard();
+  rerender();
 }
 
 function resetTimer() {
@@ -210,15 +239,6 @@ on.play = () => {
 };
 
 on.pause = () => {
-  resetTimer();
-};
-
-on.board_resize = (newSize) => {
-  boardSize = newSize;
-  cellSize = Math.floor(DEFAULT_CELL_SIZE * (DEFAULT_BOARD_SIZE / newSize));
-  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
-  renderBoard();
-  generationChange(0);
   resetTimer();
 };
 
@@ -276,6 +296,7 @@ on.save_board = async () => {
 };
 
 on.apply_board = (newBoard) => {
+  boardSize = newBoard.length;
   board = newBoard;
   renderBoard();
   generationChange(0);
