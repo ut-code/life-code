@@ -34,7 +34,7 @@ export async function POST({ request }) {
     },
   });
 
-  return json(newState, { status: 201 });
+  return json({ id: newState.id }, { status: 201 });
 }
 
 export async function GET({ url }) {
@@ -72,7 +72,7 @@ export async function GET({ url }) {
     });
 
     if (!allStates || allStates.length === 0) {
-      return json({ message: "No state found" }, { status: 404 });
+      return json({ message: "保存されている盤面がありません。" }, { status: 404 });
     }
 
     return json(allStates);

@@ -9,11 +9,7 @@ export async function saveBoard(data: { board: boolean[][]; name: string }, isJa
     });
 
     if (!response.ok) {
-      if (isJapanese) {
-        throw new Error("サーバーとの通信に失敗しました。");
-      } else {
-        throw new Error("Failed to communicate with the server.");
-      }
+      throw new Error("Failed to communicate with the server.");
     }
 
     if (isJapanese) {
@@ -22,11 +18,10 @@ export async function saveBoard(data: { board: boolean[][]; name: string }, isJa
       alert("Board saved!");
     }
   } catch (err) {
+    console.error("Save Error:", err);
     if (isJapanese) {
-      console.error("保存エラー:", err);
       alert("保存に失敗しました。");
     } else {
-      console.error("Save Error:", err);
       alert("Failed to save.");
     }
   }
@@ -45,17 +40,9 @@ export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem
 
     if (!response.ok) {
       if (response.status === 404) {
-        if (isJapanese) {
-          throw new Error("保存されているデータがありません。");
-        } else {
-          throw new Error("There is no saved data.");
-        }
+        throw new Error("There is no saved data.");
       } else {
-        if (isJapanese) {
-          throw new Error("サーバーとの通信に失敗しました。");
-        } else {
-          throw new Error("Failed to communicate with the server.");
-        }
+        throw new Error("Failed to communicate with the server.");
       }
     }
 
@@ -63,11 +50,10 @@ export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem
 
     return boardList as BoardListItem[];
   } catch (err) {
+    console.error("Load error", err);
     if (isJapanese) {
-      console.error("読込エラー:", err);
       alert("読み込みに失敗しました。");
     } else {
-      console.error("Load error", err);
       alert("Failed to load.");
     }
   }
@@ -82,17 +68,9 @@ export async function loadBoardById(
 
     if (!response.ok) {
       if (response.status === 404) {
-        if (isJapanese) {
-          throw new Error("指定されたIDのデータが見つかりません。");
-        } else {
-          throw new Error("The specified ID data was not found.");
-        }
+        throw new Error("The specified ID data was not found.");
       } else {
-        if (isJapanese) {
-          throw new Error("サーバーとの通信に失敗しました。");
-        } else {
-          throw new Error("Failed to communicate with the server.");
-        }
+        throw new Error("Failed to communicate with the server.");
       }
     }
 
@@ -100,11 +78,10 @@ export async function loadBoardById(
 
     return loadedBoard as boolean[][];
   } catch (err) {
+    console.error("Load error", err);
     if (isJapanese) {
-      console.error("読込エラー:", err);
       alert("読み込みに失敗しました。");
     } else {
-      console.error("Load error", err);
       alert("Failed to load.");
     }
   }
