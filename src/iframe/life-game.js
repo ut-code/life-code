@@ -29,6 +29,12 @@ function isNextAlive(around, self) {
   return false;
 }
 
+// cellの状態に応じた色を返す関数
+function getStyle(cell) {
+  // cellがtrueなら黒、falseなら白を返す
+  return cell ? "black" : "white";
+}
+
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById("game-board");
@@ -99,10 +105,6 @@ function rerender() {
 document.addEventListener("mouseup", () => {
   isDragging = false;
 });
-
-function getStyle(cell) {
-  return cell ? "black" : "white";
-}
 
 renderBoard();
 progressBoard();
