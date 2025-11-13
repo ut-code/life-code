@@ -47,7 +47,7 @@
     | "apply_board"
     | "request_sync";
 
-  type IncomingEvent = "generation_change" | "sync" | "save_board";
+  type IncomingEvent = "generation_change" | "sync" | "Size shortage" | "save_board";
 
   function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
     switch (event.data.type) {
@@ -59,6 +59,14 @@
         const data = event.data.data as { generationFigure: number; boardSize: number };
         generationFigure = data.generationFigure;
         sizeValue = data.boardSize;
+        break;
+      }
+      case "Size shortage": {
+        alert(
+          isJapanese
+            ? "盤面からはみ出してしまうため、キャンセルしました"
+            : "This action was canceled because it would have extended beyond the board.",
+        );
         break;
       }
       case "save_board": {
@@ -168,13 +176,8 @@
             onclick={() => {
               sendEvent("request_sync");
 
-              const newBoard = Array.from({ length: sizeValue }, () =>
-                Array.from({ length: sizeValue }, () => false),
-              );
               const patternData = patterns[patternName];
               const patternShape = patternData.shape;
-              const patternHeight = patternShape.length;
-              const patternWidth = patternShape[0].length;
 
               if (sizeValue < (patternData.minBoardSize || 0)) {
                 if (isJapanese) {
@@ -190,18 +193,8 @@
                 return;
               }
               // パターンがボードの中央に来るよう、パターンの左上のセルの位置(startRow, startCol)を調整
-              const startRow = Math.floor((sizeValue - patternHeight) / 2);
-              const startCol = Math.floor((sizeValue - patternWidth) / 2);
-
-              for (let r = 0; r < patternHeight; r++) {
-                for (let c = 0; c < patternWidth; c++) {
-                  const boardRow = startRow + r;
-                  const boardCol = startCol + c;
-                  newBoard[boardRow][boardCol] = patternShape[r][c] === 1;
-                }
-              }
               bottomDrawerOpen = false;
-              sendEvent("place_template", newBoard);
+              sendEvent("place_template", patternShape);
             }}
           >
             <img
