@@ -1,6 +1,6 @@
 import { json } from "@sveltejs/kit";
 import { prisma } from "@/lib/prisma.server.ts";
-import { createPreview } from "@/lib/board-preview.js";
+import { createBoardPreview } from "@/lib/board-preview.js";
 import * as v from "valibot";
 
 const BoardSchema = v.object({
@@ -24,7 +24,7 @@ export async function POST({ request }) {
   }
 
   const { board, name } = result.output;
-  const preview = createPreview(board);
+  const preview = createBoardPreview(board);
 
   const newState = await prisma.boardState.create({
     data: {

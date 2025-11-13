@@ -5,8 +5,9 @@
   import lifeGameJS from "@/iframe/life-game.js?raw";
   import patterns from "$lib/board-templates";
   import * as icons from "$lib/icons/index.ts";
-  import { saveBoard, fetchBoardList, loadBoardById, type BoardListItem } from "./api.ts";
-  import { createPreview } from "$lib/board-preview";
+  import { createBoardPreview } from "$lib/board-preview";
+  import { saveBoard, fetchBoardList, loadBoardById, type BoardListItem } from "$lib/api/board";
+  import { saveCode, fetchCodeList, loadCodeById, type CodeListItem } from "$lib/api/code";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
@@ -24,16 +25,25 @@
   let generationFigure = $state(0);
   let sizeValue = $state(20);
 
-  type SaveState =
+  type SaveBoardState =
     | { saving: false }
     | { saving: true; boardData: boolean[][]; boardName: string; boardPreview: boolean[][] };
-  let saveState: SaveState = $state({ saving: false });
+  let saveBoardState: SaveBoardState = $state({ saving: false });
 
-  type LoadState =
+  type LoadBoardState =
     | { state: "closed" }
     | { state: "loading" }
     | { state: "list"; list: BoardListItem[] };
-  let loadState: LoadState = $state({ state: "closed" });
+  let loadBoardState: LoadBoardState = $state({ state: "closed" });
+
+  type SaveCodeState = { saving: false } | { saving: true; codeData: string; codeName: string };
+  let saveCodeState: SaveCodeState = $state({ saving: false });
+
+  type LoadCodeState =
+    | { state: "closed" }
+    | { state: "loading" }
+    | { state: "list"; list: CodeListItem[] };
+  let loadCodeState: LoadCodeState = $state({ state: "closed" });
 
   type OngoingEvent =
     | "play"
@@ -65,8 +75,8 @@
       }
       case "save_board": {
         const board = event.data.data as boolean[][];
-        const preview = createPreview(board);
-        saveState = { saving: true, boardData: board, boardName: "", boardPreview: preview };
+        const preview = createBoardPreview(board);
+        saveBoardState = { saving: true, boardData: board, boardName: "", boardPreview: preview };
         break;
       }
       default: {
@@ -87,35 +97,68 @@
     preview_iframe?.contentWindow?.postMessage({ type: event, data: message }, "*");
   }
 
-  async function handleSave() {
-    if (!saveState.saving) return;
+  async function handleBoardSave() {
+    if (!saveBoardState.saving) return;
 
-    const name = saveState.boardName.trim() === "" ? "Unnamed Board" : saveState.boardName.trim();
+    const name =
+      saveBoardState.boardName.trim() === "" ? "Unnamed Board" : saveBoardState.boardName.trim();
 
-    await saveBoard({ board: saveState.boardData, name: name }, isJapanese);
+    await saveBoard({ board: saveBoardState.boardData, name: name }, isJapanese);
 
-    saveState = { saving: false };
+    saveBoardState = { saving: false };
   }
 
-  async function handleLoad() {
-    loadState = { state: "loading" };
+  async function handleBoardLoad() {
+    loadBoardState = { state: "loading" };
 
     const list = await fetchBoardList(isJapanese);
 
     if (list) {
-      loadState = { state: "list", list };
+      loadBoardState = { state: "list", list };
     } else {
-      loadState = { state: "closed" };
+      loadBoardState = { state: "closed" };
     }
   }
 
   async function selectBoard(id: number) {
-    loadState = { state: "closed" };
+    loadBoardState = { state: "closed" };
 
     const board = await loadBoardById(id, isJapanese);
     if (board) {
       sizeValue = board.length;
       sendEvent("apply_board", board);
+    }
+  }
+
+  async function handleCodeSave() {
+    if (!saveCodeState.saving) return;
+
+    const name =
+      saveCodeState.codeName.trim() === "" ? "Unnamed Code" : saveCodeState.codeName.trim();
+
+    await saveCode({ code: saveCodeState.codeData, name: name }, isJapanese);
+
+    saveCodeState = { saving: false };
+  }
+
+  async function handleCodeLoad() {
+    loadCodeState = { state: "loading" };
+
+    const list = await fetchCodeList(isJapanese);
+
+    if (list) {
+      loadCodeState = { state: "list", list };
+    } else {
+      loadCodeState = { state: "closed" };
+    }
+  }
+
+  async function selectCode(id: number) {
+    loadCodeState = { state: "closed" };
+
+    const code = await loadCodeById(id, isJapanese);
+    if (code) {
+      editingCode = code;
     }
   }
 </script>
@@ -218,10 +261,10 @@
   </div>
 </div>
 
-<dialog class="modal" open={saveState.saving}>
+<dialog class="modal" open={saveBoardState.saving}>
   <form method="dialog" class="modal-box">
     <h3 class="font-bold text-lg">{isJapanese ? "盤面を保存" : "Save board"}</h3>
-    {#if saveState.saving}
+    {#if saveBoardState.saving}
       <div class="flex flex-row gap-4 mt-4">
         <div class="w-90 flex flex-col gap-4">
           <p class="py-4">
@@ -233,7 +276,7 @@
             type="text"
             placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
             class="input input-bordered w-full max-w-xs"
-            bind:value={saveState.boardName}
+            bind:value={saveBoardState.boardName}
           />
         </div>
         <div class="flex flex-col flex-shrink-0">
@@ -241,7 +284,7 @@
             {isJapanese ? "プレビュー" : "Preview"}
           </div>
           <div class="board-preview">
-            {#each saveState.boardPreview as row, i (i)}
+            {#each saveBoardState.boardPreview as row, i (i)}
               <div class="preview-row">
                 {#each row as cell, j (j)}
                   <div class="preview-cell {cell ? 'alive' : ''}"></div>
@@ -252,14 +295,14 @@
         </div>
       </div>
       <div class="modal-action">
-        <button type="button" class="btn" onclick={() => (saveState = { saving: false })}
+        <button type="button" class="btn" onclick={() => (saveBoardState = { saving: false })}
           >{isJapanese ? "キャンセル" : "Cancel"}</button
         >
         <button
           type="submit"
           class="btn btn-primary"
-          onclick={handleSave}
-          disabled={!saveState.saving}
+          onclick={handleBoardSave}
+          disabled={!saveBoardState.saving}
         >
           {isJapanese ? "保存" : "Save"}
         </button>
@@ -268,20 +311,20 @@
   </form>
 </dialog>
 
-<dialog class="modal" open={loadState.state !== "closed"}>
+<dialog class="modal" open={loadBoardState.state !== "closed"}>
   <div class="modal-box w-11/12 max-w-5xl">
     <h3 class="font-bold text-lg">{isJapanese ? "盤面をロード" : "Load board"}</h3>
 
-    {#if loadState.state === "loading"}
+    {#if loadBoardState.state === "loading"}
       <p class="py-4">
         {isJapanese ? "保存されている盤面を読み込み中..." : "Loading saved boards..."}
       </p>
       <span class="loading loading-spinner loading-lg"></span>
-    {:else if loadState.state === "list" && loadState.list.length === 0}
+    {:else if loadBoardState.state === "list" && loadBoardState.list.length === 0}
       <p class="py-4">
         {isJapanese ? "保存されている盤面はありません。" : "No saved boards found."}
       </p>
-    {:else if loadState.state === "list"}
+    {:else if loadBoardState.state === "list"}
       <div class="overflow-x-auto h-96">
         <table class="table w-full">
           <thead>
@@ -293,7 +336,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each loadState.list as item (item.id)}
+            {#each loadBoardState.list as item (item.id)}
               <tr class="hover:bg-base-300">
                 <td>
                   <div class="board-preview">
@@ -321,7 +364,91 @@
     {/if}
 
     <div class="modal-action">
-      <button class="btn" onclick={() => (loadState = { state: "closed" })}>
+      <button class="btn" onclick={() => (loadBoardState = { state: "closed" })}>
+        {isJapanese ? "閉じる" : "Close"}
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal" open={saveCodeState.saving}>
+  <form method="dialog" class="modal-box">
+    <h3 class="font-bold text-lg">{isJapanese ? "コードを保存" : "Save code"}</h3>
+    {#if saveCodeState.saving}
+      <div class="flex flex-row gap-4 mt-4">
+        <div class="w-90 flex flex-col gap-4">
+          <p class="py-4">
+            {isJapanese
+              ? "保存するコードに名前を付けてください（任意）。"
+              : "Please name the code you wish to save (optional)."}
+          </p>
+          <input
+            type="text"
+            placeholder={isJapanese ? "コード名を入力" : "Enter code name"}
+            class="input input-bordered w-full max-w-xs"
+            bind:value={saveCodeState.codeName}
+          />
+        </div>
+      </div>
+      <div class="modal-action">
+        <button type="button" class="btn" onclick={() => (saveCodeState = { saving: false })}
+          >{isJapanese ? "キャンセル" : "Cancel"}</button
+        >
+        <button
+          type="submit"
+          class="btn btn-primary"
+          onclick={handleCodeSave}
+          disabled={!saveCodeState.saving}
+        >
+          {isJapanese ? "保存" : "Save"}
+        </button>
+      </div>
+    {/if}
+  </form>
+</dialog>
+
+<dialog class="modal" open={loadCodeState.state !== "closed"}>
+  <div class="modal-box w-11/12 max-w-5xl">
+    <h3 class="font-bold text-lg">{isJapanese ? "コードをロード" : "Load code"}</h3>
+
+    {#if loadCodeState.state === "loading"}
+      <p class="py-4">
+        {isJapanese ? "保存されているコードを読み込み中..." : "Loading saved codes..."}
+      </p>
+      <span class="loading loading-spinner loading-lg"></span>
+    {:else if loadCodeState.state === "list" && loadCodeState.list.length === 0}
+      <p class="py-4">
+        {isJapanese ? "保存されているコードはありません。" : "No saved codes found."}
+      </p>
+    {:else if loadCodeState.state === "list"}
+      <div class="overflow-x-auto h-96">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>{isJapanese ? "コード名" : "Code Name"}</th>
+              <th>{isJapanese ? "保存日時" : "Saved At"}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each loadCodeState.list as item (item.id)}
+              <tr class="hover:bg-base-300">
+                <td>{item.codeName}</td>
+                <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
+                <td class="text-right">
+                  <button class="btn btn-sm btn-primary" onclick={() => selectCode(item.id)}>
+                    {isJapanese ? "ロード" : "Load"}
+                  </button>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
+
+    <div class="modal-action">
+      <button class="btn" onclick={() => (loadCodeState = { state: "closed" })}>
         {isJapanese ? "閉じる" : "Close"}
       </button>
     </div>
@@ -491,7 +618,7 @@
       onclick={() => {
         isProgress = false;
         sendEvent("pause");
-        handleLoad();
+        handleBoardLoad();
       }}
     >
       {isJapanese ? "ロード" : "Load"}
@@ -519,14 +646,36 @@
 
     <div class="w-px bg-gray-400 h-6 mx-2"></div>
     <!-- Separator -->
-
+    <div class="font-bold text-black">{isJapanese ? "コード" : "Code"}:</div>
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         appliedCode = editingCode;
       }}
     >
-      {isJapanese ? "コードを適用" : "Apply Code"}
+      {isJapanese ? "適用" : "Apply"}
+    </button>
+
+    <button
+      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      onclick={() => {
+        isProgress = false;
+        sendEvent("pause");
+        saveCodeState = { saving: true, codeData: editingCode, codeName: "" };
+      }}
+    >
+      {isJapanese ? "保存" : "Save"}
+    </button>
+
+    <button
+      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      onclick={() => {
+        isProgress = false;
+        sendEvent("pause");
+        handleCodeLoad();
+      }}
+    >
+      {isJapanese ? "ロード" : "Load"}
     </button>
   </div>
 </div>

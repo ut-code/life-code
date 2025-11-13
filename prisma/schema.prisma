@@ -22,3 +22,10 @@ model BoardState {
   boardName String
   boardPreview Json
 }
+
+model CodeState {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  codeData String
+  codeName String
+}
