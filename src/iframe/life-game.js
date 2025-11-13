@@ -7,14 +7,9 @@ let timerTime = 1000;
 let isDragging = false;
 let dragMode = false; // true: 黒にする, false: 白にする
 
-const DEFAULT_BOARD_SIZE = 20;
-const DEFAULT_CELL_SIZE = 30;
-
 //変数設定
 let boardSize = 20; //盤面の大きさ(20x20)
-let cellScale = 1.0; //セルの大きさの倍率
-
-let cellSize = Math.floor(cellScale * DEFAULT_CELL_SIZE * (DEFAULT_BOARD_SIZE / boardSize)); //セルの大きさ(px)
+const cellSize = 600 / boardSize; //セルの大きさ(px)
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
