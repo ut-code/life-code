@@ -45,9 +45,7 @@
     | "place_template"
     | "save_board"
     | "apply_board"
-    | "request_sync"
-    // unused events
-    | "board_resize";
+    | "request_sync";
 
   type IncomingEvent = "generation_change" | "sync" | "save_board";
 
@@ -154,7 +152,7 @@
 </div>
 
 <div
-  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-black pb-16"
+  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-black pb-12"
   class:translate-y-full={!bottomDrawerOpen}
   class:translate-y-0={bottomDrawerOpen}
 >
@@ -365,7 +363,7 @@
       srcdoc={previewDoc}
       title="Preview"
       sandbox="allow-scripts"
-      class="w-[80%] h-[90%] rounded-lg mx-auto my-5 shadow-lg"
+      class="w-[80%] h-[90%] rounded-lg mx-auto my-5 bg-white shadow-lg"
       onload={() => {
         setTimeout(() => {
           sendEvent("state_update");
