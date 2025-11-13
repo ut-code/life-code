@@ -29,9 +29,9 @@ export async function saveBoard(data: { board: boolean[][]; name: string }, isJa
 
 export type BoardListItem = {
   id: number;
-  boardName: string;
+  name: string;
   createdAt: string;
-  boardPreview: boolean[][];
+  preview: boolean[][];
 };
 
 export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem[] | undefined> {

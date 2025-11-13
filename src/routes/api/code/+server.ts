@@ -8,7 +8,7 @@ const CodeSchema = v.object({
 });
 
 export async function POST({ request }) {
-  let requestData;
+  let requestData: unknown;
   try {
     requestData = await request.json();
   } catch (error) {
@@ -24,10 +24,10 @@ export async function POST({ request }) {
 
   const { code, name } = result.output;
 
-  const newState = await prisma.codeState.create({
+  const newState = await prisma.code.create({
     data: {
-      codeData: code,
-      codeName: name,
+      data: code,
+      name: name,
     },
   });
 
@@ -44,25 +44,25 @@ export async function GET({ url }) {
       return json({ message: "無効なIDです。" }, { status: 400 });
     }
 
-    const state = await prisma.codeState.findUnique({
+    const state = await prisma.code.findUnique({
       where: { id: id },
-      select: { codeData: true },
+      select: { data: true },
     });
 
     if (!state) {
       return json({ message: `ID: ${id} のコードは見つかりません。` }, { status: 404 });
     }
 
-    return json(state.codeData);
+    return json(state.data);
   } else {
     //IDが指定されなかった場合、全てのコードのリストを返す
-    const allStates = await prisma.codeState.findMany({
+    const allStates = await prisma.code.findMany({
       orderBy: {
         createdAt: "desc",
       },
       select: {
         id: true,
-        codeName: true,
+        name: true,
         createdAt: true,
       },
     });

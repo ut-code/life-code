@@ -9,7 +9,7 @@ const BoardSchema = v.object({
 });
 
 export async function POST({ request }) {
-  let requestData;
+  let requestData: unknown;
   try {
     requestData = await request.json();
   } catch (error) {
@@ -26,11 +26,11 @@ export async function POST({ request }) {
   const { board, name } = result.output;
   const preview = createBoardPreview(board);
 
-  const newState = await prisma.boardState.create({
+  const newState = await prisma.board.create({
     data: {
-      boardData: board,
-      boardName: name,
-      boardPreview: preview,
+      data: board,
+      name: name,
+      preview: preview,
     },
   });
 
@@ -47,27 +47,27 @@ export async function GET({ url }) {
       return json({ message: "無効なIDです。" }, { status: 400 });
     }
 
-    const state = await prisma.boardState.findUnique({
+    const state = await prisma.board.findUnique({
       where: { id: id },
-      select: { boardData: true },
+      select: { data: true },
     });
 
     if (!state) {
       return json({ message: `ID: ${id} の盤面は見つかりません。` }, { status: 404 });
     }
 
-    return json(state.boardData);
+    return json(state.data);
   } else {
     //IDが指定されなかった場合、全ての盤面のリストを返す
-    const allStates = await prisma.boardState.findMany({
+    const allStates = await prisma.board.findMany({
       orderBy: {
         createdAt: "desc",
       },
       select: {
         id: true,
-        boardName: true,
+        name: true,
         createdAt: true,
-        boardPreview: true,
+        preview: true,
       },
     });
 

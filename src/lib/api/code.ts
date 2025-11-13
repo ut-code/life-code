@@ -29,7 +29,7 @@ export async function saveCode(data: { code: string; name: string }, isJapanese:
 
 export type CodeListItem = {
   id: number;
-  codeName: string;
+  name: string;
   createdAt: string;
 };
 

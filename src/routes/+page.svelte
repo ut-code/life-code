@@ -27,7 +27,7 @@
 
   type SaveBoardState =
     | { saving: false }
-    | { saving: true; boardData: boolean[][]; boardName: string; boardPreview: boolean[][] };
+    | { saving: true; data: boolean[][]; name: string; preview: boolean[][] };
   let saveBoardState: SaveBoardState = $state({ saving: false });
 
   type LoadBoardState =
@@ -36,7 +36,7 @@
     | { state: "list"; list: BoardListItem[] };
   let loadBoardState: LoadBoardState = $state({ state: "closed" });
 
-  type SaveCodeState = { saving: false } | { saving: true; codeData: string; codeName: string };
+  type SaveCodeState = { saving: false } | { saving: true; data: string; name: string };
   let saveCodeState: SaveCodeState = $state({ saving: false });
 
   type LoadCodeState =
@@ -76,7 +76,7 @@
       case "save_board": {
         const board = event.data.data as boolean[][];
         const preview = createBoardPreview(board);
-        saveBoardState = { saving: true, boardData: board, boardName: "", boardPreview: preview };
+        saveBoardState = { saving: true, data: board, name: "", preview: preview };
         break;
       }
       default: {
@@ -100,10 +100,9 @@
   async function handleBoardSave() {
     if (!saveBoardState.saving) return;
 
-    const name =
-      saveBoardState.boardName.trim() === "" ? "Unnamed Board" : saveBoardState.boardName.trim();
+    const name = saveBoardState.name.trim() === "" ? "Unnamed Board" : saveBoardState.name.trim();
 
-    await saveBoard({ board: saveBoardState.boardData, name: name }, isJapanese);
+    await saveBoard({ board: saveBoardState.data, name: name }, isJapanese);
 
     saveBoardState = { saving: false };
   }
@@ -133,10 +132,9 @@
   async function handleCodeSave() {
     if (!saveCodeState.saving) return;
 
-    const name =
-      saveCodeState.codeName.trim() === "" ? "Unnamed Code" : saveCodeState.codeName.trim();
+    const name = saveCodeState.name.trim() === "" ? "Unnamed Code" : saveCodeState.name.trim();
 
-    await saveCode({ code: saveCodeState.codeData, name: name }, isJapanese);
+    await saveCode({ code: saveCodeState.data, name: name }, isJapanese);
 
     saveCodeState = { saving: false };
   }
@@ -276,7 +274,7 @@
             type="text"
             placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
             class="input input-bordered w-full max-w-xs"
-            bind:value={saveBoardState.boardName}
+            bind:value={saveBoardState.name}
           />
         </div>
         <div class="flex flex-col flex-shrink-0">
@@ -284,7 +282,7 @@
             {isJapanese ? "プレビュー" : "Preview"}
           </div>
           <div class="board-preview">
-            {#each saveBoardState.boardPreview as row, i (i)}
+            {#each saveBoardState.preview as row, i (i)}
               <div class="preview-row">
                 {#each row as cell, j (j)}
                   <div class="preview-cell {cell ? 'alive' : ''}"></div>
@@ -340,7 +338,7 @@
               <tr class="hover:bg-base-300">
                 <td>
                   <div class="board-preview">
-                    {#each item.boardPreview as row, i (i)}
+                    {#each item.preview as row, i (i)}
                       <div class="preview-row">
                         {#each row as cell, j (j)}
                           <div class="preview-cell {cell ? 'alive' : ''}"></div>
@@ -349,7 +347,7 @@
                     {/each}
                   </div>
                 </td>
-                <td>{item.boardName}</td>
+                <td>{item.name}</td>
                 <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
                 <td class="text-right">
                   <button class="btn btn-sm btn-primary" onclick={() => selectBoard(item.id)}>
@@ -386,7 +384,7 @@
             type="text"
             placeholder={isJapanese ? "コード名を入力" : "Enter code name"}
             class="input input-bordered w-full max-w-xs"
-            bind:value={saveCodeState.codeName}
+            bind:value={saveCodeState.name}
           />
         </div>
       </div>
@@ -433,7 +431,7 @@
           <tbody>
             {#each loadCodeState.list as item (item.id)}
               <tr class="hover:bg-base-300">
-                <td>{item.codeName}</td>
+                <td>{item.name}</td>
                 <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
                 <td class="text-right">
                   <button class="btn btn-sm btn-primary" onclick={() => selectCode(item.id)}>
@@ -661,7 +659,7 @@
       onclick={() => {
         isProgress = false;
         sendEvent("pause");
-        saveCodeState = { saving: true, codeData: editingCode, codeName: "" };
+        saveCodeState = { saving: true, data: editingCode, name: "" };
       }}
     >
       {isJapanese ? "保存" : "Save"}
