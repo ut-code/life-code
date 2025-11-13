@@ -14,6 +14,8 @@ const DEFAULT_CELL_SIZE = 30;
 let boardSize = 20; //盤面の大きさ(20x20)
 let cellScale = 1.0; //セルの大きさの倍率
 
+let cellSize = Math.floor(cellScale * DEFAULT_CELL_SIZE * (DEFAULT_BOARD_SIZE / boardSize)); //セルの大きさ(px)
+
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
   // 自身が生きている & 周囲が 2 か 3 で生存
@@ -30,63 +32,65 @@ function isNextAlive(around, self) {
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
 const table = document.getElementById("game-board");
-//盤面をBoardに従って変更する関数(Boardを変更したら必ず実行する)
+
+//盤面をBoardに従って変更する関数達(Boardを変更したら実行する)
 function renderBoard() {
-  const cellSize = Math.floor(cellScale * DEFAULT_CELL_SIZE * (DEFAULT_BOARD_SIZE / boardSize));
-  // 初回の処理
-  if (table.children.length === 0) {
-    table.innerHTML = "";
-    for (let i = 0; i < boardSize; i++) {
-      const tr = document.createElement("tr");
-      tr.style.padding = "0";
-      for (let j = 0; j < boardSize; j++) {
-        const td = document.createElement("td");
-        td.style.padding = "0";
-        const button = document.createElement("button");
-        button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
-        button.style.border = "0.5px solid black";
-        button.style.width = `${cellSize}px`;
-        button.style.height = `${cellSize}px`;
-        button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
-        button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
-        button.onmousedown = (e) => {
-          e.preventDefault();
-          if (timer === "stop") {
-            isDragging = true;
-            board[i][j] = !board[i][j];
-            dragMode = board[i][j];
-            button.style.backgroundColor = board[i][j] ? "black" : "white";
-          }
-        };
-        button.onmouseenter = () => {
-          if (isDragging && timer === "stop" && board[i][j] !== dragMode) {
-            board[i][j] = dragMode;
-            button.style.backgroundColor = board[i][j] ? "black" : "white";
-          }
-        };
-        td.appendChild(button);
-        tr.appendChild(td);
-      }
-      table.appendChild(tr);
+  // 初回の盤面生成
+  table.innerHTML = "";
+  for (let i = 0; i < boardSize; i++) {
+    const tr = document.createElement("tr");
+    tr.style.padding = "0";
+    for (let j = 0; j < boardSize; j++) {
+      const td = document.createElement("td");
+      td.style.padding = "0";
+      const button = document.createElement("button");
+      button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
+      button.style.border = "0.5px solid black";
+      button.style.width = `${cellSize}px`;
+      button.style.height = `${cellSize}px`;
+      button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
+      button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
+      button.onmousedown = (e) => {
+        e.preventDefault();
+        if (timer === "stop") {
+          isDragging = true;
+          board[i][j] = !board[i][j];
+          dragMode = board[i][j];
+          button.style.backgroundColor = board[i][j] ? "black" : "white";
+        }
+      };
+      button.onmouseenter = () => {
+        if (isDragging && timer === "stop" && board[i][j] !== dragMode) {
+          board[i][j] = dragMode;
+          button.style.backgroundColor = board[i][j] ? "black" : "white";
+        }
+      };
+      td.appendChild(button);
+      tr.appendChild(td);
     }
-  } else {
-    // ２回目以降の処理
-    for (let i = 0; i < boardSize; i++) {
-      for (let j = 0; j < boardSize; j++) {
-        const button = table.children[i].children[j].children[0];
+    table.appendChild(tr);
+  }
+}
 
-        const shouldBeBlack = board[i][j];
-        const isBlack = button.style.backgroundColor === "black";
-        if (shouldBeBlack !== isBlack) {
-          button.style.backgroundColor = shouldBeBlack ? "black" : "white";
-        }
+function rerender() {
+  // ２回目以降の盤面生成
+  for (let i = 0; i < boardSize; i++) {
+    for (let j = 0; j < boardSize; j++) {
+      const button = table.children[i].children[j].children[0];
 
-        const currentCellsize = button.style.width;
-        const expectedCellsize = `${cellSize}px`;
-        if (currentCellsize !== expectedCellsize) {
-          button.style.width = expectedCellsize;
-          button.style.height = expectedCellsize;
-        }
+      // 色の更新
+      const currentCellColor = button.style.backgroundColor;
+      const expectedCellColor = getStyle(board[i][j]);
+      if (currentCellColor !== expectedCellColor) {
+        button.style.backgroundColor = expectedCellColor;
+      }
+
+      // セルサイズの更新
+      const currentCellsize = button.style.width;
+      const expectedCellsize = `${cellSize}px`;
+      if (currentCellsize !== expectedCellsize) {
+        button.style.width = expectedCellsize;
+        button.style.height = expectedCellsize;
       }
     }
   }
@@ -95,6 +99,10 @@ function renderBoard() {
 document.addEventListener("mouseup", () => {
   isDragging = false;
 });
+
+function getStyle(cell) {
+  return cell ? "black" : "white";
+}
 
 renderBoard();
 progressBoard();
@@ -150,7 +158,7 @@ function progressBoard() {
   }
   board = newBoard;
   generationChange(generationFigure + 1);
-  renderBoard();
+  rerender();
 }
 
 function resetTimer() {
