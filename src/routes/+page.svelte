@@ -92,10 +92,7 @@
 
     const name = saveState.boardName.trim() === "" ? "Unnamed Board" : saveState.boardName.trim();
 
-    await saveBoard(
-      { board: saveState.boardData, name: name, preview: saveState.boardPreview },
-      isJapanese,
-    );
+    await saveBoard({ board: saveState.boardData, name: name }, isJapanese);
 
     saveState = { saving: false };
   }

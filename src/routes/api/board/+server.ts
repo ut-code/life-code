@@ -1,23 +1,30 @@
 import { json } from "@sveltejs/kit";
 import { prisma } from "@/lib/prisma.server.ts";
+import { createPreview } from "@/lib/board-preview.js";
 import * as v from "valibot";
 
 const BoardSchema = v.object({
   board: v.array(v.array(v.boolean())),
   name: v.pipe(v.string(), v.minLength(1, "盤面名は必須です。")),
-  preview: v.array(v.array(v.boolean())),
 });
 
 export async function POST({ request }) {
-  let body;
+  let requestData;
   try {
-    body = v.parse(BoardSchema, await request.json());
+    requestData = await request.json();
   } catch (error) {
-    console.error("Request validation failed:", error);
+    console.error("Request body JSON parsing failed:", error);
+    return json({ message: "無効なリクエスト形式です。" }, { status: 400 });
+  }
+
+  const result = v.safeParse(BoardSchema, requestData);
+  if (!result.success) {
+    console.error("Request validation failed:", result.issues);
     return json({ message: "無効なリクエストデータです。" }, { status: 400 });
   }
 
-  const { board, name, preview } = body;
+  const { board, name } = result.output;
+  const preview = createPreview(board);
 
   const newState = await prisma.boardState.create({
     data: {
