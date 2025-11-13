@@ -6,6 +6,11 @@ let generationFigure = 0;
 let timerTime = 1000;
 let isDragging = false;
 let dragMode = false; // true: 黒にする, false: 白にする
+let isTemplate = false;
+let patternShape = [];
+let patternHeight = 0;
+let patternWidth = 0;
+let previewCells = [];
 
 const DEFAULT_BOARD_SIZE = 20;
 const DEFAULT_CELL_SIZE = 30;
@@ -46,9 +51,38 @@ function renderBoard() {
       button.style.height = `${cellSize}px`;
       button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
       button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
+      button.onclick = () => {
+        if (isTemplate) {
+          clearPreview();
+          isTemplate = false;
+          if (i + patternHeight < boardSize + 1 && j + patternWidth < boardSize + 1) {
+            for (let r = 0; r < patternHeight; r++) {
+              for (let c = 0; c < patternWidth; c++) {
+                const boardRow = i + r;
+                const boardCol = j + c;
+                if (patternShape[r][c] === 1) {
+                  board[boardRow][boardCol] = true;
+                }
+              }
+            }
+            renderBoard();
+            generationChange(0);
+            resetTimer();
+            stop();
+          } else {
+            window.parent.postMessage(
+              {
+                type: "Size shortage",
+                data: {},
+              },
+              "*",
+            );
+          }
+        }
+      };
       button.onmousedown = (e) => {
         e.preventDefault();
-        if (timer === "stop") {
+        if (timer === "stop" && !isTemplate) {
           isDragging = true;
           board[i][j] = !board[i][j];
           dragMode = board[i][j];
@@ -56,9 +90,12 @@ function renderBoard() {
         }
       };
       button.onmouseenter = () => {
-        if (isDragging && timer === "stop" && board[i][j] !== dragMode) {
+        if (isDragging && timer === "stop" && board[i][j] !== dragMode && !isTemplate) {
           board[i][j] = dragMode;
           button.style.backgroundColor = board[i][j] ? "black" : "white";
+        }
+        if (isTemplate) {
+          drawPreview(i, j);
         }
       };
       td.appendChild(button);
@@ -66,6 +103,37 @@ function renderBoard() {
     }
     table.appendChild(tr);
   }
+}
+
+table.onmouseleave = () => {
+  if (isTemplate) {
+    clearPreview();
+  }
+};
+
+function drawPreview(row, col) {
+  clearPreview();
+  for (let r = 0; r < patternHeight; r++) {
+    for (let c = 0; c < patternWidth; c++) {
+      if (patternShape[r][c] === 1) {
+        const boardRow = row + r;
+        const boardCol = col + c;
+        if (boardRow < boardSize && boardCol < boardSize) {
+          const cell = table.rows[boardRow].cells[boardCol].firstChild;
+          cell.style.backgroundColor = "gray";
+          previewCells.push({ row: boardRow, col: boardCol });
+        }
+      }
+    }
+  }
+}
+
+function clearPreview() {
+  previewCells.forEach((cellPos) => {
+    const cell = table.rows[cellPos.row].cells[cellPos.col].firstChild;
+    cell.style.backgroundColor = board[cellPos.row][cellPos.col] ? "black" : "white";
+  });
+  previewCells = [];
 }
 
 document.addEventListener("mouseup", () => {
@@ -196,11 +264,12 @@ on.request_sync = () => {
   console.log("generationFigure:", generationFigure, "boardSize:", boardSize);
 };
 
-on.place_template = (newBoard) => {
-  board = newBoard;
-  renderBoard();
-  generationChange(0);
-  resetTimer();
+on.place_template = (template) => {
+  patternShape = template;
+  patternHeight = patternShape.length;
+  patternWidth = patternShape[0].length;
+  isTemplate = true;
+  table.style.cursor = "crosshair";
   stop();
 };
 
