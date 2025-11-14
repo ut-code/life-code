@@ -418,7 +418,9 @@
     <!-- Separator -->
     <div class="font-bold text-black">{isJapanese ? "コード" : "Code"}:</div>
     <button
-      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      class="btn {editingCode === appliedCode
+        ? 'btn-ghost hover:bg-[rgb(220,220,220)] text-black'
+        : 'btn-success text-black'}"
       onclick={() => {
         appliedCode = editingCode;
         isProgress = false;
