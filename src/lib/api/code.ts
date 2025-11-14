@@ -1,6 +1,6 @@
-export async function saveBoard(data: { board: boolean[][]; name: string }, isJapanese: boolean) {
+export async function saveCode(data: { code: string; name: string }, isJapanese: boolean) {
   try {
-    const response = await fetch("/api/board", {
+    const response = await fetch("/api/code", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -13,9 +13,9 @@ export async function saveBoard(data: { board: boolean[][]; name: string }, isJa
     }
 
     if (isJapanese) {
-      alert("盤面を保存しました！");
+      alert("コードを保存しました！");
     } else {
-      alert("Board saved!");
+      alert("Code saved!");
     }
   } catch (err) {
     console.error("Save Error:", err);
@@ -27,16 +27,15 @@ export async function saveBoard(data: { board: boolean[][]; name: string }, isJa
   }
 }
 
-export type BoardListItem = {
+export type CodeListItem = {
   id: number;
-  boardName: string;
+  name: string;
   createdAt: string;
-  boardPreview: boolean[][];
 };
 
-export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem[] | undefined> {
+export async function fetchCodeList(isJapanese: boolean): Promise<CodeListItem[] | undefined> {
   try {
-    const response = await fetch("/api/board");
+    const response = await fetch("/api/code");
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -46,9 +45,9 @@ export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem
       }
     }
 
-    const boardList = await response.json();
+    const codeList = await response.json();
 
-    return boardList as BoardListItem[];
+    return codeList as CodeListItem[];
   } catch (err) {
     console.error("Load error", err);
     if (isJapanese) {
@@ -59,12 +58,9 @@ export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem
   }
 }
 
-export async function loadBoardById(
-  id: number,
-  isJapanese: boolean,
-): Promise<boolean[][] | undefined> {
+export async function loadCodeById(id: number, isJapanese: boolean): Promise<string | undefined> {
   try {
-    const response = await fetch(`/api/board?id=${id}`);
+    const response = await fetch(`/api/code?id=${id}`);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -74,9 +70,9 @@ export async function loadBoardById(
       }
     }
 
-    const loadedBoard = await response.json();
+    const loadedCode = await response.json();
 
-    return loadedBoard as boolean[][];
+    return loadedCode as string;
   } catch (err) {
     console.error("Load error", err);
     if (isJapanese) {

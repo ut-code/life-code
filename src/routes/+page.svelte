@@ -5,8 +5,10 @@
   import lifeGameJS from "@/iframe/life-game.js?raw";
   import patterns from "$lib/board-templates";
   import * as icons from "$lib/icons/index.ts";
-  import { saveBoard, fetchBoardList, loadBoardById, type BoardListItem } from "./api.ts";
-  import { createPreview } from "$lib/board-preview";
+  import { BoardManager } from "$lib/models/BoardManager.svelte";
+  import { CodeManager } from "$lib/models/CodeManager.svelte";
+  import BoardModals from "$lib/components/BoardModals.svelte";
+  import CodeModals from "$lib/components/CodeModals.svelte";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
@@ -23,6 +25,9 @@
   let generationFigure = $state(0);
   let sizeValue = $state(20);
 
+  const boardManager = new BoardManager();
+  const codeManager = new CodeManager();
+
   let timer: "running" | "stopped" = $state("stopped");
   let intervalMs = $state(1000);
   $effect(() => {
@@ -32,17 +37,6 @@
     }, intervalMs);
     return () => clearInterval(timerId);
   });
-
-  type SaveState =
-    | { saving: false }
-    | { saving: true; boardData: boolean[][]; boardName: string; boardPreview: boolean[][] };
-  let saveState: SaveState = $state({ saving: false });
-
-  type LoadState =
-    | { state: "closed" }
-    | { state: "loading" }
-    | { state: "list"; list: BoardListItem[] };
-  let loadState: LoadState = $state({ state: "closed" });
 
   type OngoingEvent =
     | "play"
@@ -79,9 +73,7 @@
         break;
       }
       case "save_board": {
-        const board = event.data.data as boolean[][];
-        const preview = createPreview(board);
-        saveState = { saving: true, boardData: board, boardName: "", boardPreview: preview };
+        boardManager.openSaveModal(event.data.data as boolean[][]);
         break;
       }
       default: {
@@ -102,35 +94,18 @@
     preview_iframe?.contentWindow?.postMessage({ type: event, data: message }, "*");
   }
 
-  async function handleSave() {
-    if (!saveState.saving) return;
-
-    const name = saveState.boardName.trim() === "" ? "Unnamed Board" : saveState.boardName.trim();
-
-    await saveBoard({ board: saveState.boardData, name: name }, isJapanese);
-
-    saveState = { saving: false };
-  }
-
-  async function handleLoad() {
-    loadState = { state: "loading" };
-
-    const list = await fetchBoardList(isJapanese);
-
-    if (list) {
-      loadState = { state: "list", list };
-    } else {
-      loadState = { state: "closed" };
-    }
-  }
-
-  async function selectBoard(id: number) {
-    loadState = { state: "closed" };
-
-    const board = await loadBoardById(id, isJapanese);
+  async function onBoardSelect(id: number) {
+    const board = await boardManager.load(id, isJapanese);
     if (board) {
       sizeValue = board.length;
       sendEvent("apply_board", board);
+    }
+  }
+
+  async function onCodeSelect(id: number) {
+    const code = await codeManager.load(id, isJapanese);
+    if (code) {
+      editingCode = code;
     }
   }
 </script>
@@ -217,115 +192,8 @@
   </div>
 </div>
 
-<dialog class="modal" open={saveState.saving}>
-  <form method="dialog" class="modal-box">
-    <h3 class="font-bold text-lg">{isJapanese ? "盤面を保存" : "Save board"}</h3>
-    {#if saveState.saving}
-      <div class="flex flex-row gap-4 mt-4">
-        <div class="w-90 flex flex-col gap-4">
-          <p class="py-4">
-            {isJapanese
-              ? "保存する盤面に名前を付けてください（任意）。"
-              : "Please name the board you wish to save (optional)."}
-          </p>
-          <input
-            type="text"
-            placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
-            class="input input-bordered w-full max-w-xs"
-            bind:value={saveState.boardName}
-          />
-        </div>
-        <div class="flex flex-col flex-shrink-0">
-          <div class="text-center text-sm mb-2">
-            {isJapanese ? "プレビュー" : "Preview"}
-          </div>
-          <div class="board-preview">
-            {#each saveState.boardPreview as row, i (i)}
-              <div class="preview-row">
-                {#each row as cell, j (j)}
-                  <div class="preview-cell {cell ? 'alive' : ''}"></div>
-                {/each}
-              </div>
-            {/each}
-          </div>
-        </div>
-      </div>
-      <div class="modal-action">
-        <button type="button" class="btn" onclick={() => (saveState = { saving: false })}
-          >{isJapanese ? "キャンセル" : "Cancel"}</button
-        >
-        <button
-          type="submit"
-          class="btn btn-primary"
-          onclick={handleSave}
-          disabled={!saveState.saving}
-        >
-          {isJapanese ? "保存" : "Save"}
-        </button>
-      </div>
-    {/if}
-  </form>
-</dialog>
-
-<dialog class="modal" open={loadState.state !== "closed"}>
-  <div class="modal-box w-11/12 max-w-5xl">
-    <h3 class="font-bold text-lg">{isJapanese ? "盤面をロード" : "Load board"}</h3>
-
-    {#if loadState.state === "loading"}
-      <p class="py-4">
-        {isJapanese ? "保存されている盤面を読み込み中..." : "Loading saved boards..."}
-      </p>
-      <span class="loading loading-spinner loading-lg"></span>
-    {:else if loadState.state === "list" && loadState.list.length === 0}
-      <p class="py-4">
-        {isJapanese ? "保存されている盤面はありません。" : "No saved boards found."}
-      </p>
-    {:else if loadState.state === "list"}
-      <div class="overflow-x-auto h-96">
-        <table class="table w-full">
-          <thead>
-            <tr>
-              <th class="pl-5">{isJapanese ? "プレビュー" : "Preview"}</th>
-              <th>{isJapanese ? "盤面名" : "Board Name"}</th>
-              <th>{isJapanese ? "保存日時" : "Saved At"}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each loadState.list as item (item.id)}
-              <tr class="hover:bg-base-300">
-                <td>
-                  <div class="board-preview">
-                    {#each item.boardPreview as row, i (i)}
-                      <div class="preview-row">
-                        {#each row as cell, j (j)}
-                          <div class="preview-cell {cell ? 'alive' : ''}"></div>
-                        {/each}
-                      </div>
-                    {/each}
-                  </div>
-                </td>
-                <td>{item.boardName}</td>
-                <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
-                <td class="text-right">
-                  <button class="btn btn-sm btn-primary" onclick={() => selectBoard(item.id)}>
-                    {isJapanese ? "ロード" : "Load"}
-                  </button>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {/if}
-
-    <div class="modal-action">
-      <button class="btn" onclick={() => (loadState = { state: "closed" })}>
-        {isJapanese ? "閉じる" : "Close"}
-      </button>
-    </div>
-  </div>
-</dialog>
+<BoardModals manager={boardManager} {isJapanese} onSelect={onBoardSelect} />
+<CodeModals manager={codeManager} {isJapanese} onSelect={onCodeSelect} />
 
 <dialog class="modal" open={resetModalOpen}>
   <div class="modal-box">
@@ -494,7 +362,7 @@
         isProgress = false;
         timer = "stopped";
         sendEvent("pause");
-        handleLoad();
+        boardManager.openLoadModal(isJapanese);
       }}
     >
       {isJapanese ? "ロード" : "Load"}
@@ -526,7 +394,7 @@
 
     <div class="w-px bg-gray-400 h-6 mx-2"></div>
     <!-- Separator -->
-
+    <div class="font-bold text-black">{isJapanese ? "コード" : "Code"}:</div>
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
@@ -535,29 +403,29 @@
         timer = "stopped";
       }}
     >
-      {isJapanese ? "コードを適用" : "Apply Code"}
+      {isJapanese ? "適用" : "Apply"}
+    </button>
+
+    <button
+      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      onclick={() => {
+        isProgress = false;
+        sendEvent("pause");
+        codeManager.openSaveModal(editingCode);
+      }}
+    >
+      {isJapanese ? "保存" : "Save"}
+    </button>
+
+    <button
+      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      onclick={() => {
+        isProgress = false;
+        sendEvent("pause");
+        codeManager.openLoadModal(isJapanese);
+      }}
+    >
+      {isJapanese ? "ロード" : "Load"}
     </button>
   </div>
 </div>
-
-<style>
-  .board-preview {
-    display: grid;
-    grid-template-columns: repeat(20, 3px);
-    grid-template-rows: repeat(20, 3px);
-    width: 60px;
-    height: 60px;
-    border: 1px solid #9ca3af;
-    background-color: white;
-  }
-  .preview-row {
-    display: contents;
-  }
-  .preview-cell {
-    width: 3px;
-    height: 3px;
-  }
-  .preview-cell.alive {
-    background-color: black;
-  }
-</style>

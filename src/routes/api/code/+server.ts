@@ -1,11 +1,10 @@
 import { json } from "@sveltejs/kit";
 import { prisma } from "@/lib/prisma.server.ts";
-import { createBoardPreview } from "@/lib/board-preview.js";
 import * as v from "valibot";
 
-const BoardSchema = v.object({
-  board: v.array(v.array(v.boolean())),
-  name: v.pipe(v.string(), v.minLength(1, "盤面名は必須です。")),
+const CodeSchema = v.object({
+  code: v.pipe(v.string(), v.minLength(1, "コードが空白です。")),
+  name: v.pipe(v.string(), v.minLength(1, "コード名は必須です。")),
 });
 
 export async function POST({ request }) {
@@ -17,20 +16,18 @@ export async function POST({ request }) {
     return json({ message: "無効なリクエスト形式です。" }, { status: 400 });
   }
 
-  const result = v.safeParse(BoardSchema, requestData);
+  const result = v.safeParse(CodeSchema, requestData);
   if (!result.success) {
     console.error("Request validation failed:", result.issues);
     return json({ message: "無効なリクエストデータです。" }, { status: 400 });
   }
 
-  const { board, name } = result.output;
-  const preview = createBoardPreview(board);
+  const { code, name } = result.output;
 
-  const newState = await prisma.board.create({
+  const newState = await prisma.code.create({
     data: {
-      data: board,
+      data: code,
       name: name,
-      preview: preview,
     },
   });
 
@@ -38,28 +35,28 @@ export async function POST({ request }) {
 }
 
 export async function GET({ url }) {
-  const boardId = url.searchParams.get("id");
+  const codeId = url.searchParams.get("id");
 
-  if (boardId) {
-    //IDが指定された場合、そのIDの盤面を返す
-    const id = parseInt(boardId, 10);
+  if (codeId) {
+    //IDが指定された場合、そのIDのコードを返す
+    const id = parseInt(codeId, 10);
     if (isNaN(id)) {
       return json({ message: "無効なIDです。" }, { status: 400 });
     }
 
-    const state = await prisma.board.findUnique({
+    const state = await prisma.code.findUnique({
       where: { id: id },
       select: { data: true },
     });
 
     if (!state) {
-      return json({ message: `ID: ${id} の盤面は見つかりません。` }, { status: 404 });
+      return json({ message: `ID: ${id} のコードは見つかりません。` }, { status: 404 });
     }
 
     return json(state.data);
   } else {
-    //IDが指定されなかった場合、全ての盤面のリストを返す
-    const allStates = await prisma.board.findMany({
+    //IDが指定されなかった場合、全てのコードのリストを返す
+    const allStates = await prisma.code.findMany({
       orderBy: {
         createdAt: "desc",
       },
@@ -67,12 +64,11 @@ export async function GET({ url }) {
         id: true,
         name: true,
         createdAt: true,
-        preview: true,
       },
     });
 
     if (!allStates || allStates.length === 0) {
-      return json({ message: "保存されている盤面がありません。" }, { status: 404 });
+      return json({ message: "保存されているコードがありません。" }, { status: 404 });
     }
 
     return json(allStates);

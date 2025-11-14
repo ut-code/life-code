@@ -15,10 +15,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model BoardState {
+model Board {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-  boardData Json
-  boardName String
-  boardPreview Json
+  data Json
+  name String
+  preview Json
+}
+
+model Code {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  data String
+  name String
 }
