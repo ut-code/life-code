@@ -125,6 +125,14 @@
       sendEvent("apply_board", board);
     }
   }
+
+  function timerChange() {
+    if (!isProgress) return;
+    clearInterval(timerId);
+    timerId = setInterval(() => {
+      sendEvent("progress");
+    }, intervalMs);
+  }
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -408,12 +416,7 @@
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = intervalMs * 2;
-        if (isProgress) {
-          clearInterval(timerId);
-          timerId = setInterval(() => {
-            sendEvent("progress");
-          }, intervalMs);
-        }
+        timerChange();
       }}
     >
       <img class="size-6" src={icons.decelerate} alt="decelerate" />
@@ -423,12 +426,7 @@
       class="btn btn-ghost btn-circle text-black hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = 1000;
-        if (isProgress) {
-          clearInterval(timerId);
-          timerId = setInterval(() => {
-            sendEvent("progress");
-          }, intervalMs);
-        }
+        timerChange();
       }}
     >
       x1
@@ -438,12 +436,7 @@
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = intervalMs / 2;
-        if (isProgress) {
-          clearInterval(timerId);
-          timerId = setInterval(() => {
-            sendEvent("progress");
-          }, intervalMs);
-        }
+        timerChange();
       }}
     >
       <img class="size-6" src={icons.accelerate} alt="accelerate" />
