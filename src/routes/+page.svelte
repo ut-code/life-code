@@ -7,6 +7,8 @@
   import * as icons from "$lib/icons/index.ts";
   import { BoardManager } from "$lib/models/BoardManager.svelte";
   import { CodeManager } from "$lib/models/CodeManager.svelte";
+  import BoardModals from "$lib/components/BoardModals.svelte";
+  import CodeModals from "$lib/components/CodeModals.svelte";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
@@ -77,7 +79,7 @@
     preview_iframe?.contentWindow?.postMessage({ type: event, data: message }, "*");
   }
 
-  async function selectBoard(id: number) {
+  async function onBoardSelect(id: number) {
     const board = await boardManager.load(id, isJapanese);
     if (board) {
       sizeValue = board.length;
@@ -85,7 +87,7 @@
     }
   }
 
-  async function selectCode(id: number) {
+  async function onCodeSelect(id: number) {
     const code = await codeManager.load(id, isJapanese);
     if (code) {
       editingCode = code;
@@ -191,199 +193,8 @@
   </div>
 </div>
 
-<dialog class="modal" open={boardManager.saveState.saving}>
-  <form method="dialog" class="modal-box">
-    <h3 class="font-bold text-lg">{isJapanese ? "盤面を保存" : "Save board"}</h3>
-    {#if boardManager.saveState.saving}
-      <div class="flex flex-row gap-4 mt-4">
-        <div class="w-90 flex flex-col gap-4">
-          <p class="py-4">
-            {isJapanese
-              ? "保存する盤面に名前を付けてください（任意）。"
-              : "Please name the board you wish to save (optional)."}
-          </p>
-          <input
-            type="text"
-            placeholder={isJapanese ? "盤面名を入力" : "Enter board name"}
-            class="input input-bordered w-full max-w-xs"
-            bind:value={boardManager.saveState.name}
-          />
-        </div>
-        <div class="flex flex-col flex-shrink-0">
-          <div class="text-center text-sm mb-2">
-            {isJapanese ? "プレビュー" : "Preview"}
-          </div>
-          <div class="board-preview">
-            {#each boardManager.saveState.preview as row, i (i)}
-              <div class="preview-row">
-                {#each row as cell, j (j)}
-                  <div class="preview-cell {cell ? 'alive' : ''}"></div>
-                {/each}
-              </div>
-            {/each}
-          </div>
-        </div>
-      </div>
-      <div class="modal-action">
-        <button type="button" class="btn" onclick={() => boardManager.closeSaveModal()}
-          >{isJapanese ? "キャンセル" : "Cancel"}</button
-        >
-        <button
-          type="submit"
-          class="btn btn-primary"
-          onclick={() => boardManager.save(isJapanese)}
-          disabled={!boardManager.saveState.saving}
-        >
-          {isJapanese ? "保存" : "Save"}
-        </button>
-      </div>
-    {/if}
-  </form>
-</dialog>
-
-<dialog class="modal" open={boardManager.loadState.state !== "closed"}>
-  <div class="modal-box w-11/12 max-w-5xl">
-    <h3 class="font-bold text-lg">{isJapanese ? "盤面をロード" : "Load board"}</h3>
-
-    {#if boardManager.loadState.state === "loading"}
-      <p class="py-4">
-        {isJapanese ? "保存されている盤面を読み込み中..." : "Loading saved boards..."}
-      </p>
-      <span class="loading loading-spinner loading-lg"></span>
-    {:else if boardManager.loadState.state === "list" && boardManager.loadState.list.length === 0}
-      <p class="py-4">
-        {isJapanese ? "保存されている盤面はありません。" : "No saved boards found."}
-      </p>
-    {:else if boardManager.loadState.state === "list"}
-      <div class="overflow-x-auto h-96">
-        <table class="table w-full">
-          <thead>
-            <tr>
-              <th class="pl-5">{isJapanese ? "プレビュー" : "Preview"}</th>
-              <th>{isJapanese ? "盤面名" : "Board Name"}</th>
-              <th>{isJapanese ? "保存日時" : "Saved At"}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each boardManager.loadState.list as item (item.id)}
-              <tr class="hover:bg-base-300">
-                <td>
-                  <div class="board-preview">
-                    {#each item.preview as row, i (i)}
-                      <div class="preview-row">
-                        {#each row as cell, j (j)}
-                          <div class="preview-cell {cell ? 'alive' : ''}"></div>
-                        {/each}
-                      </div>
-                    {/each}
-                  </div>
-                </td>
-                <td>{item.name}</td>
-                <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
-                <td class="text-right">
-                  <button class="btn btn-sm btn-primary" onclick={() => selectBoard(item.id)}>
-                    {isJapanese ? "ロード" : "Load"}
-                  </button>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {/if}
-
-    <div class="modal-action">
-      <button class="btn" onclick={() => boardManager.closeLoadModal()}>
-        {isJapanese ? "閉じる" : "Close"}
-      </button>
-    </div>
-  </div>
-</dialog>
-
-<dialog class="modal" open={codeManager.saveState.saving}>
-  <form method="dialog" class="modal-box">
-    <h3 class="font-bold text-lg">{isJapanese ? "コードを保存" : "Save code"}</h3>
-    {#if codeManager.saveState.saving}
-      <div class="flex flex-row gap-4 mt-4">
-        <div class="w-90 flex flex-col gap-4">
-          <p class="py-4">
-            {isJapanese
-              ? "保存するコードに名前を付けてください（任意）。"
-              : "Please name the code you wish to save (optional)."}
-          </p>
-          <input
-            type="text"
-            placeholder={isJapanese ? "コード名を入力" : "Enter code name"}
-            class="input input-bordered w-full max-w-xs"
-            bind:value={codeManager.saveState.name}
-          />
-        </div>
-      </div>
-      <div class="modal-action">
-        <button type="button" class="btn" onclick={() => codeManager.closeSaveModal()}
-          >{isJapanese ? "キャンセル" : "Cancel"}</button
-        >
-        <button
-          type="submit"
-          class="btn btn-primary"
-          onclick={() => codeManager.save(isJapanese)}
-          disabled={!codeManager.saveState.saving}
-        >
-          {isJapanese ? "保存" : "Save"}
-        </button>
-      </div>
-    {/if}
-  </form>
-</dialog>
-
-<dialog class="modal" open={codeManager.loadState.state !== "closed"}>
-  <div class="modal-box w-11/12 max-w-5xl">
-    <h3 class="font-bold text-lg">{isJapanese ? "コードをロード" : "Load code"}</h3>
-
-    {#if codeManager.loadState.state === "loading"}
-      <p class="py-4">
-        {isJapanese ? "保存されているコードを読み込み中..." : "Loading saved codes..."}
-      </p>
-      <span class="loading loading-spinner loading-lg"></span>
-    {:else if codeManager.loadState.state === "list" && codeManager.loadState.list.length === 0}
-      <p class="py-4">
-        {isJapanese ? "保存されているコードはありません。" : "No saved codes found."}
-      </p>
-    {:else if codeManager.loadState.state === "list"}
-      <div class="overflow-x-auto h-96">
-        <table class="table w-full">
-          <thead>
-            <tr>
-              <th>{isJapanese ? "コード名" : "Code Name"}</th>
-              <th>{isJapanese ? "保存日時" : "Saved At"}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each codeManager.loadState.list as item (item.id)}
-              <tr class="hover:bg-base-300">
-                <td>{item.name}</td>
-                <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
-                <td class="text-right">
-                  <button class="btn btn-sm btn-primary" onclick={() => selectCode(item.id)}>
-                    {isJapanese ? "ロード" : "Load"}
-                  </button>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {/if}
-
-    <div class="modal-action">
-      <button class="btn" onclick={() => codeManager.closeLoadModal()}>
-        {isJapanese ? "閉じる" : "Close"}
-      </button>
-    </div>
-  </div>
-</dialog>
+<BoardModals manager={boardManager} {isJapanese} onSelect={onBoardSelect} />
+<CodeModals manager={codeManager} {isJapanese} onSelect={onCodeSelect} />
 
 <dialog class="modal" open={resetModalOpen}>
   <div class="modal-box">
@@ -609,25 +420,3 @@
     </button>
   </div>
 </div>
-
-<style>
-  .board-preview {
-    display: grid;
-    grid-template-columns: repeat(20, 3px);
-    grid-template-rows: repeat(20, 3px);
-    width: 60px;
-    height: 60px;
-    border: 1px solid #9ca3af;
-    background-color: white;
-  }
-  .preview-row {
-    display: contents;
-  }
-  .preview-cell {
-    width: 3px;
-    height: 3px;
-  }
-  .preview-cell.alive {
-    background-color: black;
-  }
-</style>
