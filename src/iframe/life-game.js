@@ -1,11 +1,14 @@
 "use strict";
 
 let timer = "stop";
-let timerId = 0;
 let generationFigure = 0;
-let timerTime = 1000;
 let isDragging = false;
 let dragMode = false; // true: 黒にする, false: 白にする
+let isPlacingTemplate = false;
+let patternShape = [];
+let patternHeight = 0;
+let patternWidth = 0;
+let previewCells = [];
 
 //変数設定
 let boardSize = 20; //盤面の大きさ(20x20)
@@ -51,9 +54,35 @@ function renderBoard() {
       button.style.height = `${cellSize}px`;
       button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
       button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
+      button.onclick = () => {
+        if (isPlacingTemplate) {
+          clearPreview();
+          isPlacingTemplate = false;
+          if (i + patternHeight < boardSize + 1 && j + patternWidth < boardSize + 1) {
+            for (let r = 0; r < patternHeight; r++) {
+              for (let c = 0; c < patternWidth; c++) {
+                const boardRow = i + r;
+                const boardCol = j + c;
+                board[boardRow][boardCol] = patternShape[r][c] === 1;
+              }
+            }
+            rerender();
+            generationChange(0);
+            stop();
+          } else {
+            window.parent.postMessage(
+              {
+                type: "Size shortage",
+                data: {},
+              },
+              "*",
+            );
+          }
+        }
+      };
       button.onmousedown = (e) => {
         e.preventDefault();
-        if (timer === "stop") {
+        if (timer === "stop" && !isPlacingTemplate) {
           isDragging = true;
           board[i][j] = !board[i][j];
           dragMode = board[i][j];
@@ -61,9 +90,12 @@ function renderBoard() {
         }
       };
       button.onmouseenter = () => {
-        if (isDragging && timer === "stop" && board[i][j] !== dragMode) {
+        if (isDragging && timer === "stop" && board[i][j] !== dragMode && !isPlacingTemplate) {
           board[i][j] = dragMode;
           button.style.backgroundColor = board[i][j] ? "black" : "white";
+        }
+        if (isPlacingTemplate) {
+          drawPreview(i, j);
         }
       };
       td.appendChild(button);
@@ -71,6 +103,37 @@ function renderBoard() {
     }
     table.appendChild(tr);
   }
+}
+
+table.onmouseleave = () => {
+  if (isPlacingTemplate) {
+    clearPreview();
+  }
+};
+
+function drawPreview(row, col) {
+  clearPreview();
+  for (let r = 0; r < patternHeight; r++) {
+    for (let c = 0; c < patternWidth; c++) {
+      if (patternShape[r][c] === 1) {
+        const boardRow = row + r;
+        const boardCol = col + c;
+        if (boardRow < boardSize && boardCol < boardSize) {
+          const cell = table.rows[boardRow].cells[boardCol].firstChild;
+          cell.style.backgroundColor = "gray";
+          previewCells.push({ row: boardRow, col: boardCol });
+        }
+      }
+    }
+  }
+}
+
+function clearPreview() {
+  previewCells.forEach((cellPos) => {
+    const cell = table.rows[cellPos.row].cells[cellPos.col].firstChild;
+    cell.style.backgroundColor = board[cellPos.row][cellPos.col] ? "black" : "white";
+  });
+  previewCells = [];
 }
 
 function rerender() {
@@ -158,22 +221,18 @@ function progressBoard() {
   rerender();
 }
 
-function resetTimer() {
-  if (timer !== "stop") {
-    timer = "stop";
-    clearInterval(timerId);
-  }
-}
-
 //イベント
+
+on.progress = () => {
+  progressBoard();
+};
 
 on.play = () => {
   timer = "start";
-  timerId = setInterval(progressBoard, timerTime);
 };
 
 on.pause = () => {
-  resetTimer();
+  timer = "stop";
 };
 
 on.board_reset = () => {
@@ -181,7 +240,6 @@ on.board_reset = () => {
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
   renderBoard();
   generationChange(0);
-  resetTimer();
 };
 
 on.board_randomize = () => {
@@ -191,15 +249,6 @@ on.board_randomize = () => {
   );
   renderBoard();
   generationChange(0);
-  resetTimer();
-};
-
-on.timer_change = (ms) => {
-  timerTime = ms;
-  if (timer === "start") {
-    clearInterval(timerId);
-    timerId = setInterval(progressBoard, timerTime);
-  }
 };
 
 on.request_sync = () => {
@@ -216,11 +265,12 @@ on.request_sync = () => {
   console.log("generationFigure:", generationFigure, "boardSize:", boardSize);
 };
 
-on.place_template = (newBoard) => {
-  board = newBoard;
-  renderBoard();
-  generationChange(0);
-  resetTimer();
+on.place_template = (template) => {
+  patternShape = template;
+  patternHeight = patternShape.length;
+  patternWidth = patternShape[0].length;
+  isPlacingTemplate = true;
+  table.style.cursor = "crosshair";
   stop();
 };
 
@@ -233,6 +283,5 @@ on.apply_board = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
-  resetTimer();
   stop();
 };

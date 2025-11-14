@@ -20,9 +20,18 @@
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
 
-  let intervalMs = $state(1000);
   let generationFigure = $state(0);
   let sizeValue = $state(20);
+
+  let timer: "running" | "stopped" = $state("stopped");
+  let intervalMs = $state(1000);
+  $effect(() => {
+    if (timer === "stopped") return;
+    const timerId = setInterval(() => {
+      sendEvent("progress");
+    }, intervalMs);
+    return () => clearInterval(timerId);
+  });
 
   type SaveState =
     | { saving: false }
@@ -39,15 +48,15 @@
     | "play"
     | "pause"
     | "state_update"
-    | "timer_change"
     | "board_reset"
     | "board_randomize"
     | "place_template"
     | "save_board"
     | "apply_board"
-    | "request_sync";
+    | "request_sync"
+    | "progress";
 
-  type IncomingEvent = "generation_change" | "sync" | "save_board";
+  type IncomingEvent = "generation_change" | "sync" | "Size shortage" | "save_board";
 
   function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
     switch (event.data.type) {
@@ -59,6 +68,14 @@
         const data = event.data.data as { generationFigure: number; boardSize: number };
         generationFigure = data.generationFigure;
         sizeValue = data.boardSize;
+        break;
+      }
+      case "Size shortage": {
+        alert(
+          isJapanese
+            ? "盤面からはみ出してしまうため、キャンセルしました"
+            : "This action was canceled because it would have extended beyond the board.",
+        );
         break;
       }
       case "save_board": {
@@ -168,13 +185,8 @@
             onclick={() => {
               sendEvent("request_sync");
 
-              const newBoard = Array.from({ length: sizeValue }, () =>
-                Array.from({ length: sizeValue }, () => false),
-              );
               const patternData = patterns[patternName];
               const patternShape = patternData.shape;
-              const patternHeight = patternShape.length;
-              const patternWidth = patternShape[0].length;
 
               if (sizeValue < (patternData.minBoardSize || 0)) {
                 if (isJapanese) {
@@ -189,19 +201,8 @@
 
                 return;
               }
-              // パターンがボードの中央に来るよう、パターンの左上のセルの位置(startRow, startCol)を調整
-              const startRow = Math.floor((sizeValue - patternHeight) / 2);
-              const startCol = Math.floor((sizeValue - patternWidth) / 2);
-
-              for (let r = 0; r < patternHeight; r++) {
-                for (let c = 0; c < patternWidth; c++) {
-                  const boardRow = startRow + r;
-                  const boardCol = startCol + c;
-                  newBoard[boardRow][boardCol] = patternShape[r][c] === 1;
-                }
-              }
               bottomDrawerOpen = false;
-              sendEvent("place_template", newBoard);
+              sendEvent("place_template", patternShape);
             }}
           >
             <img
@@ -415,7 +416,6 @@
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = intervalMs * 2;
-        sendEvent("timer_change", intervalMs);
       }}
     >
       <img class="size-6" src={icons.decelerate} alt="decelerate" />
@@ -425,7 +425,6 @@
       class="btn btn-ghost btn-circle text-black hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = 1000;
-        sendEvent("timer_change", intervalMs);
       }}
     >
       x1
@@ -435,7 +434,6 @@
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = intervalMs / 2;
-        sendEvent("timer_change", intervalMs);
       }}
     >
       <img class="size-6" src={icons.accelerate} alt="accelerate" />
@@ -455,8 +453,13 @@
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap"
       onclick={() => {
-        const eventName = isProgress ? "pause" : "play";
-        sendEvent(eventName);
+        if (isProgress) {
+          timer = "stopped";
+          sendEvent("pause");
+        } else {
+          timer = "running";
+          sendEvent("play");
+        }
         isProgress = !isProgress;
       }}
     >
@@ -477,6 +480,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        timer = "stopped";
         sendEvent("pause");
         sendEvent("save_board");
       }}
@@ -488,6 +492,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        timer = "stopped";
         sendEvent("pause");
         handleLoad();
       }}
@@ -499,6 +504,8 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        timer = "stopped";
+        sendEvent("pause");
         sendEvent("board_reset");
       }}
     >
@@ -509,6 +516,8 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        timer = "stopped";
+        sendEvent("pause");
         sendEvent("board_randomize");
       }}
     >
@@ -522,6 +531,8 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         appliedCode = editingCode;
+        isProgress = false;
+        timer = "stopped";
       }}
     >
       {isJapanese ? "コードを適用" : "Apply Code"}
