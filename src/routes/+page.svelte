@@ -185,13 +185,16 @@
           </p>
           <button
             class="btn overflow-hidden p-0 w-24 h-24"
-            title={disabledTemplates[patternName]
-              ? isJapanese
-                ? `このパターンには ${patterns[patternName].minBoardSize}x${patterns[patternName].minBoardSize} 以上の盤面が必要です`
-                : `This pattern requires a board size of at least ${patterns[patternName].minBoardSize}x${patterns[patternName].minBoardSize}.`
-              : null}
             onclick={async () => {
-              if (disabledTemplates[patternName]) return;
+              if (disabledTemplates[patternName]) {
+                toast.show(
+                  isJapanese
+                    ? `このパターンには ${patterns[patternName].minBoardSize}x${patterns[patternName].minBoardSize} 以上の盤面が必要です`
+                    : `This pattern requires a board size of at least ${patterns[patternName].minBoardSize}x${patterns[patternName].minBoardSize}.`,
+                  "error",
+                );
+                return;
+              }
               const patternData = patterns[patternName];
               const patternShape = patternData.shape;
               bottomDrawerOpen = false;
