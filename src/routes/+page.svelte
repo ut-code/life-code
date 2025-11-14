@@ -21,6 +21,7 @@
   let isJapanese = $state(true);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
+  let disabledTemplates = $state<{ [key: string]: boolean }>({});
 
   let generationFigure = $state(0);
   let sizeValue = $state(20);
@@ -117,6 +118,19 @@
       resolveSync = resolve;
     });
   }
+
+  async function updateTemplateDisability() {
+    sendEvent("request_sync");
+    await waitForSync();
+
+    const newDisabledState: { [key: string]: boolean } = {};
+    for (const key in patterns) {
+      const patternName = key as keyof typeof patterns;
+      const patternData = patterns[patternName];
+      newDisabledState[patternName] = sizeValue < (patternData.minBoardSize || 0);
+    }
+    disabledTemplates = newDisabledState;
+  }
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -160,32 +174,24 @@
   <div class="bg-base-200 shadow-lg p-4 h-48 w-full overflow-x-auto">
     <div class="flex gap-4">
       {#each Object.keys(patterns) as (keyof typeof patterns)[] as patternName (patternName)}
-        <div class="text-center flex-shrink-0">
+        <div
+          class="text-center flex-shrink-0"
+          style:opacity={disabledTemplates[patternName] ? 0.3 : 1}
+        >
           <p class="font-bold mb-2">
             {isJapanese ? patterns[patternName].names.ja : patterns[patternName].names.en}
           </p>
           <button
             class="btn overflow-hidden p-0 w-24 h-24"
+            title={disabledTemplates[patternName]
+              ? isJapanese
+                ? `このパターンには ${patterns[patternName].minBoardSize}x${patterns[patternName].minBoardSize} 以上の盤面が必要です`
+                : `This pattern requires a board size of at least ${patterns[patternName].minBoardSize}x${patterns[patternName].minBoardSize}.`
+              : null}
             onclick={async () => {
-              sendEvent("request_sync");
-              await waitForSync();
-
+              if (disabledTemplates[patternName]) return;
               const patternData = patterns[patternName];
               const patternShape = patternData.shape;
-
-              if (sizeValue < (patternData.minBoardSize || 0)) {
-                if (isJapanese) {
-                  alert(
-                    `このパターンには ${patternData.minBoardSize}x${patternData.minBoardSize} 以上の盤面が必要です`,
-                  );
-                } else {
-                  alert(
-                    `This pattern requires a board size of at least ${patternData.minBoardSize}x${patternData.minBoardSize}.`,
-                  );
-                }
-
-                return;
-              }
               bottomDrawerOpen = false;
               sendEvent("place_template", patternShape);
             }}
@@ -243,9 +249,10 @@
       title="Preview"
       sandbox="allow-scripts"
       class="w-[80%] h-[90%] rounded-lg mx-auto my-5 bg-white shadow-lg"
-      onload={() => {
-        setTimeout(() => {
+      onload={async () => {
+        setTimeout(async () => {
           sendEvent("state_update");
+          await updateTemplateDisability();
           console.log("generationFigure onload:", generationFigure);
         }, 50);
       }}
