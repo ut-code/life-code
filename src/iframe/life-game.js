@@ -186,45 +186,40 @@ function generationChange(num) {
 }
 
 function progressBoard() {
-  const newBoard = structuredClone(board);
-  for (let i = 0; i < boardSize; i++) {
-    for (let j = 0; j < boardSize; j++) {
-      //周囲のマスに黒マスが何個あるかを計算(aroundに格納)↓
-      let around = 0;
-      let tate = [0];
-      let yoko = [0];
-      if (i === 0) {
-        tate = [0, 1];
-      }
-      if (i === boardSize - 1) {
-        tate = [0, -1];
-      }
-      if (0 < i && i < boardSize - 1) {
-        tate = [-1, 0, 1];
-      }
-      if (j === 0) {
-        yoko = [0, 1];
-      }
-      if (j === boardSize - 1) {
-        yoko = [0, -1];
-      }
-      if (0 < j && j < boardSize - 1) {
-        yoko = [-1, 0, 1];
-      }
-      for (let ii = 0; ii < tate.length; ii++) {
-        for (let jj = 0; jj < yoko.length; jj++) {
-          if (tate[ii] !== 0 || yoko[jj] !== 0) {
-            around += board[i + tate[ii]][j + yoko[jj]] ? 1 : 0;
-          }
-        }
-      }
-      //↑周囲のマスに黒マスが何個あるかを計算(aroundに格納)
-      newBoard[i][j] = isNextAlive(around, board[i][j]);
-    }
-  }
-  board = newBoard;
-  generationChange(generationFigure + 1);
-  rerender();
+	const newBoard = structuredClone(board);
+	for (let i = 0; i < boardSize; i++) {
+		for (let j = 0; j < boardSize; j++) {
+			//周囲のマスに黒マスが何個あるかを計算(aroundに格納)↓
+			let around = 0;
+			let tate, yoko;
+			if (i === 0) {
+				tate = [0, 1];
+			} else if (i === boardSize - 1) {
+				tate = [0, -1];
+			} else {
+				tate = [-1, 0, 1];
+			}
+			if (j === 0) {
+				yoko = [0, 1];
+			} else if (j === boardSize - 1) {
+				yoko = [0, -1];
+			} else {
+				yoko = [-1, 0, 1];
+			}
+			for (let ii = 0; ii < tate.length; ii++) {
+				for (let jj = 0; jj < yoko.length; jj++) {
+					if (tate[ii] !== 0 || yoko[jj] !== 0) {
+						around += board[i + tate[ii]][j + yoko[jj]] ? 1 : 0;
+					}
+				}
+			}
+			//↑周囲のマスに黒マスが何個あるかを計算(aroundに格納)
+			newBoard[i][j] = isNextAlive(around, board[i][j]);
+		}
+	}
+	board = newBoard;
+	generationChange(generationFigure + 1);
+	rerender();
 }
 
 //イベント
