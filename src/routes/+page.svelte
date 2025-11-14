@@ -62,6 +62,9 @@
         const data = event.data.data as { generationFigure: number; boardSize: number };
         generationFigure = data.generationFigure;
         sizeValue = data.boardSize;
+        if (resolveSync) {
+          resolveSync();
+        }
         break;
       }
       case "Size shortage": {
@@ -106,6 +109,13 @@
     if (code) {
       editingCode = code;
     }
+  }
+
+  let resolveSync: (value: void | PromiseLike<void>) => void;
+  function waitForSync(): Promise<void> {
+    return new Promise((resolve) => {
+      resolveSync = resolve;
+    });
   }
 </script>
 
@@ -156,8 +166,9 @@
           </p>
           <button
             class="btn overflow-hidden p-0 w-24 h-24"
-            onclick={() => {
+            onclick={async () => {
               sendEvent("request_sync");
+              await waitForSync();
 
               const patternData = patterns[patternName];
               const patternShape = patternData.shape;
