@@ -97,7 +97,6 @@
   async function onBoardSelect(id: number) {
     const board = await boardManager.load(id, isJapanese);
     if (board) {
-      sizeValue = board.length;
       sendEvent("apply_board", board);
     }
   }
