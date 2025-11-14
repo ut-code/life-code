@@ -283,7 +283,7 @@
   <!-- Left Section -->
   <div class="flex items-center">
     <button
-      class="btn rounded-none h-12 justify-start"
+      class="btn rounded-none h-12 justify-start w-30"
       onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
     >
       {#if bottomDrawerOpen}
@@ -295,8 +295,8 @@
       {/if}
     </button>
 
-    <div class="font-bold text-black ml-4">
-      {isJapanese ? "第" + generationFigure + "世代" : "Generation:" + generationFigure}
+    <div class="font-bold text-black ml-4 w-25">
+      {isJapanese ? "世代数:" + generationFigure : "Generation:" + generationFigure}
     </div>
   </div>
 
@@ -329,16 +329,12 @@
       <img class="size-6" src={icons.accelerate} alt="accelerate" />
     </button>
 
-    <div class="font-bold text-black ml-2">
+    <div class="font-bold text-black ml-2 w-25">
       {isJapanese ? "現在の速度" : "Current speed"}: x{1000 / intervalMs}
     </div>
 
     <div class="w-px bg-gray-400 h-6 mx-4"></div>
     <!-- Separator -->
-
-    <button class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]">
-      <img class="size-6" src={icons.LeftArrow} alt="Left Arrow" />
-    </button>
 
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap"
@@ -356,10 +352,6 @@
       <input type="checkbox" bind:checked={isProgress} />
       <img class="size-6 swap-on" src={icons.Pause} alt="Pause" />
       <img class="size-6 swap-off" src={icons.Play} alt="Play" />
-    </button>
-
-    <button class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]">
-      <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
     </button>
   </div>
 
