@@ -19,7 +19,6 @@
   let isJapanese = $state(true);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
-  let timerId: number | NodeJS.Timeout = 0;
 
   let generationFigure = $state(0);
   let sizeValue = $state(20);
