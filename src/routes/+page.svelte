@@ -9,6 +9,7 @@
   import { CodeManager } from "$lib/models/CodeManager.svelte";
   import BoardModals from "$lib/components/BoardModals.svelte";
   import CodeModals from "$lib/components/CodeModals.svelte";
+  import { toast } from "$lib/models/ToastStore.svelte";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
@@ -69,10 +70,11 @@
         break;
       }
       case "Size shortage": {
-        alert(
+        toast.show(
           isJapanese
             ? "盤面からはみ出してしまうため、キャンセルしました"
             : "This action was canceled because it would have extended beyond the board.",
+          "error",
         );
         break;
       }

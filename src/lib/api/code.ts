@@ -1,3 +1,5 @@
+import { toast } from "$lib/models/ToastStore.svelte";
+
 export async function saveCode(data: { code: string; name: string }, isJapanese: boolean) {
   try {
     const response = await fetch("/api/code", {
@@ -13,16 +15,16 @@ export async function saveCode(data: { code: string; name: string }, isJapanese:
     }
 
     if (isJapanese) {
-      alert("コードを保存しました！");
+      toast.show("コードを保存しました！", "success");
     } else {
-      alert("Code saved!");
+      toast.show("Code saved!", "success");
     }
   } catch (err) {
     console.error("Save Error:", err);
     if (isJapanese) {
-      alert("保存に失敗しました。");
+      toast.show("保存に失敗しました。", "error");
     } else {
-      alert("Failed to save.");
+      toast.show("Failed to save.", "error");
     }
   }
 }
@@ -51,9 +53,9 @@ export async function fetchCodeList(isJapanese: boolean): Promise<CodeListItem[]
   } catch (err) {
     console.error("Load error", err);
     if (isJapanese) {
-      alert("読み込みに失敗しました。");
+      toast.show("読み込みに失敗しました。", "error");
     } else {
-      alert("Failed to load.");
+      toast.show("Failed to load.", "error");
     }
   }
 }
@@ -76,9 +78,9 @@ export async function loadCodeById(id: number, isJapanese: boolean): Promise<str
   } catch (err) {
     console.error("Load error", err);
     if (isJapanese) {
-      alert("読み込みに失敗しました。");
+      toast.show("読み込みに失敗しました。", "error");
     } else {
-      alert("Failed to load.");
+      toast.show("Failed to load.", "error");
     }
   }
 }
