@@ -21,9 +21,18 @@
   let bottomDrawerOpen = $state(false);
   let timerId: number | NodeJS.Timeout = 0;
 
-  let intervalMs = $state(1000);
   let generationFigure = $state(0);
   let sizeValue = $state(20);
+
+  let timer: "running" | "stopped" = $state("stopped");
+  let intervalMs = $state(1000);
+  $effect(() => {
+    if (timer === "stopped") return;
+    const timerId = setInterval(() => {
+      sendEvent("progress");
+    }, intervalMs);
+    return () => clearInterval(timerId);
+  });
 
   type SaveState =
     | { saving: false }
@@ -124,14 +133,6 @@
       sizeValue = board.length;
       sendEvent("apply_board", board);
     }
-  }
-
-  function timerChange() {
-    if (!isProgress) return;
-    clearInterval(timerId);
-    timerId = setInterval(() => {
-      sendEvent("progress");
-    }, intervalMs);
   }
 </script>
 
@@ -416,7 +417,6 @@
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = intervalMs * 2;
-        timerChange();
       }}
     >
       <img class="size-6" src={icons.decelerate} alt="decelerate" />
@@ -426,7 +426,6 @@
       class="btn btn-ghost btn-circle text-black hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = 1000;
-        timerChange();
       }}
     >
       x1
@@ -436,7 +435,6 @@
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
         intervalMs = intervalMs / 2;
-        timerChange();
       }}
     >
       <img class="size-6" src={icons.accelerate} alt="accelerate" />
@@ -457,12 +455,10 @@
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap"
       onclick={() => {
         if (isProgress) {
-          clearInterval(timerId);
+          timer = "stopped";
           sendEvent("pause");
         } else {
-          timerId = setInterval(() => {
-            sendEvent("progress");
-          }, intervalMs);
+          timer = "running";
           sendEvent("play");
         }
         isProgress = !isProgress;
@@ -485,7 +481,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        clearInterval(timerId);
+        timer = "stopped";
         sendEvent("pause");
         sendEvent("save_board");
       }}
@@ -497,7 +493,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        clearInterval(timerId);
+        timer = "stopped";
         sendEvent("pause");
         handleLoad();
       }}
@@ -509,7 +505,8 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        clearInterval(timerId);
+        timer = "stopped";
+        sendEvent("pause");
         sendEvent("board_reset");
       }}
     >
@@ -520,7 +517,8 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        clearInterval(timerId);
+        timer = "stopped";
+        sendEvent("pause");
         sendEvent("board_randomize");
       }}
     >
@@ -534,8 +532,8 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         appliedCode = editingCode;
-        clearInterval(timerId);
         isProgress = false;
+        timer = "stopped";
       }}
     >
       {isJapanese ? "コードを適用" : "Apply Code"}
