@@ -49,7 +49,13 @@ function renderBoard() {
       td.style.padding = "0";
       const button = document.createElement("button");
       button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
-      button.style.border = "0.5px solid black";
+      // ボードが大きいときは border をつけない
+      if (boardSize >= 50) {
+        button.style.border = "none";
+        table.style.border = "1px solid black";
+      } else {
+        button.style.border = "0.5px solid black";
+      }
       button.style.width = `${cellSize}px`;
       button.style.height = `${cellSize}px`;
       button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
