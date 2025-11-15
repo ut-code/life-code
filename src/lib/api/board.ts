@@ -1,3 +1,5 @@
+import { toast } from "$lib/models/ToastStore.svelte";
+
 export async function saveBoard(data: { board: number[][]; name: string }, isJapanese: boolean) {
   try {
     const response = await fetch("/api/board", {
@@ -13,16 +15,16 @@ export async function saveBoard(data: { board: number[][]; name: string }, isJap
     }
 
     if (isJapanese) {
-      alert("盤面を保存しました！");
+      toast.show("盤面を保存しました！", "success");
     } else {
-      alert("Board saved!");
+      toast.show("Board saved!", "success");
     }
   } catch (err) {
     console.error("Save Error:", err);
     if (isJapanese) {
-      alert("保存に失敗しました。");
+      toast.show("保存に失敗しました。", "error");
     } else {
-      alert("Failed to save.");
+      toast.show("Failed to save.", "error");
     }
   }
 }
@@ -52,9 +54,9 @@ export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem
   } catch (err) {
     console.error("Load error", err);
     if (isJapanese) {
-      alert("読み込みに失敗しました。");
+      toast.show("読み込みに失敗しました。", "error");
     } else {
-      alert("Failed to load.");
+      toast.show("Failed to load.", "error");
     }
   }
 }
@@ -80,9 +82,9 @@ export async function loadBoardById(
   } catch (err) {
     console.error("Load error", err);
     if (isJapanese) {
-      alert("読み込みに失敗しました。");
+      toast.show("読み込みに失敗しました。", "error");
     } else {
-      alert("Failed to load.");
+      toast.show("Failed to load.", "error");
     }
   }
 }

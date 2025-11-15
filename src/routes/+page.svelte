@@ -9,6 +9,7 @@
   import { CodeManager } from "$lib/models/CodeManager.svelte";
   import BoardModals from "$lib/components/BoardModals.svelte";
   import CodeModals from "$lib/components/CodeModals.svelte";
+  import { toast } from "$lib/models/ToastStore.svelte";
   import CodeMirror from "svelte-codemirror-editor";
   import { javascript } from "@codemirror/lang-javascript";
   import { oneDark } from "@codemirror/theme-one-dark";
@@ -32,6 +33,16 @@
   const boardManager = new BoardManager();
   const codeManager = new CodeManager();
 
+  let disabledTemplates: { [key: string]: boolean } = $derived.by(() => {
+    const newDisabledState: { [key: string]: boolean } = {};
+    for (const key in patterns) {
+      const patternName = key as keyof typeof patterns;
+      const patternData = patterns[patternName];
+      newDisabledState[patternName] = sizeValue < (patternData.minBoardSize || 0);
+    }
+    return newDisabledState;
+  });
+
   let timer: "running" | "stopped" = $state("stopped");
   let intervalMs = $state(1000);
   $effect(() => {
@@ -45,7 +56,6 @@
   type OngoingEvent =
     | "play"
     | "pause"
-    | "state_update"
     | "board_reset"
     | "board_randomize"
     | "place_template"
@@ -69,10 +79,11 @@
         break;
       }
       case "Size shortage": {
-        alert(
+        toast.show(
           isJapanese
             ? "盤面からはみ出してしまうため、キャンセルしました"
             : "This action was canceled because it would have extended beyond the board.",
+          "error",
         );
         break;
       }
@@ -101,7 +112,6 @@
   async function onBoardSelect(id: number) {
     const board = await boardManager.load(id, isJapanese);
     if (board) {
-      sizeValue = board.length;
       sendEvent("apply_board", board);
     }
   }
@@ -169,31 +179,27 @@
   <div class="bg-base-200 shadow-lg p-4 h-48 w-full overflow-x-auto">
     <div class="flex gap-4">
       {#each Object.keys(patterns) as (keyof typeof patterns)[] as patternName (patternName)}
-        <div class="text-center flex-shrink-0">
+        <div
+          class="text-center flex-shrink-0"
+          style:opacity={disabledTemplates[patternName] ? 0.3 : 1}
+        >
           <p class="font-bold mb-2">
             {isJapanese ? patterns[patternName].names.ja : patterns[patternName].names.en}
           </p>
           <button
             class="btn overflow-hidden p-0 w-24 h-24"
             onclick={() => {
-              sendEvent("request_sync");
-
-              const patternData = patterns[patternName];
-              const patternShape = patternData.shape;
-
-              if (sizeValue < (patternData.minBoardSize || 0)) {
-                if (isJapanese) {
-                  alert(
-                    `このパターンには ${patternData.minBoardSize}x${patternData.minBoardSize} 以上の盤面が必要です`,
-                  );
-                } else {
-                  alert(
-                    `This pattern requires a board size of at least ${patternData.minBoardSize}x${patternData.minBoardSize}.`,
-                  );
-                }
-
+              if (disabledTemplates[patternName]) {
+                toast.show(
+                  isJapanese
+                    ? `このパターンには ${patterns[patternName].minBoardSize}x${patterns[patternName].minBoardSize} 以上の盤面が必要です`
+                    : `This pattern requires a board size of at least ${patterns[patternName].minBoardSize}x${patterns[patternName].minBoardSize}.`,
+                  "error",
+                );
                 return;
               }
+              const patternData = patterns[patternName];
+              const patternShape = patternData.shape;
               bottomDrawerOpen = false;
               sendEvent("place_template", patternShape);
             }}
@@ -253,7 +259,7 @@
       class="w-[80%] h-[90%] rounded-lg mx-auto my-5 bg-white shadow-lg"
       onload={() => {
         setTimeout(() => {
-          sendEvent("state_update");
+          sendEvent("request_sync");
           console.log("generationFigure onload:", generationFigure);
         }, 50);
       }}
@@ -283,7 +289,7 @@
   <!-- Left Section -->
   <div class="flex items-center">
     <button
-      class="btn rounded-none h-12 justify-start"
+      class="btn rounded-none h-12 justify-start w-30"
       onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
     >
       {#if bottomDrawerOpen}
@@ -295,8 +301,8 @@
       {/if}
     </button>
 
-    <div class="font-bold text-black ml-4">
-      {isJapanese ? "第" + generationFigure + "世代" : "Generation:" + generationFigure}
+    <div class="font-bold text-black ml-4 w-25">
+      {isJapanese ? "世代数:" + generationFigure : "Generation:" + generationFigure}
     </div>
   </div>
 
@@ -329,16 +335,12 @@
       <img class="size-6" src={icons.accelerate} alt="accelerate" />
     </button>
 
-    <div class="font-bold text-black ml-2">
+    <div class="font-bold text-black ml-2 w-25">
       {isJapanese ? "現在の速度" : "Current speed"}: x{1000 / intervalMs}
     </div>
 
     <div class="w-px bg-gray-400 h-6 mx-4"></div>
     <!-- Separator -->
-
-    <button class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]">
-      <img class="size-6" src={icons.LeftArrow} alt="Left Arrow" />
-    </button>
 
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap"
@@ -356,10 +358,6 @@
       <input type="checkbox" bind:checked={isProgress} />
       <img class="size-6 swap-on" src={icons.Pause} alt="Pause" />
       <img class="size-6 swap-off" src={icons.Play} alt="Play" />
-    </button>
-
-    <button class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]">
-      <img class="size-6" src={icons.RightArrow} alt="Right Arrow" />
     </button>
   </div>
 
@@ -418,7 +416,10 @@
     <!-- Separator -->
     <div class="font-bold text-black">{isJapanese ? "コード" : "Code"}:</div>
     <button
-      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      class={[
+        "btn text-black",
+        editingCode === appliedCode ? "btn-ghost hover:bg-[rgb(220,220,220)]" : "btn-success",
+      ]}
       onclick={() => {
         appliedCode = editingCode;
         isProgress = false;

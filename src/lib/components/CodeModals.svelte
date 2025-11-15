@@ -37,7 +37,7 @@
         >
         <button
           type="submit"
-          class="btn btn-primary"
+          class="btn btn-success text-black"
           onclick={() => manager.save(isJapanese)}
           disabled={!manager.saveState.saving}
         >
@@ -77,7 +77,10 @@
                 <td>{item.name}</td>
                 <td>{new Date(item.createdAt).toLocaleString(isJapanese ? "ja-JP" : "en-US")}</td>
                 <td class="text-right">
-                  <button class="btn btn-sm btn-primary" onclick={() => onSelect(item.id)}>
+                  <button
+                    class="btn btn-sm btn-success text-black"
+                    onclick={() => onSelect(item.id)}
+                  >
                     {isJapanese ? "ロード" : "Load"}
                   </button>
                 </td>
