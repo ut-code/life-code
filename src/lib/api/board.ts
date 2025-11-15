@@ -1,6 +1,9 @@
 import { toast } from "$lib/models/ToastStore.svelte";
 
-export async function saveBoard(data: { board: number[][]; name: string }, isJapanese: boolean) {
+export async function saveBoard(
+  data: { board: number[][]; name: string; code: string },
+  isJapanese: boolean,
+) {
   try {
     const response = await fetch("/api/board", {
       method: "POST",
@@ -61,10 +64,15 @@ export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem
   }
 }
 
+export type LoadedBoardData = {
+  board: number[][];
+  code: string;
+};
+
 export async function loadBoardById(
   id: number,
   isJapanese: boolean,
-): Promise<number[][] | undefined> {
+): Promise<LoadedBoardData | undefined> {
   try {
     const response = await fetch(`/api/board?id=${id}`);
 
@@ -78,7 +86,7 @@ export async function loadBoardById(
 
     const loadedBoard = await response.json();
 
-    return loadedBoard as number[][];
+    return loadedBoard as LoadedBoardData;
   } catch (err) {
     console.error("Load error", err);
     if (isJapanese) {

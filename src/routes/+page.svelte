@@ -88,7 +88,7 @@
         break;
       }
       case "save_board": {
-        boardManager.openSaveModal(event.data.data as number[][]);
+        boardManager.openSaveModal(event.data.data as number[][], appliedCode as string);
         break;
       }
       default: {
@@ -110,9 +110,11 @@
   }
 
   async function onBoardSelect(id: number) {
-    const board = await boardManager.load(id, isJapanese);
-    if (board) {
-      sendEvent("apply_board", board);
+    const data = await boardManager.load(id, isJapanese);
+    if (data) {
+      editingCode = data.code;
+      appliedCode = data.code;
+      sendEvent("apply_board", data.board);
     }
   }
 
