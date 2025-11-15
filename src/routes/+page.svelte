@@ -22,13 +22,22 @@
   let isJapanese = $state(true);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
-  let disabledTemplates = $state<{ [key: string]: boolean }>({});
 
   let generationFigure = $state(0);
   let sizeValue = $state(20);
 
   const boardManager = new BoardManager();
   const codeManager = new CodeManager();
+
+  let disabledTemplates: { [key: string]: boolean } = $derived.by(() => {
+    const newDisabledState: { [key: string]: boolean } = {};
+    for (const key in patterns) {
+      const patternName = key as keyof typeof patterns;
+      const patternData = patterns[patternName];
+      newDisabledState[patternName] = sizeValue < (patternData.minBoardSize || 0);
+    }
+    return newDisabledState;
+  });
 
   let timer: "running" | "stopped" = $state("stopped");
   let intervalMs = $state(1000);
@@ -43,7 +52,6 @@
   type OngoingEvent =
     | "play"
     | "pause"
-    | "state_update"
     | "board_reset"
     | "board_randomize"
     | "place_template"
@@ -64,9 +72,6 @@
         const data = event.data.data as { generationFigure: number; boardSize: number };
         generationFigure = data.generationFigure;
         sizeValue = data.boardSize;
-        if (resolveSync) {
-          resolveSync();
-        }
         break;
       }
       case "Size shortage": {
@@ -112,26 +117,6 @@
     if (code) {
       editingCode = code;
     }
-  }
-
-  let resolveSync: (value: void | PromiseLike<void>) => void;
-  function waitForSync(): Promise<void> {
-    return new Promise((resolve) => {
-      resolveSync = resolve;
-    });
-  }
-
-  async function updateTemplateDisability() {
-    sendEvent("request_sync");
-    await waitForSync();
-
-    const newDisabledState: { [key: string]: boolean } = {};
-    for (const key in patterns) {
-      const patternName = key as keyof typeof patterns;
-      const patternData = patterns[patternName];
-      newDisabledState[patternName] = sizeValue < (patternData.minBoardSize || 0);
-    }
-    disabledTemplates = newDisabledState;
   }
 </script>
 
@@ -185,7 +170,7 @@
           </p>
           <button
             class="btn overflow-hidden p-0 w-24 h-24"
-            onclick={async () => {
+            onclick={() => {
               if (disabledTemplates[patternName]) {
                 toast.show(
                   isJapanese
@@ -254,10 +239,9 @@
       title="Preview"
       sandbox="allow-scripts"
       class="w-[80%] h-[90%] rounded-lg mx-auto my-5 bg-white shadow-lg"
-      onload={async () => {
-        setTimeout(async () => {
-          sendEvent("state_update");
-          await updateTemplateDisability();
+      onload={() => {
+        setTimeout(() => {
+          sendEvent("request_sync");
           console.log("generationFigure onload:", generationFigure);
         }, 50);
       }}
@@ -410,9 +394,10 @@
     <!-- Separator -->
     <div class="font-bold text-black">{isJapanese ? "コード" : "Code"}:</div>
     <button
-      class="btn {editingCode === appliedCode
-        ? 'btn-ghost hover:bg-[rgb(220,220,220)] text-black'
-        : 'btn-success text-black'}"
+      class={[
+        "btn text-black",
+        editingCode === appliedCode ? "btn-ghost hover:bg-[rgb(220,220,220)]" : "btn-success",
+      ]}
       onclick={() => {
         appliedCode = editingCode;
         isProgress = false;
