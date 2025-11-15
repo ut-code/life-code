@@ -10,6 +10,10 @@
   import BoardModals from "$lib/components/BoardModals.svelte";
   import CodeModals from "$lib/components/CodeModals.svelte";
   import { toast } from "$lib/models/ToastStore.svelte";
+  import CodeMirror from "svelte-codemirror-editor";
+  import { javascript } from "@codemirror/lang-javascript";
+  import { oneDark } from "@codemirror/theme-one-dark";
+  import { EditorView } from "@codemirror/view";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
@@ -118,6 +122,20 @@
       editingCode = code;
     }
   }
+
+  const editorTheme = EditorView.theme({
+    "&": {
+      height: "100%",
+      maxHeight: "100%",
+    },
+    ".cm-scroller": {
+      overflow: "auto",
+      maxHeight: "100%",
+    },
+    ".cm-content, .cm-gutter": {
+      minHeight: "100%",
+    },
+  });
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -254,10 +272,14 @@
       showEditor ? "basis-[40%] opacity-100" : "basis-0 opacity-0",
     ]}
   >
-    <textarea
-      bind:value={editingCode}
-      class="w-full h-full border-none p-4 font-mono bg-black text-[#0f0]"
-    ></textarea>
+    <div class="w-full h-full overflow-y-auto">
+      <CodeMirror
+        bind:value={editingCode}
+        lang={javascript()}
+        theme={oneDark}
+        extensions={[editorTheme]}
+      />
+    </div>
   </div>
 </div>
 
