@@ -3,7 +3,7 @@
 let timer = "stop";
 let generationFigure = 0;
 let isDragging = false;
-let dragMode = false; // true: 黒にする, false: 白にする
+let dragMode = 0; // 1: 黒にする, 0: 白にする
 let isPlacingTemplate = false;
 let patternShape = [];
 let patternHeight = 0;
@@ -70,7 +70,7 @@ function renderBoard() {
               for (let c = 0; c < patternWidth; c++) {
                 const boardRow = i + r;
                 const boardCol = j + c;
-                board[boardRow][boardCol] = patternShape[r][c] === 1;
+                board[boardRow][boardCol] = patternShape[r][c];
               }
             }
             rerender();
@@ -239,7 +239,7 @@ on.pause = () => {
 
 on.board_reset = () => {
   //すべて白にBoardを変更
-  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => 0));
   renderBoard();
   generationChange(0);
 };
@@ -247,7 +247,7 @@ on.board_reset = () => {
 on.board_randomize = () => {
   //白黒ランダムにBoardを変更
   board = Array.from({ length: boardSize }, () =>
-    Array.from({ length: boardSize }, () => Math.random() > 0.5),
+    Array.from({ length: boardSize }, () => (Math.random() > 0.5 ? 1 : 0)),
   );
   renderBoard();
   generationChange(0);

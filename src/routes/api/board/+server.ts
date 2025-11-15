@@ -6,6 +6,7 @@ import * as v from "valibot";
 const BoardSchema = v.object({
   board: v.array(v.array(v.number())),
   name: v.pipe(v.string(), v.minLength(1, "盤面名は必須です。")),
+  code: v.string(),
 });
 
 export async function POST({ request }) {
@@ -23,14 +24,15 @@ export async function POST({ request }) {
     return json({ message: "無効なリクエストデータです。" }, { status: 400 });
   }
 
-  const { board, name } = result.output;
+  const { board, name, code } = result.output;
   const preview = createBoardPreview(board);
 
   const newState = await prisma.board.create({
     data: {
-      data: board,
+      board: board,
       name: name,
       preview: preview,
+      code: code,
     },
   });
 
@@ -49,14 +51,14 @@ export async function GET({ url }) {
 
     const state = await prisma.board.findUnique({
       where: { id: id },
-      select: { data: true },
+      select: { board: true, code: true },
     });
 
     if (!state) {
       return json({ message: `ID: ${id} の盤面は見つかりません。` }, { status: 404 });
     }
 
-    return json(state.data);
+    return json(state);
   } else {
     //IDが指定されなかった場合、全ての盤面のリストを返す
     const allStates = await prisma.board.findMany({
