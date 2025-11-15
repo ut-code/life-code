@@ -33,7 +33,7 @@ export type BoardListItem = {
   id: number;
   name: string;
   createdAt: string;
-  preview: boolean[][];
+  preview: number[][];
 };
 
 export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem[] | undefined> {
@@ -64,7 +64,7 @@ export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem
 export async function loadBoardById(
   id: number,
   isJapanese: boolean,
-): Promise<boolean[][] | undefined> {
+): Promise<number[][] | undefined> {
   try {
     const response = await fetch(`/api/board?id=${id}`);
 
@@ -78,7 +78,7 @@ export async function loadBoardById(
 
     const loadedBoard = await response.json();
 
-    return loadedBoard as boolean[][];
+    return loadedBoard as number[][];
   } catch (err) {
     console.error("Load error", err);
     if (isJapanese) {

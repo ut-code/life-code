@@ -3,7 +3,7 @@ import { saveBoard, fetchBoardList, loadBoardById, type BoardListItem } from "$l
 
 type SaveState =
   | { saving: false }
-  | { saving: true; data: boolean[][]; name: string; preview: boolean[][] };
+  | { saving: true; data: number[][]; name: string; preview: number[][] };
 
 type LoadState =
   | { state: "closed" }
@@ -16,7 +16,7 @@ export class BoardManager {
 
   constructor() {}
 
-  openSaveModal(board: boolean[][]) {
+  openSaveModal(board: number[][]) {
     const preview = createBoardPreview(board);
     this.saveState = { saving: true, data: board, name: "", preview: preview };
   }
@@ -46,7 +46,7 @@ export class BoardManager {
     this.loadState = { state: "closed" };
   }
 
-  async load(id: number, isJapanese: boolean): Promise<boolean[][] | undefined> {
+  async load(id: number, isJapanese: boolean): Promise<number[][] | undefined> {
     this.closeLoadModal();
     return await loadBoardById(id, isJapanese);
   }

@@ -4,12 +4,12 @@ const PREVIEW_SIZE = 20;
  * 任意のサイズの盤面データから、中央 20x20 のプレビューを生成します。
  * 20x20 に満たない場合は、中央に配置し、周囲を false (空白) で埋めます。
  */
-export function createBoardPreview(boardData: boolean[][]): boolean[][] {
+export function createBoardPreview(boardData: number[][]): number[][] {
   const boardHeight = boardData.length;
   const boardWidth = boardData[0]?.length || 0;
 
-  const finalPreview: boolean[][] = Array.from({ length: PREVIEW_SIZE }, () =>
-    Array(PREVIEW_SIZE).fill(false),
+  const finalPreview: number[][] = Array.from({ length: PREVIEW_SIZE }, () =>
+    Array(PREVIEW_SIZE).fill(0),
   );
 
   const sourceStartRow = Math.max(0, Math.floor((boardHeight - PREVIEW_SIZE) / 2));

@@ -18,23 +18,24 @@ const cellSize = 600 / boardSize; //セルの大きさ(px)
 function isNextAlive(around, self) {
   // 自身が生きている & 周囲が 2 か 3 で生存
   if (self && 2 <= around && around <= 3) {
-    return true;
+    return self;
   }
   // 自身が死んでいる & 周囲が 3 で誕生
   if (!self && around === 3) {
-    return true;
+    return 1;
   }
-  return false;
+  return 0;
 }
 
 // cellの状態に応じた色を返す関数
 function getStyle(cell) {
-  // cellがtrueなら黒、falseなら白を返す
-  return cell ? "black" : "white";
+  if (cell === 0) return "white";
+  // cellの値に応じて色を返す場合はここに追加
+  return "black"; // デフォルトは黒
 }
 
 //Boardの初期化
-let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => false));
+let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => 0));
 const table = document.getElementById("game-board");
 
 //盤面をBoardに従って変更する関数達(Boardを変更したら実行する)
@@ -209,7 +210,7 @@ function progressBoard() {
       for (let ii = 0; ii < tate.length; ii++) {
         for (let jj = 0; jj < yoko.length; jj++) {
           if (tate[ii] !== 0 || yoko[jj] !== 0) {
-            around += board[i + tate[ii]][j + yoko[jj]] ? 1 : 0;
+            around += board[i + tate[ii]][j + yoko[jj]] !== 0 ? 1 : 0;
           }
         }
       }

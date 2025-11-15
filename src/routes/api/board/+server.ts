@@ -4,7 +4,7 @@ import { createBoardPreview } from "@/lib/board-preview.js";
 import * as v from "valibot";
 
 const BoardSchema = v.object({
-  board: v.array(v.array(v.boolean())),
+  board: v.array(v.array(v.number())),
   name: v.pipe(v.string(), v.minLength(1, "盤面名は必須です。")),
 });
 
