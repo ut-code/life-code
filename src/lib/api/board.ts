@@ -1,6 +1,6 @@
 import { toast } from "$lib/models/ToastStore.svelte";
 
-export async function saveBoard(data: { board: boolean[][]; name: string }, isJapanese: boolean) {
+export async function saveBoard(data: { board: number[][]; name: string }, isJapanese: boolean) {
   try {
     const response = await fetch("/api/board", {
       method: "POST",
