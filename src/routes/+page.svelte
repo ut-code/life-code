@@ -77,7 +77,7 @@
         break;
       }
       case "save_board": {
-        boardManager.openSaveModal(event.data.data as boolean[][]);
+        boardManager.openSaveModal(event.data.data as number[][]);
         break;
       }
       default: {
