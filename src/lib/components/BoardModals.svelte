@@ -10,6 +10,22 @@
     isJapanese: boolean;
     onSelect: (id: number) => void;
   } = $props();
+
+  let showConfirmation = $state(false);
+  let selectedBoardId = $state<number | null>(null);
+
+  function handleLoadClick(id: number) {
+    selectedBoardId = id;
+    showConfirmation = true;
+  }
+
+  function handleConfirmLoad() {
+    if (selectedBoardId !== null) {
+      onSelect(selectedBoardId);
+    }
+    showConfirmation = false;
+    selectedBoardId = null;
+  }
 </script>
 
 <dialog class="modal" open={manager.saveState.saving}>
@@ -105,7 +121,7 @@
                 <td class="text-right">
                   <button
                     class="btn btn-sm btn-success text-black"
-                    onclick={() => onSelect(item.id)}
+                    onclick={() => handleLoadClick(item.id)}
                   >
                     {isJapanese ? "ロード" : "Load"}
                   </button>
@@ -120,6 +136,27 @@
     <div class="modal-action">
       <button class="btn" onclick={() => manager.closeLoadModal()}>
         {isJapanese ? "閉じる" : "Close"}
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal modal-middle" open={showConfirmation}>
+  <div class="modal-box">
+    <h3 class="font-bold text-lg">
+      {isJapanese ? "警告" : "Caution"}
+    </h3>
+    <p class="py-4">
+      {isJapanese
+        ? "盤面に加え、コードも上書きされます。よろしいですか？"
+        : "The current board and **CODE** will be overwritten. Are you sure?"}
+    </p>
+    <div class="modal-action">
+      <button class="btn btn-error" onclick={() => (showConfirmation = false)}>
+        {isJapanese ? "いいえ" : "No"}
+      </button>
+      <button class="btn btn-success text-black" onclick={handleConfirmLoad}>
+        {isJapanese ? "はい" : "Yes"}
       </button>
     </div>
   </div>
