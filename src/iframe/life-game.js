@@ -13,24 +13,38 @@ let previewCells = [];
 //変数設定
 let boardSize = 20; //盤面の大きさ(20x20)
 const cellSize = 600 / boardSize; //セルの大きさ(px)
+const maxLifespan = 2; // セルの最大寿命
 
-// around: 周囲の生きたセル数 self: 自身が生きているかどうか
-function isNextAlive(around, self) {
-  // 自身が生きている & 周囲が 2 か 3 で生存
-  if (self && 2 <= around && around <= 3) {
-    return self;
+// around: 周囲の生きたセル数, currentLifespan: 現在の寿命
+function getNextLifespan(around, currentLifespan) {
+  // セルが生きている場合
+  if (currentLifespan > 0) {
+    // 周囲が 2 か 3 なら寿命を維持（減らさない）
+    if (2 <= around && around <= 3) {
+      return currentLifespan;
+    }
+    // 条件を満たさない場合は寿命を減らす
+    return currentLifespan - 1;
   }
-  // 自身が死んでいる & 周囲が 3 で誕生
-  if (!self && around === 3) {
-    return 1;
+
+  // セルが死んでいる場合
+  // 周囲が 3 なら誕生
+  if (around === 3) {
+    return maxLifespan;
   }
+
   return 0;
 }
 
 // cellの状態に応じた色を返す関数
-function getStyle(cell) {
+function getStyle(cell, lifespan) {
   if (cell === 0) return "white";
+
   // cellの値に応じて色を返す場合はここに追加
+  if (lifespan === 2) return "black";
+  if (lifespan === 1) return "gray";
+  if (lifespan === 0) return "white";
+
   return "black"; // デフォルトは黒
 }
 
@@ -49,7 +63,9 @@ function renderBoard() {
       const td = document.createElement("td");
       td.style.padding = "0";
       const button = document.createElement("button");
-      button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
+      button.lifespan = board[i][j] ? maxLifespan : 0; // セルの寿命を設定
+      button.style.backgroundColor = getStyle(board[i][j], button.lifespan); //Boardの対応する値によって色を変更
+
       // ボードが大きいときは border をつけない
       if (boardSize >= 50) {
         button.style.border = "none";
@@ -61,6 +77,7 @@ function renderBoard() {
       button.style.height = `${cellSize}px`;
       button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
       button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
+
       button.onclick = () => {
         if (isPlacingTemplate) {
           clearPreview();
@@ -71,6 +88,11 @@ function renderBoard() {
                 const boardRow = i + r;
                 const boardCol = j + c;
                 board[boardRow][boardCol] = patternShape[r][c];
+                // パターン配置時に寿命を設定
+                if (patternShape[r][c]) {
+                  const btn = table.children[boardRow].children[boardCol].children[0];
+                  btn.lifespan = maxLifespan;
+                }
               }
             }
             rerender();
@@ -93,13 +115,15 @@ function renderBoard() {
           isDragging = true;
           board[i][j] = !board[i][j];
           dragMode = board[i][j];
-          button.style.backgroundColor = board[i][j] ? "black" : "white";
+          button.lifespan = board[i][j] ? maxLifespan : 0;
+          button.style.backgroundColor = getStyle(board[i][j], button.lifespan);
         }
       };
       button.onmouseenter = () => {
         if (isDragging && timer === "stop" && board[i][j] !== dragMode && !isPlacingTemplate) {
           board[i][j] = dragMode;
-          button.style.backgroundColor = board[i][j] ? "black" : "white";
+          button.lifespan = board[i][j] ? maxLifespan : 0;
+          button.style.backgroundColor = getStyle(board[i][j], button.lifespan);
         }
         if (isPlacingTemplate) {
           drawPreview(i, j);
@@ -138,7 +162,8 @@ function drawPreview(row, col) {
 function clearPreview() {
   previewCells.forEach((cellPos) => {
     const cell = table.rows[cellPos.row].cells[cellPos.col].firstChild;
-    cell.style.backgroundColor = board[cellPos.row][cellPos.col] ? "black" : "white";
+    const lifespan = cell.lifespan || 0;
+    cell.style.backgroundColor = getStyle(board[cellPos.row][cellPos.col], lifespan);
   });
   previewCells = [];
 }
@@ -151,7 +176,7 @@ function rerender() {
 
       // 色の更新
       const currentCellColor = button.style.backgroundColor;
-      const expectedCellColor = getStyle(board[i][j]);
+      const expectedCellColor = getStyle(board[i][j], button.lifespan);
       if (currentCellColor !== expectedCellColor) {
         button.style.backgroundColor = expectedCellColor;
       }
@@ -187,7 +212,10 @@ function generationChange(num) {
 }
 
 function progressBoard() {
-  const newBoard = structuredClone(board);
+  const newLifespans = Array(boardSize)
+    .fill(0)
+    .map(() => Array(boardSize).fill(0));
+
   for (let i = 0; i < boardSize; i++) {
     for (let j = 0; j < boardSize; j++) {
       //周囲のマスに黒マスが何個あるかを計算(aroundに格納)↓
@@ -210,15 +238,29 @@ function progressBoard() {
       for (let ii = 0; ii < tate.length; ii++) {
         for (let jj = 0; jj < yoko.length; jj++) {
           if (tate[ii] !== 0 || yoko[jj] !== 0) {
-            around += board[i + tate[ii]][j + yoko[jj]] !== 0 ? 1 : 0;
+            const neighborButton = table.children[i + tate[ii]].children[j + yoko[jj]].children[0];
+            around += neighborButton.lifespan > 0 ? 1 : 0;
           }
         }
       }
       //↑周囲のマスに黒マスが何個あるかを計算(aroundに格納)
-      newBoard[i][j] = isNextAlive(around, board[i][j]);
+
+      // 前の世代の寿命をボタンから取得し、新しい寿命を計算して保存
+      const button = table.children[i].children[j].children[0];
+      const currentLifespan = button.lifespan;
+      newLifespans[i][j] = getNextLifespan(around, currentLifespan);
     }
   }
-  board = newBoard;
+
+  // 新しい寿命を適用
+  for (let i = 0; i < boardSize; i++) {
+    for (let j = 0; j < boardSize; j++) {
+      const button = table.children[i].children[j].children[0];
+      button.lifespan = newLifespans[i][j];
+      board[i][j] = button.lifespan > 0 ? 1 : 0;
+    }
+  }
+
   generationChange(generationFigure + 1);
   rerender();
 }
