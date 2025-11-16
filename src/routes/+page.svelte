@@ -254,7 +254,7 @@
 >
   <div class="bg-[rgb(220,220,220)] shadow-lg p-4 h-30 w-full overflow-x-auto">
     <div class="flex gap-4">
-      {#each Object.entries(rulesExplanation) as [ruleName, description]}
+      {#each Object.entries(rulesExplanation) as [ruleName, description] (ruleName)}
         <button
           class="card bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer text-left flex-shrink-0 w-64"
           onclick={() => {
