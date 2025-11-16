@@ -16,14 +16,19 @@ const cellSize = 600 / boardSize; //セルの大きさ(px)
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
-  // 自身が生きている & 周囲が 2 か 3 で生存
+  // 自身が生きている & 周囲が 2 か 3 で生存 50%の確率でこのルールに従う
   if (self && 2 <= around && around <= 3) {
-    return self;
+    return Math.random() > 0.5 ? self : !self;
   }
-  // 自身が死んでいる & 周囲が 3 で誕生
+  // 自身が生きている & 周囲が2,3以外で死亡 50%の確率でこのルールに従う
+  if (self && (around < 2 || around > 3)) {
+    return Math.random() > 0.5 ? !self : self;
+  }
+  // 自身が死んでいる & 周囲が 3 で誕生 50%の確率でこのルールに従う
   if (!self && around === 3) {
-    return 1;
+    return Math.random() > 0.5 ? 1 : 0;
   }
+  // 自身が死んでいる & 周囲が3以外で死亡のまま
   return 0;
 }
 
