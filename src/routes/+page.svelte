@@ -3,8 +3,7 @@
   import event from "@/iframe/event.js?raw";
   import lifeGameHTML from "@/iframe/life-game.html?raw";
   import lifeGameJS from "@/iframe/life-game.js?raw";
-  import lifespan from "$lib/assets/life-game-rules/lifespan.js?raw";
-  import probabilistics from "$lib/assets/life-game-rules/probabilistics.js?raw";
+  import { rulesExplanation, type RuleExplanation } from "$lib/rules-explanation";
   import patterns from "$lib/board-templates";
   import * as icons from "$lib/icons/index.ts";
   import { BoardManager } from "$lib/models/BoardManager.svelte";
@@ -142,28 +141,7 @@
     },
   });
 
-  const rulesExplanation = {
-    lifespan: {
-      code: lifespan,
-      ja: "それぞれのいのちに寿命を設定できます",
-      en: "Set lifespan for each cell",
-    },
-    probabilistics: {
-      code: probabilistics,
-      ja: "生死に確率を導入できます",
-      en: "Introduce probability to life and death",
-    },
-  };
-
-  type RuleExplanation = {
-    code: string;
-    ja: string;
-    en: string;
-  };
-
-  function selectRule(ruleName: keyof typeof rulesExplanation) {
-    console.log(`Selected rule: ${ruleName}`);
-    const rule = rulesExplanation[ruleName] as RuleExplanation;
+  function selectRule(rule: RuleExplanation) {
     editingCode = rule.code;
     appliedCode = rule.code;
   }
@@ -258,7 +236,7 @@
         <button
           class="card bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer text-left flex-shrink-0 w-64"
           onclick={() => {
-            selectRule(ruleName as keyof typeof rulesExplanation);
+            selectRule(description as RuleExplanation);
             ruleDrawerOpen = false;
           }}
         >
@@ -522,9 +500,9 @@
       {#if ruleDrawerOpen}
         ▼
       {:else if isJapanese}
-        ▲ 追加ルール
+        ▲ ルール選択
       {:else}
-        ▲ Additional Rules
+        ▲ Select Rule
       {/if}
     </button>
   </div>
