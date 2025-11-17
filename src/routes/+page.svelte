@@ -236,7 +236,7 @@
         <button
           class="card bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer text-left flex-shrink-0 w-64"
           onclick={() => {
-            selectRule(ruleData.name as RuleExplanation);
+            selectRule(ruleData as RuleExplanation);
             ruleDrawerOpen = false;
           }}
         >
