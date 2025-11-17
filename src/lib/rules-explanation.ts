@@ -2,11 +2,16 @@ import lifespan from "$lib/assets/life-game-rules/lifespan.js?raw";
 import probabilistics from "$lib/assets/life-game-rules/probabilistics.js?raw";
 
 export type RuleExplanation = {
+  name: {
+    ja: string;
+    en: string;
+  };
+  description: {
+    ja: string;
+    en: string;
+  };
   code: string;
-  ja: string;
-  en: string;
 };
-
 export const rulesExplanation = {
   lifespan: {
     name: {
