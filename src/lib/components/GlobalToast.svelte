@@ -14,7 +14,8 @@
 </script>
 
 {#if toast.visible}
-  <div class="toast toast-middle toast-center">
+  <!-- 最前面に配置 -->
+  <div class="toast toast-middle toast-center z-[9999]">
     <div class={`alert ${alertClass} p-3 text-lg`}>
       <div>
         <span>{toast.message}</span>
