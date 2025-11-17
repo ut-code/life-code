@@ -180,7 +180,6 @@ document.addEventListener("mouseup", () => {
 });
 
 renderBoard();
-progressBoard();
 
 function generationChange(num) {
   //現在の世代を表すgenerationFigureを変更し、文章も変更
