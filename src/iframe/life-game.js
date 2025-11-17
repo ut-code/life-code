@@ -82,7 +82,7 @@ function renderBoard() {
               }
             }
             rerender();
-            generationChange(0);
+            // generationChange(0); 別に世代をリセットする必要はない？
             stop();
           } else {
             window.parent.postMessage(
