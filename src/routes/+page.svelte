@@ -3,6 +3,7 @@
   import event from "@/iframe/event.js?raw";
   import lifeGameHTML from "@/iframe/life-game.html?raw";
   import lifeGameJS from "@/iframe/life-game.js?raw";
+  import { rulesExplanation, type RuleExplanation } from "$lib/rules-explanation";
   import patterns from "$lib/board-templates";
   import * as icons from "$lib/icons/index.ts";
   import { BoardManager } from "$lib/models/BoardManager.svelte";
@@ -26,6 +27,7 @@
   let isJapanese = $state(true);
   let resetModalOpen = $state(false);
   let bottomDrawerOpen = $state(false);
+  let ruleDrawerOpen = $state(false);
 
   let generationFigure = $state(0);
   let sizeValue = $state(20);
@@ -138,6 +140,11 @@
       minHeight: "100%",
     },
   });
+
+  function selectRule(rule: RuleExplanation) {
+    editingCode = rule.code;
+    appliedCode = rule.code;
+  }
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -218,6 +225,34 @@
   </div>
 </div>
 
+<div
+  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 pb-12"
+  class:translate-y-full={!ruleDrawerOpen}
+  class:translate-y-0={ruleDrawerOpen}
+>
+  <div class="bg-[rgb(220,220,220)] shadow-lg p-4 h-30 w-full overflow-x-auto">
+    <div class="flex gap-4">
+      {#each Object.entries(rulesExplanation) as [ruleName, ruleData] (ruleName)}
+        <button
+          class="card bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer text-left flex-shrink-0 w-64"
+          onclick={() => {
+            selectRule(ruleData.name as RuleExplanation);
+            ruleDrawerOpen = false;
+          }}
+        >
+          <div class="card-body p-4">
+            <h3 class="card-title text-lg text-primary">
+              {isJapanese ? ruleData.name.ja : ruleData.name.en}
+            </h3>
+            <p class="text-sm text-base-content">
+              {isJapanese ? ruleData.description.ja : ruleData.description.en}
+            </p>
+          </div>
+        </button>
+      {/each}
+    </div>
+  </div>
+</div>
 <BoardModals manager={boardManager} {isJapanese} onSelect={onBoardSelect} />
 <CodeModals manager={codeManager} {isJapanese} onSelect={onCodeSelect} />
 
@@ -292,7 +327,10 @@
   <div class="flex items-center">
     <button
       class="btn rounded-none h-12 justify-start w-30"
-      onclick={() => (bottomDrawerOpen = !bottomDrawerOpen)}
+      onclick={() => {
+        bottomDrawerOpen = !bottomDrawerOpen;
+        ruleDrawerOpen = false;
+      }}
     >
       {#if bottomDrawerOpen}
         ▼
@@ -451,6 +489,23 @@
       }}
     >
       {isJapanese ? "ロード" : "Load"}
+    </button>
+    <button
+      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
+      onclick={() => {
+        isProgress = false;
+        sendEvent("pause");
+        ruleDrawerOpen = !ruleDrawerOpen;
+        bottomDrawerOpen = false;
+      }}
+    >
+      {#if ruleDrawerOpen}
+        ▼
+      {:else if isJapanese}
+        ▲ ルール選択
+      {:else}
+        ▲ Select Rule
+      {/if}
     </button>
   </div>
 </div>
