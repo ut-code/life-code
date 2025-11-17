@@ -15,7 +15,6 @@
   import { javascript } from "@codemirror/lang-javascript";
   import { oneDark } from "@codemirror/theme-one-dark";
   import { EditorView } from "@codemirror/view";
-  import { is } from "valibot";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
