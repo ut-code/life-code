@@ -40,6 +40,14 @@ const table = document.getElementById("game-board");
 
 //盤面をBoardに従って変更する関数達(Boardを変更したら実行する)
 function renderBoard() {
+  // bodyを中央配置に設定
+  document.body.style.display = "flex";
+  document.body.style.justifyContent = "center";
+  document.body.style.alignItems = "center";
+  document.body.style.minHeight = "100vh";
+  document.body.style.margin = "0";
+  document.body.style.padding = "0";
+
   // 初回の盤面生成
   table.innerHTML = "";
   for (let i = 0; i < boardSize; i++) {
