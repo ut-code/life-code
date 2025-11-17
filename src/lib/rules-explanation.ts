@@ -9,13 +9,25 @@ export type RuleExplanation = {
 
 export const rulesExplanation = {
   lifespan: {
+    name: {
+      ja: "寿命システム",
+      en: "Lifespan system",
+    },
+    description: {
+      ja: "それぞれのいのちに寿命を設定できます",
+      en: "Set lifespan for each cell",
+    },
     code: lifespan,
-    ja: "それぞれのいのちに寿命を設定できます",
-    en: "Set lifespan for each cell",
   },
   probabilistics: {
+    name: {
+      ja: "確率システム",
+      en: "Probabilistic system",
+    },
+    description: {
+      ja: "生死に確率を導入できます",
+      en: "Introduce probability to life and death",
+    },
     code: probabilistics,
-    ja: "生死に確率を導入できます",
-    en: "Introduce probability to life and death",
   },
 };

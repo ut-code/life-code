@@ -15,6 +15,7 @@
   import { javascript } from "@codemirror/lang-javascript";
   import { oneDark } from "@codemirror/theme-one-dark";
   import { EditorView } from "@codemirror/view";
+  import { is } from "valibot";
 
   let editingCode = $state(lifeGameJS);
   let appliedCode = $state(lifeGameJS);
@@ -232,18 +233,20 @@
 >
   <div class="bg-[rgb(220,220,220)] shadow-lg p-4 h-30 w-full overflow-x-auto">
     <div class="flex gap-4">
-      {#each Object.entries(rulesExplanation) as [ruleName, description] (ruleName)}
+      {#each Object.entries(rulesExplanation) as [ruleName, ruleData] (ruleName)}
         <button
           class="card bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer text-left flex-shrink-0 w-64"
           onclick={() => {
-            selectRule(description as RuleExplanation);
+            selectRule(ruleData.name as RuleExplanation);
             ruleDrawerOpen = false;
           }}
         >
           <div class="card-body p-4">
-            <h3 class="card-title text-lg text-primary">{ruleName}</h3>
+            <h3 class="card-title text-lg text-primary">
+              {isJapanese ? ruleData.name.ja : ruleData.name.en}
+            </h3>
             <p class="text-sm text-base-content">
-              {isJapanese ? description.ja : description.en}
+              {isJapanese ? ruleData.description.ja : ruleData.description.en}
             </p>
           </div>
         </button>
