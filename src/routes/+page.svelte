@@ -163,12 +163,22 @@
     <img class="size-6" src={icons.reset} alt="Reset" />
   </button>
 
-  <label class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap mx-5">
+  <label class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-5">
     <input type="checkbox" bind:checked={showEditor} />
     <div class="text-black">
       <img class="size-6" src={icons.CodeBracket} alt="Code Bracket" />
     </div>
   </label>
+
+  <button
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-5"
+    onclick={() => {
+      // ここにチュートリアル・ヘルプを配置 (初起動時に表示もあり)
+      // 他の方法で実装してもよし
+    }}
+  >
+    <img class="size-6" src={icons.questionmark} alt="Info" />
+  </button>
 
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] mx-5"
