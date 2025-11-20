@@ -66,7 +66,14 @@
     | "request_sync"
     | "progress";
 
-  type IncomingEvent = "generation_change" | "sync" | "Size shortage" | "save_board";
+  type IncomingEvent =
+    | "generation_change"
+    | "sync"
+    | "Size shortage"
+    | "save_board"
+    | "Score reset"
+    | "Score loop"
+    | "Score white";
 
   function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
     switch (event.data.type) {
@@ -91,6 +98,38 @@
       }
       case "save_board": {
         boardManager.openSaveModal(event.data.data as number[][], appliedCode as string);
+        break;
+      }
+      case "Score reset": {
+        toast.show(
+          isJapanese
+            ? "盤面が途中で変更されたため得点がリセットされました。スコア:" + event.data.data
+            : "The score has been reset because the board was changed midway through. Score:" +
+                event.data.data,
+          "error",
+        );
+        break;
+      }
+      case "Score loop": {
+        toast.show(
+          isJapanese
+            ? "ループ発生　終了！ スコア:" + event.data.data
+            : "Loop detected! End! Score:" + event.data.data,
+          "info",
+        );
+        timer = "stopped";
+        isProgress = false;
+        break;
+      }
+      case "Score white": {
+        toast.show(
+          isJapanese
+            ? "盤面上に生きているセルがなくなりました　終了！ スコア:" + event.data.data
+            : "All cells on the board have been cleared. Game over! Score:" + event.data.data,
+          "info",
+        );
+        timer = "stopped";
+        isProgress = false;
         break;
       }
       default: {
