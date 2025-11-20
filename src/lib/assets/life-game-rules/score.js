@@ -191,14 +191,10 @@ progressBoard();
 function scoreReset() {
   if (score === 0) return;
   previousBoard = [];
-  window.parent.postMessage(
-    {
-      type: "Score reset",
-      data: score,
-    },
-    "*",
+  showToast(
+    "盤面が途中で変更されたため得点がリセットされました。スコア:" + score,
+    "The score has been reset because the board was changed midway through. Score:" + score,
   );
-
   score = 0;
 }
 
@@ -254,36 +250,25 @@ function progressBoard() {
     if (generationFigure === 0) {
       return;
     }
-    window.parent.postMessage(
-      {
-        type: "Score white",
-        data: score,
-      },
-      "*",
+    showToast(
+      "盤面上に生きているセルがなくなりました　終了！ スコア:" + score,
+      "All cells on the board have been cleared. Game over! Score:" + score,
     );
     stop();
-    timer = "stop";
     previousBoard = [];
   }
 
   // ループ確認
   const newBoardString = JSON.stringify(newBoard);
   if (previousBoard.some((prevBoard) => JSON.stringify(prevBoard) === newBoardString)) {
-    window.parent.postMessage(
-      {
-        type: "Score loop",
-        data: score,
-      },
-      "*",
-    );
+    showToast("ループ発生　終了！ スコア:" + score, "Loop detected! End! Score:" + score);
     stop();
-    timer = "stop";
     previousBoard = [];
   }
 
   let previousLiveCells = board.flat().reduce((sum, cell) => sum + cell, 0);
   let currentLiveCells = newBoard.flat().reduce((sum, cell) => sum + cell, 0);
-  if (timer == "stop") {
+  if (previousBoard.length === 0) {
     score = 0;
   } else {
     score += previousLiveCells > currentLiveCells ? previousLiveCells - currentLiveCells : 0;
@@ -364,3 +349,14 @@ on.apply_board = (newBoard) => {
   stop();
   scoreReset();
 };
+
+function showToast(jMessage, eMessage) {
+  timer = "stop";
+  window.parent.postMessage(
+    {
+      type: "show_toast",
+      data: { japanese: jMessage, english: eMessage },
+    },
+    "*",
+  );
+}
