@@ -10,6 +10,7 @@
   import { CodeManager } from "$lib/models/CodeManager.svelte";
   import BoardModals from "$lib/components/BoardModals.svelte";
   import CodeModals from "$lib/components/CodeModals.svelte";
+  import HelpModal from "$lib/components/HelpModal.svelte";
   import { toast } from "$lib/models/ToastStore.svelte";
   import CodeMirror from "svelte-codemirror-editor";
   import { javascript } from "@codemirror/lang-javascript";
@@ -26,6 +27,7 @@
   let isProgress = $state(false);
   let isJapanese = $state(true);
   let resetModalOpen = $state(false);
+  let helpModalOpen = $state(true);
   let bottomDrawerOpen = $state(false);
   let ruleDrawerOpen = $state(false);
 
@@ -173,8 +175,7 @@
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-5"
     onclick={() => {
-      // ここにチュートリアル・ヘルプを配置 (初起動時に表示もあり)
-      // 他の方法で実装してもよし
+      helpModalOpen = true;
     }}
   >
     <img class="size-6" src={icons.questionmark} alt="Info" />
@@ -263,8 +264,10 @@
     </div>
   </div>
 </div>
+
 <BoardModals manager={boardManager} {isJapanese} onSelect={onBoardSelect} />
 <CodeModals manager={codeManager} {isJapanese} onSelect={onCodeSelect} />
+<HelpModal open={helpModalOpen} {isJapanese} onClose={() => (helpModalOpen = false)} />
 
 <dialog class="modal" open={resetModalOpen}>
   <div class="modal-box">
