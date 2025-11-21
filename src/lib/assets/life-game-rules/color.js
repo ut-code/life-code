@@ -14,13 +14,30 @@ let previewCells = [];
 let boardSize = 20; //盤面の大きさ(20x20)
 const cellSize = 600 / boardSize; //セルの大きさ(px)
 
-const WHITE = { r: 255, g: 255, b: 255 };
-const BLACK = { r: 0, g: 0, b: 0 };
-let currentColor = { ...BLACK };
+const WHITE_HEX = 0xffffff;
+const BLACK_HEX = 0x000000;
+let currentColorHex = BLACK_HEX;
 let isColorMode = false;
 
-function isAlive(cell) {
-  return !(cell.r === WHITE.r && cell.g === WHITE.g && cell.b === WHITE.b);
+function hexToRgb(hex) {
+  return {
+    r: (hex >> 16) & 0xff,
+    g: (hex >> 8) & 0xff,
+    b: hex & 0xff,
+  };
+}
+
+function rgbToHex(r, g, b) {
+  return (r << 16) | (g << 8) | b;
+}
+
+function getStyle(hex) {
+  const rgb = hexToRgb(hex);
+  return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+}
+
+function isAlive(hex) {
+  return hex !== WHITE_HEX;
 }
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
@@ -36,11 +53,6 @@ function isNextAlive(around, self) {
   return 0;
 }
 
-// cellの状態に応じた色を返す関数
-function getStyle(cell) {
-  return "rgb(" + cell.r + ", " + cell.g + ", " + cell.b + ")";
-}
-
 // 周囲の色の平均を取得する関数
 function getAverageColor(i, j) {
   let totalR = 0,
@@ -54,28 +66,29 @@ function getAverageColor(i, j) {
       const ni = i + di;
       const nj = j + dj;
       if (ni >= 0 && ni < boardSize && nj >= 0 && nj < boardSize && isAlive(board[ni][nj])) {
-        totalR += board[ni][nj].r;
-        totalG += board[ni][nj].g;
-        totalB += board[ni][nj].b;
+        const rgb = hexToRgb(board[ni][nj]);
+        totalR += rgb.r;
+        totalG += rgb.g;
+        totalB += rgb.b;
         count++;
       }
     }
   }
 
   if (count > 0) {
-    return {
-      r: Math.round(totalR / count),
-      g: Math.round(totalG / count),
-      b: Math.round(totalB / count),
-    };
+    return rgbToHex(
+      Math.round(totalR / count),
+      Math.round(totalG / count),
+      Math.round(totalB / count),
+    );
   }
 
-  return isColorMode ? { ...currentColor } : { ...BLACK };
+  return isColorMode ? currentColorHex : BLACK_HEX;
 }
 
 //Boardの初期化
 let board = Array.from({ length: boardSize }, () =>
-  Array.from({ length: boardSize }, () => ({ ...WHITE })),
+  Array.from({ length: boardSize }, () => WHITE_HEX),
 );
 const table = document.getElementById("game-board");
 
@@ -120,8 +133,7 @@ function renderBoard() {
               for (let c = 0; c < patternWidth; c++) {
                 const boardRow = i + r;
                 const boardCol = j + c;
-                board[boardRow][boardCol] =
-                  patternShape[r][c] === 1 ? { ...currentColor } : { ...WHITE };
+                board[boardRow][boardCol] = patternShape[r][c] === 1 ? currentColorHex : WHITE_HEX;
               }
             }
             rerender();
@@ -137,7 +149,7 @@ function renderBoard() {
           }
         } else if (isColorMode && isAlive(board[i][j])) {
           // 色選択モード：生きているセルに色を適用
-          board[i][j] = { ...currentColor };
+          board[i][j] = currentColorHex;
           button.style.backgroundColor = getStyle(board[i][j]);
         }
       };
@@ -146,10 +158,10 @@ function renderBoard() {
         if (timer === "stop" && !isPlacingTemplate) {
           isDragging = true;
           if (isAlive(board[i][j])) {
-            board[i][j] = { ...WHITE };
+            board[i][j] = WHITE_HEX;
             dragMode = 0; // 白にする
           } else {
-            board[i][j] = { ...currentColor };
+            board[i][j] = currentColorHex;
             dragMode = 1; // 指定した色にする
           }
           button.style.backgroundColor = getStyle(board[i][j]);
@@ -158,9 +170,9 @@ function renderBoard() {
       button.onmouseenter = () => {
         if (isDragging && timer === "stop" && !isPlacingTemplate) {
           if (dragMode === 1 && !isAlive(board[i][j])) {
-            board[i][j] = { ...currentColor };
+            board[i][j] = currentColorHex;
           } else if (dragMode === 0 && isAlive(board[i][j])) {
-            board[i][j] = { ...WHITE };
+            board[i][j] = WHITE_HEX;
           }
           button.style.backgroundColor = getStyle(board[i][j]);
         }
@@ -249,7 +261,7 @@ function generationChange(num) {
 }
 
 function progressBoard() {
-  const newBoard = board.map((row) => row.map((cell) => ({ ...cell })));
+  const newBoard = board.map((row) => [...row]);
   for (let i = 0; i < boardSize; i++) {
     for (let j = 0; j < boardSize; j++) {
       //周囲のマスに黒マスが何個あるかを計算(aroundに格納)↓
@@ -286,10 +298,10 @@ function progressBoard() {
         newBoard[i][j] = getAverageColor(i, j);
       } else if (nextAlive) {
         // 生き続けるセル：色を保持
-        newBoard[i][j] = { ...board[i][j] };
+        newBoard[i][j] = board[i][j];
       } else {
         // 死ぬセル：白にする
-        newBoard[i][j] = { ...WHITE };
+        newBoard[i][j] = WHITE_HEX;
       }
     }
   }
@@ -315,7 +327,7 @@ on.pause = () => {
 on.board_reset = () => {
   //すべて白にBoardを変更
   board = Array.from({ length: boardSize }, () =>
-    Array.from({ length: boardSize }, () => ({ ...WHITE })),
+    Array.from({ length: boardSize }, () => WHITE_HEX),
   );
   renderBoard();
   generationChange(0);
@@ -328,13 +340,13 @@ on.board_randomize = () => {
   board = Array.from({ length: boardSize }, () =>
     Array.from({ length: boardSize }, () => {
       if (Math.random() > 0.5) {
-        return {
-          r: Math.floor(Math.random() * 256),
-          g: Math.floor(Math.random() * 256),
-          b: Math.floor(Math.random() * 256),
-        };
+        return hexToRgb(
+          Math.floor(Math.random() * 256),
+          Math.floor(Math.random() * 256),
+          Math.floor(Math.random() * 256),
+        );
       } else {
-        return { ...WHITE };
+        return WHITE_HEX;
       }
     }),
   );
@@ -375,7 +387,7 @@ on.apply_board = (newBoard) => {
     row.map((cell) => {
       if (typeof cell === "number") {
         // 旧形式：0 = 白（死）, 1 = 黒（生）
-        return cell === 0 ? { ...WHITE } : { ...BLACK };
+        return cell === 0 ? WHITE_HEX : BLACK_HEX;
       } else {
         // 新形式：そのまま使用
         return cell;
@@ -389,9 +401,9 @@ on.apply_board = (newBoard) => {
   table.style.cursor = "default";
 };
 
-on.apply_color = (color) => {
-  // colorはRGBオブジェクト形式で受け取る
-  currentColor = { ...color };
+on.apply_color = (hexValue) => {
+  // 16進数の数値を直接受け取る
+  currentColorHex = hexValue;
   isColorMode = true;
   table.style.cursor = "crosshair";
 };

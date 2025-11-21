@@ -151,13 +151,11 @@
   }
 
   function applyColor(color: string) {
-    // 16進数カラーコード（例: #ff0000）をRGBオブジェクトに変換
+    // 16進数文字列を数値に変換して送信
     const hex = color.startsWith("#") ? color.slice(1) : color;
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
+    const hexValue = parseInt(hex, 16);
 
-    sendEvent("apply_color", { r, g, b });
+    sendEvent("apply_color", hexValue);
     showColorPicker = false;
   }
 </script>

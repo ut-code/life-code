@@ -21,7 +21,7 @@ model Board {
   board Json
   name String
   preview Json
-  code Json
+  code String     @db.Text
 }
 
 model Code {

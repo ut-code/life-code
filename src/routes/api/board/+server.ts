@@ -18,25 +18,67 @@ export async function POST({ request }) {
     return json({ message: "無効なリクエスト形式です。" }, { status: 400 });
   }
 
+  // ========== デバッグコード ここから ==========
+  console.log("=== DEBUG INFO ===");
+  console.log("Request data keys:", Object.keys(requestData as object));
+  console.log("Board type:", typeof (requestData as any).board);
+  console.log("Board is array:", Array.isArray((requestData as any).board));
+  if (Array.isArray((requestData as any).board) && (requestData as any).board.length > 0) {
+    console.log("Board first row:", (requestData as any).board[0]);
+    console.log("Board sample cell:", (requestData as any).board[0]?.[0]);
+    console.log("Board sample cell type:", typeof (requestData as any).board[0]?.[0]);
+  }
+  console.log("Code type:", typeof (requestData as any).code);
+  console.log("Code length:", (requestData as any).code?.length);
+  console.log("Name:", (requestData as any).name);
+  console.log("==================");
+  // ========== デバッグコード ここまで ==========
+
   const result = v.safeParse(BoardSchema, requestData);
   if (!result.success) {
     console.error("Request validation failed:", result.issues);
+    // より詳細なエラーログ
+    result.issues.forEach((issue, idx) => {
+      console.error(`Issue ${idx}:`, {
+        path: issue.path,
+        message: issue.message,
+        expected: issue.expected,
+        received: issue.received,
+      });
+    });
     return json({ message: "無効なリクエストデータです。" }, { status: 400 });
   }
 
   const { board, name, code } = result.output;
   const preview = createBoardPreview(board);
 
-  const newState = await prisma.board.create({
-    data: {
-      board: board,
-      name: name,
-      preview: preview,
-      code: code,
-    },
-  });
+  // Prisma保存前のログ
+  console.log("Attempting to save to DB...");
+  console.log("Board dimensions:", board.length, "x", board[0]?.length);
+  console.log("Preview dimensions:", preview.length, "x", preview[0]?.length);
 
-  return json({ id: newState.id }, { status: 201 });
+  try {
+    const newState = await prisma.board.create({
+      data: {
+        board: board,
+        name: name,
+        preview: preview,
+        code: code,
+      },
+    });
+
+    console.log("✅ Save successful! ID:", newState.id);
+    return json({ id: newState.id }, { status: 201 });
+  } catch (dbError) {
+    console.error("❌ Database save failed:", dbError);
+    // エラーの詳細を出力
+    if (dbError instanceof Error) {
+      console.error("Error name:", dbError.name);
+      console.error("Error message:", dbError.message);
+      console.error("Error stack:", dbError.stack);
+    }
+    return json({ message: "データベースエラーが発生しました。" }, { status: 500 });
+  }
 }
 
 export async function GET({ url }) {

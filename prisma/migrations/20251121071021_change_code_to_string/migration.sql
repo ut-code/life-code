@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Board" ALTER COLUMN "code" SET DATA TYPE TEXT;
