@@ -71,7 +71,13 @@
     | "request_sync"
     | "progress";
 
-  type IncomingEvent = "generation_change" | "sync" | "Size shortage" | "save_board" | "show_toast";
+  type IncomingEvent =
+    | "generation_change"
+    | "sync"
+    | "Size shortage"
+    | "save_board"
+    | "show_toast"
+    | "timer_change";
 
   function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
     switch (event.data.type) {
@@ -101,8 +107,11 @@
       case "show_toast": {
         const sentence = event.data.data as showToastEvent;
         toast.show(isJapanese ? sentence.japanese : sentence.english, "info");
-        timer = "stopped";
-        isProgress = false;
+        break;
+      }
+      case "timer_change": {
+        timer = event.data.data as "stopped" | "running";
+        isProgress = timer === "running";
         break;
       }
       default: {
@@ -516,6 +525,7 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
+        timer = "stopped";
         sendEvent("pause");
         ruleDrawerOpen = !ruleDrawerOpen;
         bottomDrawerOpen = false;

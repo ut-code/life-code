@@ -254,6 +254,7 @@ function progressBoard() {
       "盤面上に生きているセルがなくなりました　終了！ スコア:" + score,
       "All cells on the board have been cleared. Game over! Score:" + score,
     );
+    window.parent.postMessage({ type: "timer_change", data: "stopped" }, "*");
     stop();
     previousBoard = [];
   }
@@ -262,6 +263,7 @@ function progressBoard() {
   const newBoardString = JSON.stringify(newBoard);
   if (previousBoard.some((prevBoard) => JSON.stringify(prevBoard) === newBoardString)) {
     showToast("ループ発生　終了！ スコア:" + score, "Loop detected! End! Score:" + score);
+    window.parent.postMessage({ type: "timer_change", data: "stopped" }, "*");
     stop();
     previousBoard = [];
   }
