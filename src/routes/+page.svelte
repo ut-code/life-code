@@ -65,10 +65,10 @@
     | "place_template"
     | "save_board"
     | "apply_board"
-    | "request_sync"
+    | "get_boardsize"
     | "progress";
 
-  type IncomingEvent = "generation_change" | "sync" | "Size shortage" | "save_board";
+  type IncomingEvent = "generation_change" | "get_boardsize" | "Size shortage" | "save_board";
 
   function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
     switch (event.data.type) {
@@ -76,9 +76,8 @@
         generationFigure = event.data.data as number;
         break;
       }
-      case "sync": {
-        const data = event.data.data as { generationFigure: number; boardSize: number };
-        generationFigure = data.generationFigure;
+      case "get_boardsize": {
+        const data = event.data.data as { boardSize: number };
         sizeValue = data.boardSize;
         break;
       }
@@ -309,8 +308,7 @@
       class="w-[80%] h-[90%] rounded-lg mx-auto my-5 bg-white shadow-lg"
       onload={() => {
         setTimeout(() => {
-          sendEvent("request_sync");
-          console.log("generationFigure onload:", generationFigure);
+          sendEvent("get_boardsize");
         }, 50);
       }}
     ></iframe>

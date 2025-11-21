@@ -267,18 +267,8 @@ on.board_randomize = () => {
   generationChange(0);
 };
 
-on.request_sync = () => {
-  window.parent.postMessage(
-    {
-      type: "sync",
-      data: {
-        generationFigure: generationFigure,
-        boardSize: boardSize,
-      },
-    },
-    "*",
-  );
-  console.log("generationFigure:", generationFigure, "boardSize:", boardSize);
+on.get_boardsize = () => {
+  window.parent.postMessage({ type: "get_boardsize", data: boardSize }, "*");
 };
 
 on.place_template = (template) => {
