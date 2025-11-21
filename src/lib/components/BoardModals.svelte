@@ -26,6 +26,21 @@
     showConfirmation = false;
     selectedBoardId = null;
   }
+
+  function getCellColor(cell: number): string {
+    const WHITE = 0xffffff;
+
+    // 色対応版（0xFFFFFF形式）
+    if (cell === WHITE) return "white";
+    if (cell === 0x000000) return "black";
+
+    // レガシー版（0/1形式）への互換性
+    if (cell === 0) return "white";
+    if (cell === 1) return "black";
+
+    // その他の色値
+    return "#" + cell.toString(16).padStart(6, "0");
+  }
 </script>
 
 <dialog class="modal" open={manager.saveState.saving}>
@@ -54,7 +69,7 @@
             {#each manager.saveState.preview as row, i (i)}
               <div class="preview-row">
                 {#each row as cell, j (j)}
-                  <div class="preview-cell {cell ? 'alive' : ''}"></div>
+                  <div class="preview-cell" style="background-color: {getCellColor(cell)}"></div>
                 {/each}
               </div>
             {/each}
@@ -110,7 +125,10 @@
                     {#each item.preview as row, i (i)}
                       <div class="preview-row">
                         {#each row as cell, j (j)}
-                          <div class="preview-cell {cell ? 'alive' : ''}"></div>
+                          <div
+                            class="preview-cell"
+                            style="background-color: {getCellColor(cell)}"
+                          ></div>
                         {/each}
                       </div>
                     {/each}
@@ -178,8 +196,5 @@
   .preview-cell {
     width: 3px;
     height: 3px;
-  }
-  .preview-cell.alive {
-    background-color: black;
   }
 </style>
