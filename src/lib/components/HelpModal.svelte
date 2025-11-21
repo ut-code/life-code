@@ -57,9 +57,9 @@
 
           <p class="mt-4 flex justify-center">
             <img
-              src="/lib/help_img/rules_ja.png"
+              src="/help_img/rules_ja.png"
               alt="ライフゲームのルール"
-              class="w-full max-w-sm rounded shadow-md"
+              class="w-full max-w-xl rounded shadow-md"
             />
           </p>
 
@@ -115,9 +115,9 @@
 
           <p class="mt-4 flex justify-center">
             <img
-              src="/help-images/rules_en.png"
+              src="/help_img/rules_en.png"
               alt="Game of Life Rules"
-              class="w-full max-w-sm rounded shadow-md"
+              class="w-full max-w-xl rounded shadow-md"
             />
           </p>
 
@@ -139,13 +139,13 @@
       {#if isJapanese}
         <p class="mt-4 flex justify-center">
           <img
-            src="/lib/help_img/ui_map_ja.png"
+            src="/help_img/ui_map_ja.png"
             alt="画面の見方"
-            class="w-full max-w-sm rounded shadow-md"
+            class="w-full max-w-[50rem] rounded shadow-md"
           />
         </p>
 
-        <h4 class="font-bold mt-4 mb-2">画面の構成</h4>
+        <h4 class="font-bold mt-4 mb-2">① 画面の構成</h4>
         <ul class="list-disc list-inside ml-4 space-y-1">
           <li>
             <strong>中央の盤面:</strong> セルが繁殖するフィールドです。クリックまたはドラッグでセルの状態を変更できます。
@@ -155,7 +155,7 @@
           </li>
         </ul>
 
-        <h4 class="font-bold mt-4 mb-2">シミュレーション制御:</h4>
+        <h4 class="font-bold mt-4 mb-2">② シミュレーション制御:</h4>
         <ul class="list-disc list-inside ml-8 space-y-1">
           <li><strong>世代数:</strong> 現在のシミュレーションのステップ数が表示されます。</li>
           <li>
@@ -164,7 +164,7 @@
           <li><strong>再生/一時停止:</strong> シミュレーションを開始・停止します。</li>
         </ul>
 
-        <h4 class="font-bold mt-4 mb-2">盤面の操作:</h4>
+        <h4 class="font-bold mt-4 mb-2">③ 盤面の操作:</h4>
         <ul class="list-disc list-inside ml-8 space-y-1">
           <li>
             <strong>保存/ロード:</strong> 盤面を保存して他のユーザーに公開することや、他のユーザーが作成した盤面を読み込むことが可能です。
@@ -174,7 +174,7 @@
           </li>
         </ul>
 
-        <h4 class="font-bold mt-4 mb-2">コードエディタの操作:</h4>
+        <h4 class="font-bold mt-4 mb-2">④ コードエディタの操作:</h4>
         <ul class="list-disc list-inside ml-8 space-y-1">
           <li><strong>適用:</strong> 編集中のコードをシミュレーションに反映します。</li>
           <li>
@@ -182,7 +182,7 @@
           </li>
         </ul>
 
-        <h4 class="font-bold mt-4 mb-2">テンプレート/ルール選択:</h4>
+        <h4 class="font-bold mt-4 mb-2">⑤ テンプレート/ルール選択:</h4>
         <ul class="list-disc list-inside ml-8 space-y-1">
           <li>
             <strong>テンプレート:</strong> ライフゲームでは面白い振る舞いをする有名なパターンがいくつも見つかっており、テンプレートボタンでは、それらのパターンを盤面に配置することができます。
@@ -192,7 +192,7 @@
           </li>
         </ul>
 
-        <h4 class="font-bold mt-4 mb-2">画面右上のアイコン:</h4>
+        <h4 class="font-bold mt-4 mb-2">⑥ 画面右上のアイコン:</h4>
         <ul class="list-disc list-inside ml-8 space-y-1">
           <li><strong>リセットアイコン:</strong> 編集したコードを初期状態に戻します。</li>
           <li><strong>コードアイコン:</strong> コードエディタの表示・非表示を切り替えます。</li>
@@ -202,13 +202,13 @@
       {:else}
         <p class="mt-4 flex justify-center">
           <img
-            src="/help-images/ui_map_en.png"
+            src="/help_img/ui_map_en.png"
             alt="Screen Guide"
-            class="w-full max-w-sm rounded shadow-md"
+            class="w-full max-w-[50rem] rounded shadow-md"
           />
         </p>
 
-        <h4 class="font-bold mt-4 mb-2">Screen Layout</h4>
+        <h4 class="font-bold mt-4 mb-2">1. Screen Layout</h4>
         <ul class="list-disc list-inside ml-4 space-y-1">
           <li>
             <strong>Center Board:</strong> This is the field where cells propagate. Click or drag to
@@ -220,7 +220,7 @@
           </li>
         </ul>
 
-        <h4 class="font-bold mt-4 mb-2">Simulation Control:</h4>
+        <h4 class="font-bold mt-4 mb-2">2. Simulation Control:</h4>
         <ul class="list-disc list-inside ml-8 space-y-1">
           <li><strong>Generation:</strong> Shows the current simulation step count.</li>
           <li>
@@ -229,7 +229,7 @@
           <li><strong>Play/Pause:</strong> Starts or stops the simulation.</li>
         </ul>
 
-        <h4 class="font-bold mt-4 mb-2">Board Operations:</h4>
+        <h4 class="font-bold mt-4 mb-2">3. Board Operations:</h4>
         <ul class="list-disc list-inside ml-8 space-y-1">
           <li>
             <strong>Save/Load:</strong> You can save the board state and share it with other users, or
@@ -240,7 +240,7 @@
           </li>
         </ul>
 
-        <h4 class="font-bold mt-4 mb-2">Code Editor Operations:</h4>
+        <h4 class="font-bold mt-4 mb-2">4. Code Editor Operations:</h4>
         <ul class="list-disc list-inside ml-8 space-y-1">
           <li>
             <strong>Apply:</strong> Applies the code currently being edited to the simulation.
@@ -251,7 +251,7 @@
           </li>
         </ul>
 
-        <h4 class="font-bold mt-4 mb-2">Template/Rule Selection:</h4>
+        <h4 class="font-bold mt-4 mb-2">5. Template/Rule Selection:</h4>
         <ul class="list-disc list-inside ml-8 space-y-1">
           <li>
             <strong>Template:</strong> Several famous patterns exhibiting interesting behavior in the
@@ -264,7 +264,7 @@
           </li>
         </ul>
 
-        <h4 class="font-bold mt-4 mb-2">Top Right Icons:</h4>
+        <h4 class="font-bold mt-4 mb-2">6. Top Right Icons:</h4>
         <ul class="list-disc list-inside ml-8 space-y-1">
           <li><strong>Reset Icon:</strong> Reverts the edited code back to its initial state.</li>
           <li><strong>Code Icon:</strong> Toggles the display of the code editor.</li>
