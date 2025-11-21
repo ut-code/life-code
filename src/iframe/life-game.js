@@ -10,7 +10,7 @@ let patternWidth = 0;
 let previewCells = [];
 
 //盤面の大きさ
-let boardSize = 20;
+const boardSize = 20;
 const cellSize = 450 / boardSize;
 
 //セルの色
@@ -89,7 +89,6 @@ function renderBoard() {
               }
             }
             rerender();
-            stop();
           } else {
             window.parent.postMessage(
               {
@@ -105,7 +104,7 @@ function renderBoard() {
         e.preventDefault();
         if (!isPlacingTemplate) {
           isDragging = true;
-          board[i][j] = board[i][j] === 1 ? 0 : 1;
+          board[i][j] = board[i][j] ? 0 : 1;
           dragMode = board[i][j];
           button.style.backgroundColor = board[i][j] ? aliveCellColor : deadCellColor;
         }
@@ -168,14 +167,6 @@ function rerender() {
       const expectedCellColor = getStyle(board[i][j]);
       if (currentCellColor !== expectedCellColor) {
         button.style.backgroundColor = expectedCellColor;
-      }
-
-      // セルサイズの更新
-      const currentCellsize = button.style.width;
-      const expectedCellsize = `${cellSize}px`;
-      if (currentCellsize !== expectedCellsize) {
-        button.style.width = expectedCellsize;
-        button.style.height = expectedCellsize;
       }
     }
   }
