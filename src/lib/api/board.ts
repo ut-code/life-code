@@ -1,7 +1,7 @@
 import { toast } from "$lib/models/ToastStore.svelte";
 
 export async function saveBoard(
-  data: { board: number[][]; name: string; code: string },
+  data: { board: number[][]; name: string; code: string; isColorful: boolean },
   isJapanese: boolean,
 ) {
   try {
@@ -67,6 +67,7 @@ export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem
 export type LoadedBoardData = {
   board: number[][];
   code: string;
+  isColorful: boolean;
 };
 
 export async function loadBoardById(

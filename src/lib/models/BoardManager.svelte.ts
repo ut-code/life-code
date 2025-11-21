@@ -15,6 +15,7 @@ type SaveState =
       name: string;
       preview: number[][];
       code: string;
+      isColorful: boolean;
     };
 
 type LoadState =
@@ -28,7 +29,7 @@ export class BoardManager {
 
   constructor() {}
 
-  openSaveModal(board: number[][], code: string) {
+  openSaveModal(board: number[][], code: string, isColorful: boolean) {
     const preview = createBoardPreview(board);
     this.saveState = {
       saving: true,
@@ -36,6 +37,7 @@ export class BoardManager {
       name: "",
       preview: preview,
       code: code,
+      isColorful: isColorful,
     };
   }
 
@@ -51,6 +53,7 @@ export class BoardManager {
         board: this.saveState.board,
         name: name,
         code: this.saveState.code,
+        isColorful: this.saveState.isColorful,
       },
       isJapanese,
     );

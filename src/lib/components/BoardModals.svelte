@@ -5,10 +5,12 @@
     manager,
     isJapanese,
     onSelect,
+    isColorful,
   }: {
     manager: BoardManager;
     isJapanese: boolean;
     onSelect: (id: number) => void;
+    isColorful: boolean;
   } = $props();
 
   let showConfirmation = $state(false);
@@ -30,16 +32,16 @@
   function getCellColor(cell: number): string {
     const WHITE = 0xffffff;
 
-    // 色対応版（0xFFFFFF形式）
-    if (cell === WHITE) return "white";
-    if (cell === 0x000000) return "black";
-
-    // レガシー版（0/1形式）への互換性
-    if (cell === 0) return "white";
-    if (cell === 1) return "black";
-
-    // その他の色値
-    return "#" + cell.toString(16).padStart(6, "0");
+    if (isColorful) {
+      // 色対応版（0xFFFFFF形式）
+      if (cell === WHITE) return "white";
+      return "#" + cell.toString(16).padStart(6, "0");
+    } else {
+      // レガシー版（0/1形式）への互換性
+      if (cell === 0) return "white";
+      if (cell === 1) return "black";
+    }
+    return "white"; // 不明な値の場合
   }
 </script>
 

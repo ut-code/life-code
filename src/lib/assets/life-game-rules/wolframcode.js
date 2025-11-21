@@ -2,6 +2,7 @@
 
 let generationFigure = 0;
 let currentRow = 0;
+let isColorful = false;
 
 //盤面の大きさ
 const boardSize = 201; //奇数に設定する
@@ -128,5 +129,18 @@ on.board_randomize = () => {
 };
 
 on.save_board = async () => {
-  window.parent.postMessage({ type: "save_board", data: board }, "*");
+  window.parent.postMessage(
+    {
+      type: "save_board",
+      data: {
+        board: board,
+        isColorful: isColorful,
+      },
+    },
+    "*",
+  );
+};
+
+on.request_colorful_status = () => {
+  window.parent.postMessage({ type: "colorful_status", data: isColorful }, "*");
 };

@@ -9,6 +9,7 @@ let patternShape = [];
 let patternHeight = 0;
 let patternWidth = 0;
 let previewCells = [];
+let isColorful = false;
 
 //変数設定
 let boardSize = 20; //盤面の大きさ(20x20)
@@ -282,7 +283,16 @@ on.place_template = (template) => {
 };
 
 on.save_board = async () => {
-  window.parent.postMessage({ type: "save_board", data: board }, "*");
+  window.parent.postMessage(
+    {
+      type: "save_board",
+      data: {
+        board: board,
+        isColorful: isColorful,
+      },
+    },
+    "*",
+  );
 };
 
 on.apply_board = (newBoard) => {
@@ -290,4 +300,8 @@ on.apply_board = (newBoard) => {
   renderBoard();
   generationChange(0);
   stop();
+};
+
+on.request_colorful_status = () => {
+  window.parent.postMessage({ type: "colorful_status", data: isColorful }, "*");
 };

@@ -35,6 +35,7 @@
 
   let showColorPicker = $state(false);
   let selectedColor = $state("#000000");
+  let isColorful = $state(false);
 
   const boardManager = new BoardManager();
   const codeManager = new CodeManager();
@@ -67,9 +68,15 @@
     | "apply_board"
     | "get_boardsize"
     | "progress"
-    | "apply_color";
+    | "apply_color"
+    | "request_colorful_status";
 
-  type IncomingEvent = "generation_change" | "get_boardsize" | "Size shortage" | "save_board";
+  type IncomingEvent =
+    | "generation_change"
+    | "get_boardsize"
+    | "Size shortage"
+    | "save_board"
+    | "colorful_status";
 
   function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
     switch (event.data.type) {
@@ -92,7 +99,12 @@
         break;
       }
       case "save_board": {
-        boardManager.openSaveModal(event.data.data as number[][], appliedCode as string);
+        const data = event.data.data as { board: number[][]; isColorful?: boolean };
+        boardManager.openSaveModal(data.board, appliedCode, data.isColorful ?? false);
+        break;
+      }
+      case "colorful_status": {
+        isColorful = event.data.data as boolean;
         break;
       }
       default: {
@@ -118,6 +130,7 @@
     if (data) {
       editingCode = data.code;
       appliedCode = data.code;
+      isColorful = data.isColorful;
       sendEvent("apply_board", data.board);
     }
   }
@@ -164,7 +177,11 @@
 
   <div class="font-semibold text-black text-[20px] ml-5">Life code</div>
 
-  <label class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-auto">
+  <label
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-auto"
+    class:invisible={!isColorful}
+    class:pointer-events-none={!isColorful}
+  >
     <input type="checkbox" bind:checked={showColorPicker} />
     <div class="text-black">
       <img class="size-6" src={icons.paintBrush} alt="Paint Brush" />
@@ -280,7 +297,7 @@
   </div>
 </div>
 
-<BoardModals manager={boardManager} {isJapanese} onSelect={onBoardSelect} />
+<BoardModals manager={boardManager} {isJapanese} onSelect={onBoardSelect} {isColorful} />
 <CodeModals manager={codeManager} {isJapanese} onSelect={onCodeSelect} />
 <HelpModal open={helpModalOpen} {isJapanese} onClose={() => (helpModalOpen = false)} />
 
@@ -325,6 +342,7 @@
       onload={() => {
         setTimeout(() => {
           sendEvent("get_boardsize");
+          sendEvent("request_colorful_status");
         }, 50);
       }}
     ></iframe>

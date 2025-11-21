@@ -8,9 +8,10 @@ let patternShape = [];
 let patternHeight = 0;
 let patternWidth = 0;
 let previewCells = [];
+let isColorful = true;
 
 //盤面の大きさ
-let boardSize = 20;
+const boardSize = 20;
 const cellSize = 450 / boardSize;
 
 //セルの誕生/生存条件
@@ -115,7 +116,6 @@ function renderBoard() {
               }
             }
             rerender();
-            stop();
           } else {
             window.parent.postMessage(
               {
@@ -194,14 +194,6 @@ function rerender() {
       const expectedCellColor = getStyle(board[i][j]);
       if (currentCellColor !== expectedCellColor) {
         button.style.backgroundColor = expectedCellColor;
-      }
-
-      // セルサイズの更新
-      const currentCellsize = button.style.width;
-      const expectedCellsize = `${cellSize}px`;
-      if (currentCellsize !== expectedCellsize) {
-        button.style.width = expectedCellsize;
-        button.style.height = expectedCellsize;
       }
     }
   }
@@ -321,7 +313,16 @@ on.place_template = (template) => {
 };
 
 on.save_board = async () => {
-  window.parent.postMessage({ type: "save_board", data: board }, "*");
+  window.parent.postMessage(
+    {
+      type: "save_board",
+      data: {
+        board: board,
+        isColorful: isColorful,
+      },
+    },
+    "*",
+  );
 };
 
 on.apply_board = (newBoard) => {
@@ -332,4 +333,8 @@ on.apply_board = (newBoard) => {
 
 on.apply_color = (colorValue) => {
   currentSelectedColor = colorValue;
+};
+
+on.request_colorful_status = () => {
+  window.parent.postMessage({ type: "colorful_status", data: isColorful }, "*");
 };
