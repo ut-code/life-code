@@ -18,22 +18,6 @@ export async function POST({ request }) {
     return json({ message: "無効なリクエスト形式です。" }, { status: 400 });
   }
 
-  // ========== デバッグコード ここから ==========
-  console.log("=== DEBUG INFO ===");
-  console.log("Request data keys:", Object.keys(requestData as object));
-  console.log("Board type:", typeof (requestData as any).board);
-  console.log("Board is array:", Array.isArray((requestData as any).board));
-  if (Array.isArray((requestData as any).board) && (requestData as any).board.length > 0) {
-    console.log("Board first row:", (requestData as any).board[0]);
-    console.log("Board sample cell:", (requestData as any).board[0]?.[0]);
-    console.log("Board sample cell type:", typeof (requestData as any).board[0]?.[0]);
-  }
-  console.log("Code type:", typeof (requestData as any).code);
-  console.log("Code length:", (requestData as any).code?.length);
-  console.log("Name:", (requestData as any).name);
-  console.log("==================");
-  // ========== デバッグコード ここまで ==========
-
   const result = v.safeParse(BoardSchema, requestData);
   if (!result.success) {
     console.error("Request validation failed:", result.issues);
