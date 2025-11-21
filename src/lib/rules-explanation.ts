@@ -42,8 +42,8 @@ export const rulesExplanation = {
       en: "Wolfram code",
     },
     description: {
-      ja: "１次元のセルオートマトンです",
-      en: "1 dimensional cellular automaton",
+      ja: "物理学者スティーブン・ウルフラムが考案した１次元のセルオートマトンです",
+      en: "a one-dimensional cellular automaton created by physicist Stephen Wolfram",
     },
     code: wolframcode,
   },
