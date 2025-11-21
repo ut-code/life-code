@@ -10,6 +10,7 @@
   import { CodeManager } from "$lib/models/CodeManager.svelte";
   import BoardModals from "$lib/components/BoardModals.svelte";
   import CodeModals from "$lib/components/CodeModals.svelte";
+  import HelpModal from "$lib/components/HelpModal.svelte";
   import { toast } from "$lib/models/ToastStore.svelte";
   import CodeMirror from "svelte-codemirror-editor";
   import { javascript } from "@codemirror/lang-javascript";
@@ -23,10 +24,10 @@
 
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
-  let isProgress = $state(false);
   let isJapanese = $state(true);
   let resetModalOpen = $state(false);
-  let bottomDrawerOpen = $state(false);
+  let helpModalOpen = $state(true);
+  let templateDrawerOpen = $state(false);
   let ruleDrawerOpen = $state(false);
 
   let generationFigure = $state(0);
@@ -45,10 +46,10 @@
     return newDisabledState;
   });
 
-  let timer: "running" | "stopped" = $state("stopped");
+  let timerIsRunnning = $state(false);
   let intervalMs = $state(1000);
   $effect(() => {
-    if (timer === "stopped") return;
+    if (!timerIsRunnning) return;
     const timerId = setInterval(() => {
       sendEvent("progress");
     }, intervalMs);
@@ -56,17 +57,15 @@
   });
 
   type OngoingEvent =
-    | "play"
-    | "pause"
     | "board_reset"
     | "board_randomize"
     | "place_template"
     | "save_board"
     | "apply_board"
-    | "request_sync"
+    | "get_boardsize"
     | "progress";
 
-  type IncomingEvent = "generation_change" | "sync" | "Size shortage" | "save_board";
+  type IncomingEvent = "generation_change" | "get_boardsize" | "Size shortage" | "save_board";
 
   function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
     switch (event.data.type) {
@@ -74,10 +73,9 @@
         generationFigure = event.data.data as number;
         break;
       }
-      case "sync": {
-        const data = event.data.data as { generationFigure: number; boardSize: number };
-        generationFigure = data.generationFigure;
-        sizeValue = data.boardSize;
+      case "get_boardsize": {
+        const data = event.data.data as number;
+        sizeValue = data;
         break;
       }
       case "Size shortage": {
@@ -173,8 +171,7 @@
   <button
     class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-5"
     onclick={() => {
-      // ここにチュートリアル・ヘルプを配置 (初起動時に表示もあり)
-      // 他の方法で実装してもよし
+      helpModalOpen = true;
     }}
   >
     <img class="size-6" src={icons.questionmark} alt="Info" />
@@ -191,11 +188,11 @@
 </div>
 
 <div
-  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-black pb-12"
-  class:translate-y-full={!bottomDrawerOpen}
-  class:translate-y-0={bottomDrawerOpen}
+  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-base-200 pb-22"
+  class:translate-y-full={!templateDrawerOpen}
+  class:translate-y-0={templateDrawerOpen}
 >
-  <div class="bg-base-200 shadow-lg p-4 h-48 w-full overflow-x-auto">
+  <div class="p-4 h-48 w-full overflow-x-auto">
     <div class="flex gap-4">
       {#each Object.keys(patterns) as (keyof typeof patterns)[] as patternName (patternName)}
         <div
@@ -219,7 +216,7 @@
               }
               const patternData = patterns[patternName];
               const patternShape = patternData.shape;
-              bottomDrawerOpen = false;
+              templateDrawerOpen = false;
               sendEvent("place_template", patternShape);
             }}
           >
@@ -236,11 +233,11 @@
 </div>
 
 <div
-  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 pb-12"
+  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-base-200 pb-22"
   class:translate-y-full={!ruleDrawerOpen}
   class:translate-y-0={ruleDrawerOpen}
 >
-  <div class="bg-[rgb(220,220,220)] shadow-lg p-4 h-30 w-full overflow-x-auto">
+  <div class="p-4 h-30 w-full overflow-x-auto">
     <div class="flex gap-4">
       {#each Object.entries(rulesExplanation) as [ruleName, ruleData] (ruleName)}
         <button
@@ -263,8 +260,10 @@
     </div>
   </div>
 </div>
+
 <BoardModals manager={boardManager} {isJapanese} onSelect={onBoardSelect} />
 <CodeModals manager={codeManager} {isJapanese} onSelect={onCodeSelect} />
+<HelpModal open={helpModalOpen} {isJapanese} onClose={() => (helpModalOpen = false)} />
 
 <dialog class="modal" open={resetModalOpen}>
   <div class="modal-box">
@@ -306,8 +305,7 @@
       class="w-[80%] h-[90%] rounded-lg mx-auto my-5 bg-white shadow-lg"
       onload={() => {
         setTimeout(() => {
-          sendEvent("request_sync");
-          console.log("generationFigure onload:", generationFigure);
+          sendEvent("get_boardsize");
         }, 50);
       }}
     ></iframe>
@@ -330,38 +328,61 @@
   </div>
 </div>
 
+<div class="fixed bottom-12 left-0 right-0 z-50 flex justify-start px-4 h-8">
+  <button
+    class="btn btn-sm text-sm rounded-t-lg rounded-b-none h-full justify-start mr-2 transition-colors duration-300 border-b-0"
+    class:bg-base-200={!templateDrawerOpen}
+    class:bg-[#E0E0E0]={templateDrawerOpen}
+    onclick={() => {
+      timerIsRunnning = false;
+      templateDrawerOpen = !templateDrawerOpen;
+      ruleDrawerOpen = false;
+    }}
+  >
+    {#if templateDrawerOpen}
+      ▼ {isJapanese ? "テンプレート" : "Template"}
+    {:else if isJapanese}
+      ▲ テンプレート
+    {:else}
+      ▲ Template
+    {/if}
+  </button>
+
+  <button
+    class="btn btn-sm text-sm rounded-t-lg rounded-b-none h-full justify-start transition-colors duration-300 border-b-0"
+    class:bg-base-200={!ruleDrawerOpen}
+    class:bg-[#E0E0E0]={ruleDrawerOpen}
+    onclick={() => {
+      timerIsRunnning = false;
+      ruleDrawerOpen = !ruleDrawerOpen;
+      templateDrawerOpen = false;
+    }}
+  >
+    {#if ruleDrawerOpen}
+      ▼ {isJapanese ? "ルール選択" : "Select Rule"}
+    {:else if isJapanese}
+      ▲ ルール選択
+    {:else}
+      ▲ Select Rule
+    {/if}
+  </button>
+</div>
+
 <div
   class="bg-[#E0E0E0] shadow-sm fixed bottom-0 left-0 right-0 z-50 h-12 p-0 flex items-center px-4"
 >
   <!-- Left Section -->
-  <div class="flex items-center">
-    <button
-      class="btn rounded-none h-12 justify-start w-30"
-      onclick={() => {
-        bottomDrawerOpen = !bottomDrawerOpen;
-        ruleDrawerOpen = false;
-      }}
-    >
-      {#if bottomDrawerOpen}
-        ▼
-      {:else if isJapanese}
-        ▲ テンプレート
-      {:else}
-        ▲ Template
-      {/if}
-    </button>
-
-    <div class="font-bold text-black ml-4 w-25">
+  <div class="flex items-center gap-x-2 ml-4">
+    <div class="font-bold text-black w-30">
       {isJapanese ? "世代数:" + generationFigure : "Generation:" + generationFigure}
     </div>
-  </div>
 
-  <!-- Center Section -->
-  <div class="flex-1 flex justify-center items-center gap-x-2">
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
-        intervalMs = intervalMs * 2;
+        if (intervalMs < 8000) {
+          intervalMs = intervalMs * 2;
+        }
       }}
     >
       <img class="size-6" src={icons.decelerate} alt="decelerate" />
@@ -379,47 +400,37 @@
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
-        intervalMs = intervalMs / 2;
+        if (intervalMs > 20) {
+          intervalMs = intervalMs / 2;
+        }
       }}
     >
       <img class="size-6" src={icons.accelerate} alt="accelerate" />
     </button>
 
-    <div class="font-bold text-black ml-2 w-25">
+    <div class="font-bold text-black ml-2 w-40">
       {isJapanese ? "現在の速度" : "Current speed"}: x{1000 / intervalMs}
     </div>
-
-    <div class="w-px bg-gray-400 h-6 mx-4"></div>
-    <!-- Separator -->
 
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap"
       onclick={() => {
-        if (isProgress) {
-          timer = "stopped";
-          sendEvent("pause");
-        } else {
-          timer = "running";
-          sendEvent("play");
-        }
-        isProgress = !isProgress;
+        timerIsRunnning = !timerIsRunnning;
       }}
     >
-      <input type="checkbox" bind:checked={isProgress} />
+      <input type="checkbox" bind:checked={timerIsRunnning} />
       <img class="size-6 swap-on" src={icons.Pause} alt="Pause" />
       <img class="size-6 swap-off" src={icons.Play} alt="Play" />
     </button>
   </div>
 
-  <!-- Right Section -->
-  <div class="flex items-center gap-x-2">
+  <!-- Center Section -->
+  <div class="flex-1 flex justify-center items-center gap-x-2">
     <div class="font-bold text-black">{isJapanese ? "盤面" : "Board"}:</div>
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
-        timer = "stopped";
-        sendEvent("pause");
+        timerIsRunnning = false;
         sendEvent("save_board");
       }}
     >
@@ -429,9 +440,7 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
-        timer = "stopped";
-        sendEvent("pause");
+        timerIsRunnning = false;
         boardManager.openLoadModal(isJapanese);
       }}
     >
@@ -441,9 +450,7 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
-        timer = "stopped";
-        sendEvent("pause");
+        timerIsRunnning = false;
         sendEvent("board_reset");
       }}
     >
@@ -453,17 +460,16 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
-        timer = "stopped";
-        sendEvent("pause");
+        timerIsRunnning = false;
         sendEvent("board_randomize");
       }}
     >
       {isJapanese ? "ランダム" : "Random"}
     </button>
+  </div>
 
-    <div class="w-px bg-gray-400 h-6 mx-2"></div>
-    <!-- Separator -->
+  <!-- Right Section -->
+  <div class="flex items-center gap-x-2 mr-4">
     <div class="font-bold text-black">{isJapanese ? "コード" : "Code"}:</div>
     <button
       class={[
@@ -472,8 +478,7 @@
       ]}
       onclick={() => {
         appliedCode = editingCode;
-        isProgress = false;
-        timer = "stopped";
+        timerIsRunnning = false;
       }}
     >
       {isJapanese ? "適用" : "Apply"}
@@ -482,8 +487,7 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
-        sendEvent("pause");
+        timerIsRunnning = false;
         codeManager.openSaveModal(editingCode);
       }}
     >
@@ -493,29 +497,11 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
-        sendEvent("pause");
+        timerIsRunnning = false;
         codeManager.openLoadModal(isJapanese);
       }}
     >
       {isJapanese ? "ロード" : "Load"}
-    </button>
-    <button
-      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
-      onclick={() => {
-        isProgress = false;
-        sendEvent("pause");
-        ruleDrawerOpen = !ruleDrawerOpen;
-        bottomDrawerOpen = false;
-      }}
-    >
-      {#if ruleDrawerOpen}
-        ▼
-      {:else if isJapanese}
-        ▲ ルール選択
-      {:else}
-        ▲ Select Rule
-      {/if}
     </button>
   </div>
 </div>
