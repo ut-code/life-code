@@ -13,13 +13,10 @@
     </button>
 
     <div class="p-6 overflow-y-auto">
-      <h2 class="font-bold text-2xl mb-4 text-primary">
-        {isJapanese ? "チュートリアル" : "Tutorial"}
-      </h2>
-      <h3 class="font-bold text-xl mt-4 mb-2 text-secondary">
-        {isJapanese ? "ライフゲームとは" : "What is Game of Life ?"}
-      </h3>
       {#if isJapanese}
+        <h2 class="font-bold text-2xl mb-4 text-primary">チュートリアル</h2>
+        <h3 class="font-bold text-xl mt-4 mb-2 text-secondary">ライフゲームとは</h3>
+
         <p>
           ライフゲームは、1970年にイギリスの数学者ジョン・ホートン・コンウェイが考案した、生命を模した数理モデルです。
           <br />
@@ -36,12 +33,13 @@
 
         <p class="font-bold mt-4 mb-2">ライフゲームの４つのルール</p>
 
+        <p>
+          各セルには「生きたセル（黒）」と「死んだセル（白）」の２つの状態があります。
+          <br />
+          セルは周囲8マスの他のセルの状態によって、次の世代の状態が変わります。
+        </p>
+
         <ol class="list-decimal list-inside ml-4 space-y-2">
-          <p>
-            各セルには「生きたセル（黒）」と「死んだセル（白）」の２つの状態があります。
-            <br />
-            セルは周囲8マスの他のセルの状態によって、次の世代の状態が変わります。
-          </p>
           <li>
             <strong>誕生:</strong> 死んだセルの周りの生きたセルが３つの場合、そのセルは次の世代で誕生し生きたセルになります。
           </li>
@@ -54,89 +52,25 @@
           <li>
             <strong>過密:</strong> 生きたセルの周りの生きたセルが４つ以上ある場合、そのセルは次の世代で過密により死んだセルになります。
           </li>
-
-          <p class="mt-4 flex justify-center">
-            <img
-              src="/help_img/rules_ja.png"
-              alt="ライフゲームのルール"
-              class="w-full max-w-xl rounded shadow-md"
-            />
-          </p>
-
-          <p>
-            このルールは B3/S23 と簡略化して呼ばれます。
-            <br />
-            B3は誕生（Born）条件が３つの生きたセル、S23は生存（Survive）条件が２つまたは３つの生きたセルという意味です。
-          </p>
         </ol>
-      {:else}
-        <p>
-          The Game of Life is a mathematical model simulating life, devised by the British
-          mathematician John Horton Conway in 1970.
-          <br />
-          The grid-like board is a field where life propagates, and the black squares represent living
-          entities.
-          <br />
-          These entities are called cells, conceived as a colony of bacteria.
-          <br />
-          A cell can survive by mutual assistance if a suitable number of other cells are present around
-          it.
-          <br />
-          It can also crossbreed with neighboring cells to create new ones.
-          <br />
-          Let's observe how the distribution of cells changes and grows more complex over time!
+
+        <p class="mt-4 flex justify-center">
+          <img
+            src="/help_img/rules_ja.png"
+            alt="ライフゲームのルール"
+            class="w-full max-w-xl rounded shadow-md"
+          />
         </p>
 
-        <p class="font-bold mt-4 mb-2">The Four Rules of Life Game</p>
+        <p>
+          このルールは B3/S23 と簡略化して呼ばれます。
+          <br />
+          B3は誕生（Born）条件が３つの生きたセル、S23は生存（Survive）条件が２つまたは３つの生きたセルという意味です。
+        </p>
 
-        <ol class="list-decimal list-inside ml-4 space-y-2">
-          <p>
-            Each cell has two states: "alive (black)" and "dead (white)".
-            <br />
-            A cell's state in the next generation changes depending on the state of the other cells in
-            its surrounding 8 squares.
-          </p>
-          <li>
-            <strong>Birth:</strong> A dead cell becomes an alive cell in the next generation if it has
-            3 alive neighbors.
-          </li>
-          <li>
-            <strong>Survival:</strong> An alive cell survives into the next generation if it has 2 or
-            3 alive neighbors.
-          </li>
-          <li>
-            <strong>Underpopulation:</strong> An alive cell dies due to underpopulation in the next generation
-            if it has 1 or fewer alive neighbors.
-          </li>
-          <li>
-            <strong>Overpopulation:</strong> An alive cell dies due to overpopulation in the next generation
-            if it has 4 or more alive neighbors.
-          </li>
+        <div class="divider"></div>
 
-          <p class="mt-4 flex justify-center">
-            <img
-              src="/help_img/rules_en.png"
-              alt="Game of Life Rules"
-              class="w-full max-w-xl rounded shadow-md"
-            />
-          </p>
-
-          <p>
-            This set of rules is often called B3/S23 in shorthand.
-            <br />
-            B3 means the Born condition requires 3 alive neighbors, and S23 means the Survive condition
-            requires 2 or 3 alive neighbors.
-          </p>
-        </ol>
-      {/if}
-
-      <div class="divider"></div>
-
-      <h3 class="font-bold text-xl mt-4 mb-2 text-secondary">
-        {isJapanese ? "画面の構成と操作方法" : "Screen Layout and Operation"}
-      </h3>
-
-      {#if isJapanese}
+        <h3 class="font-bold text-xl mt-4 mb-2 text-secondary">画面の構成と操作方法</h3>
         <p class="mt-4 flex justify-center">
           <img
             src="/help_img/ui_map_ja.png"
@@ -145,8 +79,8 @@
           />
         </p>
 
-        <h4 class="font-bold mt-4 mb-2">① 画面の構成</h4>
-        <ul class="list-disc list-inside ml-4 space-y-1">
+        <h4 class="font-bold mt-4 mb-2">① 画面の構成:</h4>
+        <ul class="list-disc list-inside ml-8 space-y-1">
           <li>
             <strong>中央の盤面:</strong> セルが繁殖するフィールドです。クリックまたはドラッグでセルの状態を変更できます。
           </li>
@@ -199,7 +133,123 @@
           <li><strong>疑問符アイコン:</strong> このヘルプ画面をいつでも再表示できます。</li>
           <li><strong>言語アイコン:</strong> 表示言語（日本語/英語）を切り替えます。</li>
         </ul>
+
+        <div class="divider"></div>
+
+        <h3 class="font-bold text-xl mt-4 mb-3 text-secondary">次に何をするかお悩みの方へ</h3>
+        <p class="mb-4">ライフコードをより深く楽しむための5つのステップをご紹介します。</p>
+        <ul class="list-decimal list-inside space-y-4">
+          <li>
+            <strong>オリジナルルールで遊ぶ</strong>
+            <p class="mt-1">
+              まずは、オリジナルのライフゲームで遊んでみましょう。セルをドラッグして配置したり、「ランダム」ボタンを押したりして、セルの動きを観察してください。速さは自由に変えられます。
+            </p>
+          </li>
+          <li>
+            <strong>有名なパターンを配置する</strong>
+            <p class="mt-1">
+              次に、画面下の「テンプレート」ボタンから、有名なライフゲームのパターンを配置してみましょう。盤面サイズが足りない場合は、右側のコードエディター内の//盤面の大きさ
+              の boardSize
+              を変更してください。緑色に光った「適用」ボタンを押すと編集したコードが反映されます。
+            </p>
+          </li>
+          <li>
+            <strong>カスタムルールを体験する</strong>
+            <p class="mt-1">
+              次に、画面下の「ルール選択」ボタンから、ut.code();
+              のチームが作成したライフゲームのルールを適用して遊んでみましょう。
+            </p>
+          </li>
+          <li>
+            <strong>コードを編集してルールを変える</strong>
+            <p class="mt-1">
+              まずは、//セルの色 の "black" や "white" を、"red", "blue", "green", "yellow", "pink",
+              "skyblue" などの他の色に変更し、「適用」ボタンを押してみましょう。
+              <br />次に、//セルの誕生/生存条件 の birthCounts や survivalCounts
+              の中身を変更してみましょう。
+              <br />たとえば、birthCounts = [3]; survivalCounts = [0, 1, 2, 3, 4];
+              にしたらどうなるでしょうか。「ランダム」ボタンを押して、セルの分布がどう変化するか見てみましょう！
+            </p>
+          </li>
+          <li>
+            <strong>作品を保存・共有する</strong>
+            <p class="mt-1">
+              自分で作った盤面やコードを保存して、他のユーザーに見てもらいましょう。また、他のユーザーが作った盤面やコードを読み込んで遊びましょう。
+            </p>
+          </li>
+        </ul>
+
+        <p class="mt-8 text-sm italic text-center text-gray-500">
+          さあ、あなただけのライフゲームを作って遊びましょう！
+        </p>
       {:else}
+        <h2 class="font-bold text-2xl mb-4 text-primary">Tutorial</h2>
+        <h3 class="font-bold text-xl mt-4 mb-2 text-secondary">What is Game of Life ?</h3>
+
+        <p>
+          The Game of Life is a mathematical model simulating life, devised by the British
+          mathematician John Horton Conway in 1970.
+          <br />
+          The grid-like board is a field where life propagates, and the black squares represent living
+          entities.
+          <br />
+          These entities are called cells, conceived as a colony of bacteria.
+          <br />
+          A cell can survive by mutual assistance if a suitable number of other cells are present around
+          it.
+          <br />
+          It can also crossbreed with neighboring cells to create new ones.
+          <br />
+          Let's observe how the distribution of cells changes and grows more complex over time!
+        </p>
+
+        <p class="font-bold mt-4 mb-2">The Four Rules of Life Game</p>
+
+        <p>
+          Each cell has two states: "alive (black)" and "dead (white)".
+          <br />
+          A cell's state in the next generation changes depending on the state of the other cells in
+          its surrounding 8 squares.
+        </p>
+
+        <ol class="list-decimal list-inside ml-4 space-y-2">
+          <li>
+            <strong>Birth:</strong> A dead cell becomes an alive cell in the next generation if it has
+            3 alive neighbors.
+          </li>
+          <li>
+            <strong>Survival:</strong> An alive cell survives into the next generation if it has 2 or
+            3 alive neighbors.
+          </li>
+          <li>
+            <strong>Underpopulation:</strong> An alive cell dies due to underpopulation in the next generation
+            if it has 1 or fewer alive neighbors.
+          </li>
+          <li>
+            <strong>Overpopulation:</strong> An alive cell dies due to overpopulation in the next generation
+            if it has 4 or more alive neighbors.
+          </li>
+        </ol>
+
+        <p class="mt-4 flex justify-center">
+          <img
+            src="/help_img/rules_en.png"
+            alt="Game of Life Rules"
+            class="w-full max-w-xl rounded shadow-md"
+          />
+        </p>
+
+        <p>
+          This set of rules is often called B3/S23 in shorthand.
+          <br />
+          B3 means the Born condition requires 3 alive neighbors, and S23 means the Survive condition
+          requires 2 or 3 alive neighbors.
+        </p>
+
+        <div class="divider"></div>
+
+        <h3 class="font-bold text-xl mt-4 mb-2 text-secondary">Screen Layout and Operation</h3>
+
         <p class="mt-4 flex justify-center">
           <img
             src="/help_img/ui_map_en.png"
@@ -271,13 +321,59 @@
           <li><strong>Questionmark Icon:</strong> Reopens this help screen at any time.</li>
           <li><strong>Language Icon:</strong> Toggles the display language (Japanese/English).</li>
         </ul>
-      {/if}
 
-      <p class="mt-8 text-sm italic text-center text-gray-500">
-        {isJapanese
-          ? "さあ、あなただけのライフゲームを作って遊びましょう！"
-          : "Enjoy creating your own game of life!"}
-      </p>
+        <h3 class="font-bold text-xl mt-4 mb-3 text-secondary">Stuck on What to Do Next?</h3>
+        <p class="mb-4">Here are five steps to enjoy Life Code more deeply.</p>
+        <ol class="list-decimal list-inside space-y-4">
+          <li>
+            <strong>Play with the Original Game of Life</strong>
+            <p class="mt-1">
+              Start by playing with the original Game of Life. Try dragging to place cells or
+              pressing the "Random" button to observe the cell movements. You can change the speed
+              freely.
+            </p>
+          </li>
+          <li>
+            <strong>Place Famous Patterns</strong>
+            <p class="mt-1">
+              Next, press the "Template" button at the bottom of the screen to place famous Game of
+              Life patterns. If the board size is insufficient, modify boardSize under
+              //盤面の大きさ in the code editor on the right. Press the green "Apply" button to
+              reflect your edited code.
+            </p>
+          </li>
+          <li>
+            <strong>Try Custom Rules</strong>
+            <p class="mt-1">
+              Next, use the "Select Rule" button at the bottom of the screen to apply custom Game of
+              Life rules created by the ut.code(): team.
+            </p>
+          </li>
+          <li>
+            <strong>Edit the Code and Change the Rules</strong>
+            <p class="mt-1">
+              First, try changing "black" or "white" under //セルの色 to another color, such as
+              "red", "blue", "green", "yellow", "pink", or "skyblue", and then press the "Apply"
+              button.
+              <br />Next, try changing the contents of birthCounts and survivalCounts under
+              //セルの誕生/生存条件. For example, what happens if you set birthCounts = [3];
+              survivalCounts = [0, 1, 2, 3, 4]; ? Press the "Random" button and see how the cell
+              distribution changes!
+            </p>
+          </li>
+          <li>
+            <strong>Save and Share Your Creations</strong>
+            <p class="mt-1">
+              Save your custom boards and code to share them with other users. You can also load and
+              play with boards and code created by other users.
+            </p>
+          </li>
+        </ol>
+
+        <p class="mt-8 text-sm italic text-center text-gray-500">
+          Enjoy creating your own game of life!
+        </p>
+      {/if}
     </div>
   </div>
 </dialog>

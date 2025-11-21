@@ -11,7 +11,7 @@ let previewCells = [];
 
 //盤面の大きさ
 let boardSize = 20;
-const cellSize = 600 / boardSize;
+const cellSize = 450 / boardSize;
 
 //セルの色
 const aliveCellColor = "black";
