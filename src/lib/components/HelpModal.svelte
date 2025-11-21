@@ -259,7 +259,7 @@
         </p>
 
         <h4 class="font-bold mt-4 mb-2">1. Screen Layout</h4>
-        <ul class="list-disc list-inside ml-4 space-y-1">
+        <ul class="list-disc list-inside ml-8 space-y-1">
           <li>
             <strong>Center Board:</strong> This is the field where cells propagate. Click or drag to
             change a cell's state.
