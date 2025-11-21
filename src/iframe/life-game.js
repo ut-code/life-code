@@ -279,3 +279,13 @@ on.apply_board = (newBoard) => {
   renderBoard();
   generationChange(0);
 };
+
+function showToast(jMessage, eMessage) {
+  window.parent.postMessage(
+    {
+      type: "show_toast",
+      data: { japanese: jMessage, english: eMessage },
+    },
+    "*",
+  );
+}
