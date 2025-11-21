@@ -89,7 +89,6 @@ function renderBoard() {
               }
             }
             rerender();
-            stop();
           } else {
             window.parent.postMessage(
               {
@@ -105,7 +104,7 @@ function renderBoard() {
         e.preventDefault();
         if (!isPlacingTemplate) {
           isDragging = true;
-          board[i][j] = board[i][j] === 1 ? 0 : 1;
+          board[i][j] = board[i][j] ? 0 : 1;
           dragMode = board[i][j];
           button.style.backgroundColor = board[i][j] ? aliveCellColor : deadCellColor;
         }
