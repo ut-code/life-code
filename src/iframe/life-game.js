@@ -283,7 +283,8 @@ on.place_template = (template) => {
 };
 
 on.save_board = async () => {
-  window.parent.postMessage({ type: "save_board", data: board }, "*");
+  const numericBoard = board.map((row) => row.map((cell) => (cell ? 1 : 0)));
+  window.parent.postMessage({ type: "save_board", data: numericBoard }, "*");
 };
 
 on.apply_board = (newBoard) => {
