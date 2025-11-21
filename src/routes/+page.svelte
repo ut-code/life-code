@@ -380,7 +380,9 @@
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
-        intervalMs = intervalMs * 2;
+        if (intervalMs < 8000) {
+          intervalMs = intervalMs * 2;
+        }
       }}
     >
       <img class="size-6" src={icons.decelerate} alt="decelerate" />
@@ -398,7 +400,9 @@
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
-        intervalMs = intervalMs / 2;
+        if (intervalMs > 20) {
+          intervalMs = intervalMs / 2;
+        }
       }}
     >
       <img class="size-6" src={icons.accelerate} alt="accelerate" />
