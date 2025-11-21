@@ -1,6 +1,7 @@
 import lifespan from "$lib/assets/life-game-rules/lifespan.js?raw";
 import probabilistics from "$lib/assets/life-game-rules/probabilistics.js?raw";
 import wolframcode from "$lib/assets/life-game-rules/wolframcode.js?raw";
+import colorful from "$lib/assets/life-game-rules/colorful.js?raw";
 import score from "$lib/assets/life-game-rules/score.js?raw";
 
 export type RuleExplanation = {
@@ -28,8 +29,8 @@ export const rulesExplanation = {
   },
   probabilistics: {
     name: {
-      ja: "確率システム",
-      en: "Probabilistic system",
+      ja: "確率的オートマトン",
+      en: "Probabilistic automaton",
     },
     description: {
       ja: "生死に確率を導入できます",
@@ -47,6 +48,17 @@ export const rulesExplanation = {
       en: "a one-dimensional cellular automaton created by physicist Stephen Wolfram",
     },
     code: wolframcode,
+  },
+  colorful: {
+    name: {
+      ja: "カラフル",
+      en: "Colorful",
+    },
+    description: {
+      ja: "多彩な色付けを可能にするシステムです",
+      en: "A system that enables colorful coloring",
+    },
+    code: colorful,
   },
   score: {
     name: {

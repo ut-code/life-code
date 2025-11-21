@@ -5,10 +5,12 @@
     manager,
     isJapanese,
     onSelect,
+    isColorful,
   }: {
     manager: BoardManager;
     isJapanese: boolean;
     onSelect: (id: number) => void;
+    isColorful: boolean;
   } = $props();
 
   let showConfirmation = $state(false);
@@ -25,6 +27,21 @@
     }
     showConfirmation = false;
     selectedBoardId = null;
+  }
+
+  function getCellColor(cell: number): string {
+    const WHITE = 0xffffff;
+
+    if (isColorful) {
+      // 色対応版（0xFFFFFF形式）
+      if (cell === WHITE) return "white";
+      return "#" + cell.toString(16).padStart(6, "0");
+    } else {
+      // レガシー版（0/1形式）への互換性
+      if (cell === 0) return "white";
+      if (cell === 1) return "black";
+    }
+    return "white"; // 不明な値の場合
   }
 </script>
 
@@ -54,7 +71,7 @@
             {#each manager.saveState.preview as row, i (i)}
               <div class="preview-row">
                 {#each row as cell, j (j)}
-                  <div class="preview-cell {cell ? 'alive' : ''}"></div>
+                  <div class="preview-cell" style="background-color: {getCellColor(cell)}"></div>
                 {/each}
               </div>
             {/each}
@@ -110,7 +127,10 @@
                     {#each item.preview as row, i (i)}
                       <div class="preview-row">
                         {#each row as cell, j (j)}
-                          <div class="preview-cell {cell ? 'alive' : ''}"></div>
+                          <div
+                            class="preview-cell"
+                            style="background-color: {getCellColor(cell)}"
+                          ></div>
                         {/each}
                       </div>
                     {/each}
@@ -178,8 +198,5 @@
   .preview-cell {
     width: 3px;
     height: 3px;
-  }
-  .preview-cell.alive {
-    background-color: black;
   }
 </style>

@@ -1,49 +1,75 @@
 "use strict";
 
-//ルール
-//スコア計算は生きているセルの総数が増加した時、増加分だけ加算されます
-//減少した時は、スコアは変化しません
-//スコアが計算され始めてからセルを直接変化させるとスコアがリセットされます
-//生きているセルがなくなるか、ループが起きたら計算終了です
-
 let generationFigure = 0;
 let isDragging = false;
-let dragMode = 0; // 1: 黒にする, 0: 白にする
+let dragColor = 0; // ドラッグ中に設定する色
 let isPlacingTemplate = false;
 let patternShape = [];
 let patternHeight = 0;
 let patternWidth = 0;
 let previewCells = [];
-let previousBoard = [];
-let isColorful = false;
-let score = 0;
+let isColorful = true;
 
-//変数設定
-let boardSize = 20; //盤面の大きさ(20x20)
-const cellSize = 450 / boardSize; //セルの大きさ(px)
+//盤面の大きさ
+const boardSize = 20;
+const cellSize = 450 / boardSize;
+
+//セルの誕生/生存条件
+const birthCounts = [3];
+const survivalCounts = [2, 3];
+
+// 色の定数定義
+const WHITE = 0xffffff; // 死んだセル（白）
+const BLACK = 0x000000; // 生きたセル（黒）
+let currentSelectedColor = BLACK; // 描かれるセルの色
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
-  // 自身が生きている & 周囲が 2 か 3 で生存
-  if (self && 2 <= around && around <= 3) {
-    return self;
+  // 自身が死んでいる & 周囲が birthCounts で誕生
+  if (!isAlive(self) && birthCounts.includes(around)) {
+    return true;
   }
-  // 自身が死んでいる & 周囲が 3 で誕生
-  if (!self && around === 3) {
-    return 1;
+  // 自身が生きている & 周囲が survivalCounts で生存
+  if (isAlive(self) && survivalCounts.includes(around)) {
+    return true;
   }
-  return 0;
+  return false;
+}
+
+function isAlive(self) {
+  return self !== WHITE ? true : false;
 }
 
 // cellの状態に応じた色を返す関数
 function getStyle(cell) {
-  if (cell === 0) return "white";
-  // cellの値に応じて色を返す場合はここに追加
-  return "black"; // デフォルトは黒
+  if (cell === WHITE) return "white";
+  // 16進数を#付きの色文字列に変換
+  return "#" + cell.toString(16).padStart(6, "0");
+}
+
+// 誕生時の色を計算
+function getBirthColor(aroundCells) {
+  const aliveCells = aroundCells.filter((cell) => isAlive(cell));
+
+  let totalR = 0;
+  let totalG = 0;
+  let totalB = 0;
+
+  for (const cell of aliveCells) {
+    totalR += (cell >> 16) & 0xff;
+    totalG += (cell >> 8) & 0xff;
+    totalB += cell & 0xff;
+  }
+
+  const avgR = Math.round(totalR / aliveCells.length);
+  const avgG = Math.round(totalG / aliveCells.length);
+  const avgB = Math.round(totalB / aliveCells.length);
+
+  return (avgR << 16) | (avgG << 8) | avgB;
 }
 
 //Boardの初期化
-let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => 0));
+let board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => WHITE));
 const table = document.getElementById("game-board");
 
 //盤面をBoardに従って変更する関数達(Boardを変更したら実行する)
@@ -65,7 +91,7 @@ function renderBoard() {
       const td = document.createElement("td");
       td.style.padding = "0";
       const button = document.createElement("button");
-      button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
+      button.style.backgroundColor = getStyle(board[i][j]); //Boardの対応する値によって色を変更
       // ボードが大きいときは border をつけない
       if (boardSize >= 50) {
         button.style.border = "none";
@@ -75,8 +101,8 @@ function renderBoard() {
       }
       button.style.width = `${cellSize}px`;
       button.style.height = `${cellSize}px`;
-      button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
-      button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
+      button.style.padding = "0";
+      button.style.display = "block";
       button.onclick = () => {
         if (isPlacingTemplate) {
           clearPreview();
@@ -86,14 +112,10 @@ function renderBoard() {
               for (let c = 0; c < patternWidth; c++) {
                 const boardRow = i + r;
                 const boardCol = j + c;
-                board[boardRow][boardCol] = patternShape[r][c];
+                board[boardRow][boardCol] = patternShape[r][c] ? currentSelectedColor : WHITE;
               }
             }
-            if (generationFigure !== 0) {
-              scoreReset();
-            }
             rerender();
-            generationChange(0);
           } else {
             window.parent.postMessage(
               {
@@ -109,18 +131,15 @@ function renderBoard() {
         e.preventDefault();
         if (!isPlacingTemplate) {
           isDragging = true;
-          board[i][j] = board[i][j] ? 0 : 1;
-          dragMode = board[i][j];
-          button.style.backgroundColor = board[i][j] ? "black" : "white";
-          if (generationFigure > 1) {
-            scoreReset();
-          }
+          board[i][j] = board[i][j] === WHITE ? currentSelectedColor : WHITE;
+          dragColor = board[i][j];
+          button.style.backgroundColor = getStyle(board[i][j]);
         }
       };
       button.onmouseenter = () => {
-        if (isDragging && board[i][j] !== dragMode && !isPlacingTemplate) {
-          board[i][j] = dragMode;
-          button.style.backgroundColor = board[i][j] ? "black" : "white";
+        if (isDragging && board[i][j] !== dragColor && !isPlacingTemplate) {
+          board[i][j] = dragColor;
+          button.style.backgroundColor = getStyle(board[i][j]);
         }
         if (isPlacingTemplate) {
           drawPreview(i, j);
@@ -159,7 +178,7 @@ function drawPreview(row, col) {
 function clearPreview() {
   previewCells.forEach((cellPos) => {
     const cell = table.rows[cellPos.row].cells[cellPos.col].firstChild;
-    cell.style.backgroundColor = board[cellPos.row][cellPos.col] ? "black" : "white";
+    cell.style.backgroundColor = getStyle(board[cellPos.row][cellPos.col]);
   });
   previewCells = [];
 }
@@ -186,16 +205,6 @@ document.addEventListener("mouseup", () => {
 
 renderBoard();
 
-function scoreReset() {
-  if (score === 0) return;
-  previousBoard = [];
-  showToast(
-    "盤面が途中で変更されたため得点がリセットされました。スコア:" + score,
-    "The score has been reset because the board was changed midway through. Score:" + score,
-  );
-  score = 0;
-}
-
 function generationChange(num) {
   //現在の世代を表すgenerationFigureを変更し、文章も変更
   generationFigure = num;
@@ -212,8 +221,9 @@ function progressBoard() {
   const newBoard = structuredClone(board);
   for (let i = 0; i < boardSize; i++) {
     for (let j = 0; j < boardSize; j++) {
-      //周囲のマスに黒マスが何個あるかを計算(aroundに格納)↓
+      //周囲のマスに生きたセルが何個あるかを計算(aroundに格納)↓
       let around = 0;
+      const aroundCells = [];
       let tate, yoko;
       if (i === 0) {
         tate = [0, 1];
@@ -229,52 +239,28 @@ function progressBoard() {
       } else {
         yoko = [-1, 0, 1];
       }
+
       for (let ii = 0; ii < tate.length; ii++) {
         for (let jj = 0; jj < yoko.length; jj++) {
           if (tate[ii] !== 0 || yoko[jj] !== 0) {
-            around += board[i + tate[ii]][j + yoko[jj]] !== 0 ? 1 : 0;
+            if (isAlive(board[i + tate[ii]][j + yoko[jj]])) {
+              around += 1;
+              aroundCells.push(board[i + tate[ii]][j + yoko[jj]]);
+            }
           }
         }
       }
-      //↑周囲のマスに黒マスが何個あるかを計算(aroundに格納)
-      newBoard[i][j] = isNextAlive(around, board[i][j]);
+      //↑周囲のマスに生きたセルが何個あるかを計算(aroundに格納)
+
+      // 生死を判定
+      if (isNextAlive(around, board[i][j])) {
+        // 生きている場合
+        newBoard[i][j] = isAlive(board[i][j]) ? board[i][j] : getBirthColor(aroundCells);
+      } else {
+        // 死んでいる場合
+        newBoard[i][j] = WHITE;
+      }
     }
-  }
-
-  // すべて白マスでないか確認
-  const isAllWhite = newBoard.every((row) => row.every((cell) => cell === 0));
-  if (isAllWhite) {
-    // generationFigure が 0 の場合は、初期状態なのでメッセージを送らない
-    if (generationFigure === 0) {
-      return;
-    }
-    showToast(
-      "盤面上に生きているセルがなくなりました　終了！ スコア:" + score,
-      "All cells on the board have been cleared. Game over! Score:" + score,
-    );
-    window.parent.postMessage({ type: "timer_change", data: false }, "*");
-    previousBoard = [];
-  }
-
-  // ループ確認
-  const newBoardString = JSON.stringify(newBoard);
-  if (previousBoard.some((prevBoard) => JSON.stringify(prevBoard) === newBoardString)) {
-    showToast("ループ発生　終了！ スコア:" + score, "Loop detected! End! Score:" + score);
-    window.parent.postMessage({ type: "timer_change", data: false }, "*");
-    previousBoard = [];
-  }
-
-  let previousLiveCells = board.flat().reduce((sum, cell) => sum + cell, 0);
-  let currentLiveCells = newBoard.flat().reduce((sum, cell) => sum + cell, 0);
-  if (previousBoard.length === 0) {
-    score = 0;
-  } else {
-    score += currentLiveCells > previousLiveCells ? currentLiveCells - previousLiveCells : 0;
-  }
-
-  previousBoard.push(board);
-  if (previousBoard.length > 120) {
-    previousBoard.shift(); // 120個までに制限
   }
   board = newBoard;
   generationChange(generationFigure + 1);
@@ -288,21 +274,30 @@ on.progress = () => {
 };
 
 on.board_reset = () => {
-  //すべて白にBoardを変更
-  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => 0));
+  //すべて死んだセルにBoardを変更
+  board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => WHITE));
   renderBoard();
   generationChange(0);
-  scoreReset();
 };
 
 on.board_randomize = () => {
-  //白黒ランダムにBoardを変更
+  //生きたセル死んだセルランダムにBoardを変更
   board = Array.from({ length: boardSize }, () =>
-    Array.from({ length: boardSize }, () => (Math.random() > 0.5 ? 1 : 0)),
+    Array.from({ length: boardSize }, () => {
+      if (Math.random() > 0.5) {
+        // 生きたセル：ランダムな色を生成
+        const r = Math.floor(Math.random() * 256);
+        const g = Math.floor(Math.random() * 256);
+        const b = Math.floor(Math.random() * 256);
+        return (r << 16) | (g << 8) | b;
+      } else {
+        // 死んだセル
+        return WHITE;
+      }
+    }),
   );
   renderBoard();
   generationChange(0);
-  scoreReset();
 };
 
 on.get_boardsize = () => {
@@ -334,18 +329,11 @@ on.apply_board = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
-  scoreReset();
 };
 
-function showToast(jMessage, eMessage) {
-  window.parent.postMessage(
-    {
-      type: "show_toast",
-      data: { japanese: jMessage, english: eMessage },
-    },
-    "*",
-  );
-}
+on.apply_color = (colorValue) => {
+  currentSelectedColor = colorValue;
+};
 
 on.request_colorful_status = () => {
   window.parent.postMessage({ type: "colorful_status", data: isColorful }, "*");

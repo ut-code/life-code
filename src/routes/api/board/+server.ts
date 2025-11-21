@@ -7,6 +7,7 @@ const BoardSchema = v.object({
   board: v.array(v.array(v.number())),
   name: v.pipe(v.string(), v.minLength(1, "盤面名は必須です。")),
   code: v.string(),
+  isColorful: v.boolean(),
 });
 
 export async function POST({ request }) {
@@ -24,7 +25,7 @@ export async function POST({ request }) {
     return json({ message: "無効なリクエストデータです。" }, { status: 400 });
   }
 
-  const { board, name, code } = result.output;
+  const { board, name, code, isColorful } = result.output;
   const preview = createBoardPreview(board);
 
   const newState = await prisma.board.create({
@@ -33,6 +34,7 @@ export async function POST({ request }) {
       name: name,
       preview: preview,
       code: code,
+      isColorful: isColorful,
     },
   });
 
@@ -51,7 +53,7 @@ export async function GET({ url }) {
 
     const state = await prisma.board.findUnique({
       where: { id: id },
-      select: { board: true, code: true },
+      select: { board: true, code: true, isColorful: true },
     });
 
     if (!state) {

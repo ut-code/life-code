@@ -33,6 +33,10 @@
   let generationFigure = $state(0);
   let sizeValue = $state(20);
 
+  let showColorPicker = $state(false);
+  let selectedColor = $state("#000000");
+  let isColorful = $state(false);
+
   const boardManager = new BoardManager();
   const codeManager = new CodeManager();
 
@@ -63,13 +67,16 @@
     | "save_board"
     | "apply_board"
     | "get_boardsize"
-    | "progress";
+    | "progress"
+    | "apply_color"
+    | "request_colorful_status";
 
   type IncomingEvent =
     | "generation_change"
     | "get_boardsize"
     | "Size shortage"
     | "save_board"
+    | "colorful_status"
     | "show_toast"
     | "timer_change";
 
@@ -94,7 +101,12 @@
         break;
       }
       case "save_board": {
-        boardManager.openSaveModal(event.data.data as number[][], appliedCode as string);
+        const data = event.data.data as { board: number[][]; isColorful?: boolean };
+        boardManager.openSaveModal(data.board, appliedCode, data.isColorful ?? false);
+        break;
+      }
+      case "colorful_status": {
+        isColorful = event.data.data as boolean;
         break;
       }
       case "show_toast": {
@@ -129,6 +141,7 @@
     if (data) {
       editingCode = data.code;
       appliedCode = data.code;
+      isColorful = data.isColorful;
       sendEvent("apply_board", data.board);
     }
   }
@@ -158,6 +171,14 @@
     editingCode = rule.code;
     appliedCode = rule.code;
   }
+
+  function applyColor(color: string) {
+    // 16進数文字列を数値に変換して送信
+    const hex = color.startsWith("#") ? color.slice(1) : color;
+    const hexValue = parseInt(hex, 16);
+    sendEvent("apply_color", hexValue);
+    showColorPicker = false;
+  }
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -167,8 +188,19 @@
 
   <div class="font-semibold text-black text-[20px] ml-5">Life code</div>
 
+  <label
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-auto"
+    class:invisible={!isColorful}
+    class:pointer-events-none={!isColorful}
+  >
+    <input type="checkbox" bind:checked={showColorPicker} />
+    <div class="text-black">
+      <img class="size-6" src={icons.paintBrush} alt="Paint Brush" />
+    </div>
+  </label>
+
   <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-auto"
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-10"
     onclick={() => {
       resetModalOpen = true;
     }}
@@ -276,7 +308,7 @@
   </div>
 </div>
 
-<BoardModals manager={boardManager} {isJapanese} onSelect={onBoardSelect} />
+<BoardModals manager={boardManager} {isJapanese} onSelect={onBoardSelect} {isColorful} />
 <CodeModals manager={codeManager} {isJapanese} onSelect={onCodeSelect} />
 <HelpModal open={helpModalOpen} {isJapanese} onClose={() => (helpModalOpen = false)} />
 
@@ -321,6 +353,7 @@
       onload={() => {
         setTimeout(() => {
           sendEvent("get_boardsize");
+          sendEvent("request_colorful_status");
         }, 50);
       }}
     ></iframe>
@@ -520,3 +553,30 @@
     </button>
   </div>
 </div>
+
+{#if showColorPicker}
+  <div
+    class="absolute top-16 right-32 z-50 bg-white p-4 rounded-lg shadow-lg border border-gray-300"
+  >
+    <h3 class="font-bold mb-2">
+      {isJapanese
+        ? "色選択可能時のみ利用できます"
+        : "Available only when color selection is enabled"}
+    </h3>
+    <input type="color" bind:value={selectedColor} class="w-full h-12 cursor-pointer" />
+    <div class="flex gap-2 mt-3">
+      <button
+        class="btn btn-sm btn-primary flex-1"
+        onclick={() => {
+          applyColor(selectedColor);
+          console.log("Applied color:", selectedColor);
+        }}
+      >
+        {isJapanese ? "適用" : "Apply"}
+      </button>
+      <button class="btn btn-sm flex-1" onclick={() => (showColorPicker = false)}>
+        {isJapanese ? "キャンセル" : "Cancel"}
+      </button>
+    </div>
+  </div>
+{/if}

@@ -10,3 +10,4 @@ export { default as reset } from "./reset.svg";
 export { default as accelerate } from "./accelerate.svg";
 export { default as decelerate } from "./decelerate.svg";
 export { default as questionmark } from "./questionmark.svg";
+export { default as paintBrush } from "./paint-brush.svg";

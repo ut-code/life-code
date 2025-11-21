@@ -5,6 +5,7 @@ const PREVIEW_SIZE = 20;
  * 20x20 に満たない場合は、中央に配置し、周囲を false (空白) で埋めます。
  */
 export function createBoardPreview(boardData: number[][]): number[][] {
+  console.log("Input board sample:", boardData[0]?.slice(0, 3));
   const boardHeight = boardData.length;
   const boardWidth = boardData[0]?.length || 0;
 
