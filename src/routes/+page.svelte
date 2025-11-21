@@ -24,7 +24,6 @@
 
   let showEditor = $state(true);
   let preview_iframe: HTMLIFrameElement | undefined = $state();
-  let isProgress = $state(false);
   let isJapanese = $state(true);
   let resetModalOpen = $state(false);
   let helpModalOpen = $state(true);
@@ -47,10 +46,10 @@
     return newDisabledState;
   });
 
-  let timer: "running" | "stopped" = $state("stopped");
+  let isProgress = $state(false);
   let intervalMs = $state(1000);
   $effect(() => {
-    if (timer === "stopped") return;
+    if (!isProgress) return;
     const timerId = setInterval(() => {
       sendEvent("progress");
     }, intervalMs);
@@ -58,8 +57,6 @@
   });
 
   type OngoingEvent =
-    | "play"
-    | "pause"
     | "board_reset"
     | "board_randomize"
     | "place_template"
@@ -338,8 +335,6 @@
     class:bg-[#E0E0E0]={templateDrawerOpen}
     onclick={() => {
       isProgress = false;
-      timer = "stopped";
-      sendEvent("pause");
       templateDrawerOpen = !templateDrawerOpen;
       ruleDrawerOpen = false;
     }}
@@ -359,8 +354,6 @@
     class:bg-[#E0E0E0]={ruleDrawerOpen}
     onclick={() => {
       isProgress = false;
-      timer = "stopped";
-      sendEvent("pause");
       ruleDrawerOpen = !ruleDrawerOpen;
       templateDrawerOpen = false;
     }}
@@ -418,13 +411,6 @@
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap"
       onclick={() => {
-        if (isProgress) {
-          timer = "stopped";
-          sendEvent("pause");
-        } else {
-          timer = "running";
-          sendEvent("play");
-        }
         isProgress = !isProgress;
       }}
     >
@@ -441,8 +427,6 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        timer = "stopped";
-        sendEvent("pause");
         sendEvent("save_board");
       }}
     >
@@ -453,8 +437,6 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        timer = "stopped";
-        sendEvent("pause");
         boardManager.openLoadModal(isJapanese);
       }}
     >
@@ -465,8 +447,6 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        timer = "stopped";
-        sendEvent("pause");
         sendEvent("board_reset");
       }}
     >
@@ -477,8 +457,6 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        timer = "stopped";
-        sendEvent("pause");
         sendEvent("board_randomize");
       }}
     >
@@ -497,7 +475,6 @@
       onclick={() => {
         appliedCode = editingCode;
         isProgress = false;
-        timer = "stopped";
       }}
     >
       {isJapanese ? "適用" : "Apply"}
@@ -507,7 +484,6 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        sendEvent("pause");
         codeManager.openSaveModal(editingCode);
       }}
     >
@@ -518,7 +494,6 @@
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
         isProgress = false;
-        sendEvent("pause");
         codeManager.openLoadModal(isJapanese);
       }}
     >

@@ -1,6 +1,5 @@
 "use strict";
 
-let timer = "stop";
 let generationFigure = 0;
 let isDragging = false;
 let dragMode = 0; // 1: 生きたセルにする, 0: 死んだセルにする
@@ -104,7 +103,7 @@ function renderBoard() {
       };
       button.onmousedown = (e) => {
         e.preventDefault();
-        if (timer === "stop" && !isPlacingTemplate) {
+        if (!isPlacingTemplate) {
           isDragging = true;
           board[i][j] = board[i][j] === 1 ? 0 : 1;
           dragMode = board[i][j];
@@ -112,7 +111,7 @@ function renderBoard() {
         }
       };
       button.onmouseenter = () => {
-        if (isDragging && timer === "stop" && board[i][j] !== dragMode && !isPlacingTemplate) {
+        if (isDragging && board[i][j] !== dragMode && !isPlacingTemplate) {
           board[i][j] = dragMode;
           button.style.backgroundColor = board[i][j] ? aliveCellColor : deadCellColor;
         }
@@ -243,14 +242,6 @@ on.progress = () => {
   progressBoard();
 };
 
-on.play = () => {
-  timer = "start";
-};
-
-on.pause = () => {
-  timer = "stop";
-};
-
 on.board_reset = () => {
   //すべて死んだセルにBoardを変更
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => 0));
@@ -277,7 +268,6 @@ on.place_template = (template) => {
   patternWidth = patternShape[0].length;
   isPlacingTemplate = true;
   table.style.cursor = "crosshair";
-  stop();
 };
 
 on.save_board = async () => {
@@ -288,5 +278,4 @@ on.apply_board = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
-  stop();
 };
