@@ -65,7 +65,13 @@
     | "get_boardsize"
     | "progress";
 
-  type IncomingEvent = "generation_change" | "get_boardsize" | "Size shortage" | "save_board";
+  type IncomingEvent =
+    | "generation_change"
+    | "get_boardsize"
+    | "Size shortage"
+    | "save_board"
+    | "show_toast"
+    | "timer_change";
 
   function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
     switch (event.data.type) {
@@ -89,6 +95,15 @@
       }
       case "save_board": {
         boardManager.openSaveModal(event.data.data as number[][], appliedCode as string);
+        break;
+      }
+      case "show_toast": {
+        const sentence = event.data.data as { japanese: string; english: string };
+        toast.show(isJapanese ? sentence.japanese : sentence.english, "info");
+        break;
+      }
+      case "timer_change": {
+        timerIsRunnning = event.data.data as boolean;
         break;
       }
       default: {
