@@ -47,6 +47,14 @@ const table = document.getElementById("game-board");
 
 //盤面をBoardに従って変更する関数達(Boardを変更したら実行する)
 function renderBoard() {
+  // bodyを中央配置に設定
+  document.body.style.display = "flex";
+  document.body.style.justifyContent = "center";
+  document.body.style.alignItems = "center";
+  document.body.style.minHeight = "100vh";
+  document.body.style.margin = "0";
+  document.body.style.padding = "0";
+
   // 初回の盤面生成
   table.innerHTML = "";
   for (let i = 0; i < boardSize; i++) {
@@ -85,7 +93,6 @@ function renderBoard() {
             }
             rerender();
             generationChange(0);
-            stop();
           } else {
             window.parent.postMessage(
               {
@@ -101,7 +108,7 @@ function renderBoard() {
         e.preventDefault();
         if (!isPlacingTemplate) {
           isDragging = true;
-          board[i][j] = !board[i][j];
+          board[i][j] = board[i][j] ? 0 : 1;
           dragMode = board[i][j];
           button.style.backgroundColor = board[i][j] ? "black" : "white";
           if (generationFigure > 1) {
@@ -168,14 +175,6 @@ function rerender() {
       if (currentCellColor !== expectedCellColor) {
         button.style.backgroundColor = expectedCellColor;
       }
-
-      // セルサイズの更新
-      const currentCellsize = button.style.width;
-      const expectedCellsize = `${cellSize}px`;
-      if (currentCellsize !== expectedCellsize) {
-        button.style.width = expectedCellsize;
-        button.style.height = expectedCellsize;
-      }
     }
   }
 }
@@ -185,7 +184,6 @@ document.addEventListener("mouseup", () => {
 });
 
 renderBoard();
-progressBoard();
 
 function scoreReset() {
   if (score === 0) return;
@@ -254,7 +252,6 @@ function progressBoard() {
       "All cells on the board have been cleared. Game over! Score:" + score,
     );
     window.parent.postMessage({ type: "timer_change", data: false }, "*");
-    stop();
     previousBoard = [];
   }
 
@@ -263,7 +260,6 @@ function progressBoard() {
   if (previousBoard.some((prevBoard) => JSON.stringify(prevBoard) === newBoardString)) {
     showToast("ループ発生　終了！ スコア:" + score, "Loop detected! End! Score:" + score);
     window.parent.postMessage({ type: "timer_change", data: false }, "*");
-    stop();
     previousBoard = [];
   }
 
@@ -318,7 +314,6 @@ on.place_template = (template) => {
   patternWidth = patternShape[0].length;
   isPlacingTemplate = true;
   table.style.cursor = "crosshair";
-  stop();
 };
 
 on.save_board = async () => {
@@ -329,7 +324,6 @@ on.apply_board = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
-  stop();
   scoreReset();
 };
 
