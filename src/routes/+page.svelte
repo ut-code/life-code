@@ -46,10 +46,10 @@
     return newDisabledState;
   });
 
-  let isProgress = $state(false);
+  let timerIsRunnning = $state(false);
   let intervalMs = $state(1000);
   $effect(() => {
-    if (!isProgress) return;
+    if (!timerIsRunnning) return;
     const timerId = setInterval(() => {
       sendEvent("progress");
     }, intervalMs);
@@ -334,7 +334,7 @@
     class:bg-base-200={!templateDrawerOpen}
     class:bg-[#E0E0E0]={templateDrawerOpen}
     onclick={() => {
-      isProgress = false;
+      timerIsRunnning = false;
       templateDrawerOpen = !templateDrawerOpen;
       ruleDrawerOpen = false;
     }}
@@ -353,7 +353,7 @@
     class:bg-base-200={!ruleDrawerOpen}
     class:bg-[#E0E0E0]={ruleDrawerOpen}
     onclick={() => {
-      isProgress = false;
+      timerIsRunnning = false;
       ruleDrawerOpen = !ruleDrawerOpen;
       templateDrawerOpen = false;
     }}
@@ -415,10 +415,10 @@
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap"
       onclick={() => {
-        isProgress = !isProgress;
+        timerIsRunnning = !timerIsRunnning;
       }}
     >
-      <input type="checkbox" bind:checked={isProgress} />
+      <input type="checkbox" bind:checked={timerIsRunnning} />
       <img class="size-6 swap-on" src={icons.Pause} alt="Pause" />
       <img class="size-6 swap-off" src={icons.Play} alt="Play" />
     </button>
@@ -430,7 +430,7 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
+        timerIsRunnning = false;
         sendEvent("save_board");
       }}
     >
@@ -440,7 +440,7 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
+        timerIsRunnning = false;
         boardManager.openLoadModal(isJapanese);
       }}
     >
@@ -450,7 +450,7 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
+        timerIsRunnning = false;
         sendEvent("board_reset");
       }}
     >
@@ -460,7 +460,7 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
+        timerIsRunnning = false;
         sendEvent("board_randomize");
       }}
     >
@@ -478,7 +478,7 @@
       ]}
       onclick={() => {
         appliedCode = editingCode;
-        isProgress = false;
+        timerIsRunnning = false;
       }}
     >
       {isJapanese ? "適用" : "Apply"}
@@ -487,7 +487,7 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
+        timerIsRunnning = false;
         codeManager.openSaveModal(editingCode);
       }}
     >
@@ -497,7 +497,7 @@
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
       onclick={() => {
-        isProgress = false;
+        timerIsRunnning = false;
         codeManager.openLoadModal(isJapanese);
       }}
     >
