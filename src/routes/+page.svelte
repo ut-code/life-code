@@ -28,7 +28,7 @@
   let isJapanese = $state(true);
   let resetModalOpen = $state(false);
   let helpModalOpen = $state(true);
-  let bottomDrawerOpen = $state(false);
+  let templateDrawerOpen = $state(false);
   let ruleDrawerOpen = $state(false);
 
   let generationFigure = $state(0);
@@ -192,11 +192,11 @@
 </div>
 
 <div
-  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-black pb-12"
-  class:translate-y-full={!bottomDrawerOpen}
-  class:translate-y-0={bottomDrawerOpen}
+  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-base-200 pb-22"
+  class:translate-y-full={!templateDrawerOpen}
+  class:translate-y-0={templateDrawerOpen}
 >
-  <div class="bg-base-200 shadow-lg p-4 h-48 w-full overflow-x-auto">
+  <div class="p-4 h-48 w-full overflow-x-auto">
     <div class="flex gap-4">
       {#each Object.keys(patterns) as (keyof typeof patterns)[] as patternName (patternName)}
         <div
@@ -220,7 +220,7 @@
               }
               const patternData = patterns[patternName];
               const patternShape = patternData.shape;
-              bottomDrawerOpen = false;
+              templateDrawerOpen = false;
               sendEvent("place_template", patternShape);
             }}
           >
@@ -237,11 +237,11 @@
 </div>
 
 <div
-  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 pb-12"
+  class="fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 bg-base-200 pb-22"
   class:translate-y-full={!ruleDrawerOpen}
   class:translate-y-0={ruleDrawerOpen}
 >
-  <div class="bg-[rgb(220,220,220)] shadow-lg p-4 h-30 w-full overflow-x-auto">
+  <div class="p-4 h-30 w-full overflow-x-auto">
     <div class="flex gap-4">
       {#each Object.entries(rulesExplanation) as [ruleName, ruleData] (ruleName)}
         <button
@@ -333,34 +333,59 @@
   </div>
 </div>
 
+<div class="fixed bottom-12 left-0 right-0 z-50 flex justify-start px-4 h-8">
+  <button
+    class="btn btn-sm text-sm rounded-t-lg rounded-b-none h-full justify-start mr-2 transition-colors duration-300 border-b-0"
+    class:bg-base-200={!templateDrawerOpen}
+    class:bg-[#E0E0E0]={templateDrawerOpen}
+    onclick={() => {
+      isProgress = false;
+      timer = "stopped";
+      sendEvent("pause");
+      templateDrawerOpen = !templateDrawerOpen;
+      ruleDrawerOpen = false;
+    }}
+  >
+    {#if templateDrawerOpen}
+      ▼ {isJapanese ? "テンプレート" : "Template"}
+    {:else if isJapanese}
+      ▲ テンプレート
+    {:else}
+      ▲ Template
+    {/if}
+  </button>
+
+  <button
+    class="btn btn-sm text-sm rounded-t-lg rounded-b-none h-full justify-start transition-colors duration-300 border-b-0"
+    class:bg-base-200={!ruleDrawerOpen}
+    class:bg-[#E0E0E0]={ruleDrawerOpen}
+    onclick={() => {
+      isProgress = false;
+      timer = "stopped";
+      sendEvent("pause");
+      ruleDrawerOpen = !ruleDrawerOpen;
+      templateDrawerOpen = false;
+    }}
+  >
+    {#if ruleDrawerOpen}
+      ▼ {isJapanese ? "ルール選択" : "Select Rule"}
+    {:else if isJapanese}
+      ▲ ルール選択
+    {:else}
+      ▲ Select Rule
+    {/if}
+  </button>
+</div>
+
 <div
   class="bg-[#E0E0E0] shadow-sm fixed bottom-0 left-0 right-0 z-50 h-12 p-0 flex items-center px-4"
 >
   <!-- Left Section -->
-  <div class="flex items-center">
-    <button
-      class="btn rounded-none h-12 justify-start w-30"
-      onclick={() => {
-        bottomDrawerOpen = !bottomDrawerOpen;
-        ruleDrawerOpen = false;
-      }}
-    >
-      {#if bottomDrawerOpen}
-        ▼
-      {:else if isJapanese}
-        ▲ テンプレート
-      {:else}
-        ▲ Template
-      {/if}
-    </button>
-
-    <div class="font-bold text-black ml-4 w-25">
+  <div class="flex items-center gap-x-2 ml-4">
+    <div class="font-bold text-black w-30">
       {isJapanese ? "世代数:" + generationFigure : "Generation:" + generationFigure}
     </div>
-  </div>
 
-  <!-- Center Section -->
-  <div class="flex-1 flex justify-center items-center gap-x-2">
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)]"
       onclick={() => {
@@ -388,12 +413,9 @@
       <img class="size-6" src={icons.accelerate} alt="accelerate" />
     </button>
 
-    <div class="font-bold text-black ml-2 w-25">
+    <div class="font-bold text-black ml-2 w-40">
       {isJapanese ? "現在の速度" : "Current speed"}: x{1000 / intervalMs}
     </div>
-
-    <div class="w-px bg-gray-400 h-6 mx-4"></div>
-    <!-- Separator -->
 
     <button
       class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap"
@@ -414,8 +436,8 @@
     </button>
   </div>
 
-  <!-- Right Section -->
-  <div class="flex items-center gap-x-2">
+  <!-- Center Section -->
+  <div class="flex-1 flex justify-center items-center gap-x-2">
     <div class="font-bold text-black">{isJapanese ? "盤面" : "Board"}:</div>
     <button
       class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
@@ -464,9 +486,10 @@
     >
       {isJapanese ? "ランダム" : "Random"}
     </button>
+  </div>
 
-    <div class="w-px bg-gray-400 h-6 mx-2"></div>
-    <!-- Separator -->
+  <!-- Right Section -->
+  <div class="flex items-center gap-x-2 mr-4">
     <div class="font-bold text-black">{isJapanese ? "コード" : "Code"}:</div>
     <button
       class={[
@@ -502,23 +525,6 @@
       }}
     >
       {isJapanese ? "ロード" : "Load"}
-    </button>
-    <button
-      class="btn btn-ghost hover:bg-[rgb(220,220,220)] text-black"
-      onclick={() => {
-        isProgress = false;
-        sendEvent("pause");
-        ruleDrawerOpen = !ruleDrawerOpen;
-        bottomDrawerOpen = false;
-      }}
-    >
-      {#if ruleDrawerOpen}
-        ▼
-      {:else if isJapanese}
-        ▲ ルール選択
-      {:else}
-        ▲ Select Rule
-      {/if}
     </button>
   </div>
 </div>
