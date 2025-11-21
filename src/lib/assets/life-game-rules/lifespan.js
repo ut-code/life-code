@@ -1,6 +1,5 @@
 "use strict";
 
-let timer = "stop";
 let generationFigure = 0;
 let isDragging = false;
 let dragMode = 0; // 1: 黒にする, 0: 白にする
@@ -12,7 +11,7 @@ let previewCells = [];
 
 //変数設定
 let boardSize = 20; //盤面の大きさ(20x20)
-const cellSize = 600 / boardSize; //セルの大きさ(px)
+const cellSize = 450 / boardSize; //セルの大きさ(px)
 const maxLifespan = 2; // セルの最大寿命
 
 // around: 周囲の生きたセル数, currentLifespan: 現在の寿命
@@ -54,6 +53,14 @@ const table = document.getElementById("game-board");
 
 //盤面をBoardに従って変更する関数達(Boardを変更したら実行する)
 function renderBoard() {
+  // bodyを中央配置に設定
+  document.body.style.display = "flex";
+  document.body.style.justifyContent = "center";
+  document.body.style.alignItems = "center";
+  document.body.style.minHeight = "100vh";
+  document.body.style.margin = "0";
+  document.body.style.padding = "0";
+
   // 初回の盤面生成
   table.innerHTML = "";
   for (let i = 0; i < boardSize; i++) {
@@ -97,7 +104,6 @@ function renderBoard() {
             }
             rerender();
             generationChange(0);
-            stop();
           } else {
             window.parent.postMessage(
               {
@@ -111,16 +117,16 @@ function renderBoard() {
       };
       button.onmousedown = (e) => {
         e.preventDefault();
-        if (timer === "stop" && !isPlacingTemplate) {
+        if (!isPlacingTemplate) {
           isDragging = true;
-          board[i][j] = !board[i][j];
+          board[i][j] = board[i][j] ? 0 : 1;
           dragMode = board[i][j];
           button.lifespan = board[i][j] ? maxLifespan : 0;
           button.style.backgroundColor = getStyle(board[i][j], button.lifespan);
         }
       };
       button.onmouseenter = () => {
-        if (isDragging && timer === "stop" && board[i][j] !== dragMode && !isPlacingTemplate) {
+        if (isDragging && board[i][j] !== dragMode && !isPlacingTemplate) {
           board[i][j] = dragMode;
           button.lifespan = board[i][j] ? maxLifespan : 0;
           button.style.backgroundColor = getStyle(board[i][j], button.lifespan);
@@ -197,7 +203,6 @@ document.addEventListener("mouseup", () => {
 });
 
 renderBoard();
-progressBoard();
 
 function generationChange(num) {
   //現在の世代を表すgenerationFigureを変更し、文章も変更
@@ -271,14 +276,6 @@ on.progress = () => {
   progressBoard();
 };
 
-on.play = () => {
-  timer = "start";
-};
-
-on.pause = () => {
-  timer = "stop";
-};
-
 on.board_reset = () => {
   //すべて白にBoardを変更
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => 0));
@@ -295,18 +292,8 @@ on.board_randomize = () => {
   generationChange(0);
 };
 
-on.request_sync = () => {
-  window.parent.postMessage(
-    {
-      type: "sync",
-      data: {
-        generationFigure: generationFigure,
-        boardSize: boardSize,
-      },
-    },
-    "*",
-  );
-  console.log("generationFigure:", generationFigure, "boardSize:", boardSize);
+on.get_boardsize = () => {
+  window.parent.postMessage({ type: "get_boardsize", data: boardSize }, "*");
 };
 
 on.place_template = (template) => {
@@ -315,7 +302,6 @@ on.place_template = (template) => {
   patternWidth = patternShape[0].length;
   isPlacingTemplate = true;
   table.style.cursor = "crosshair";
-  stop();
 };
 
 on.save_board = async () => {
@@ -326,5 +312,4 @@ on.apply_board = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
-  stop();
 };
