@@ -1,5 +1,11 @@
 "use strict";
 
+//ルール
+//スコア計算は生きているセルの総数が増加した時、増加分だけ加算されます
+//減少した時は、スコアは変化しません
+//スコアが計算され始めてからセルを直接変化させるとスコアがリセットされます
+//生きているセルがなくなるか、ループが起きたら計算終了です
+
 let generationFigure = 0;
 let isDragging = false;
 let dragMode = 0; // 1: 黒にする, 0: 白にする
@@ -8,27 +14,23 @@ let patternShape = [];
 let patternHeight = 0;
 let patternWidth = 0;
 let previewCells = [];
-let isColorful = false;
+let previousBoard = [];
+let score = 0;
 
 //変数設定
-const boardSize = 20; //盤面の大きさ(20x20)
+let boardSize = 20; //盤面の大きさ(20x20)
 const cellSize = 450 / boardSize; //セルの大きさ(px)
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
-  // 自身が生きている & 周囲が 2 か 3 で生存 50%の確率でこのルールに従う
+  // 自身が生きている & 周囲が 2 か 3 で生存
   if (self && 2 <= around && around <= 3) {
-    return Math.random() > 0.5 ? 1 : 0;
+    return self;
   }
-  // 自身が生きている & 周囲が2,3以外で死亡 50%の確率でこのルールに従う
-  if (self && (around < 2 || around > 3)) {
-    return Math.random() > 0.5 ? 0 : 1;
-  }
-  // 自身が死んでいる & 周囲が 3 で誕生 50%の確率でこのルールに従う
+  // 自身が死んでいる & 周囲が 3 で誕生
   if (!self && around === 3) {
-    return Math.random() > 0.5 ? 1 : 0;
+    return 1;
   }
-  // 自身が死んでいる & 周囲が3以外で死亡のまま
   return 0;
 }
 
@@ -86,6 +88,9 @@ function renderBoard() {
                 board[boardRow][boardCol] = patternShape[r][c];
               }
             }
+            if (generationFigure !== 0) {
+              scoreReset();
+            }
             rerender();
             generationChange(0);
           } else {
@@ -106,6 +111,9 @@ function renderBoard() {
           board[i][j] = board[i][j] ? 0 : 1;
           dragMode = board[i][j];
           button.style.backgroundColor = board[i][j] ? "black" : "white";
+          if (generationFigure > 1) {
+            scoreReset();
+          }
         }
       };
       button.onmouseenter = () => {
@@ -177,6 +185,16 @@ document.addEventListener("mouseup", () => {
 
 renderBoard();
 
+function scoreReset() {
+  if (score === 0) return;
+  previousBoard = [];
+  showToast(
+    "盤面が途中で変更されたため得点がリセットされました。スコア:" + score,
+    "The score has been reset because the board was changed midway through. Score:" + score,
+  );
+  score = 0;
+}
+
 function generationChange(num) {
   //現在の世代を表すgenerationFigureを変更し、文章も変更
   generationFigure = num;
@@ -221,6 +239,42 @@ function progressBoard() {
       newBoard[i][j] = isNextAlive(around, board[i][j]);
     }
   }
+
+  // すべて白マスでないか確認
+  const isAllWhite = newBoard.every((row) => row.every((cell) => cell === 0));
+  if (isAllWhite) {
+    // generationFigure が 0 の場合は、初期状態なのでメッセージを送らない
+    if (generationFigure === 0) {
+      return;
+    }
+    showToast(
+      "盤面上に生きているセルがなくなりました　終了！ スコア:" + score,
+      "All cells on the board have been cleared. Game over! Score:" + score,
+    );
+    window.parent.postMessage({ type: "timer_change", data: false }, "*");
+    previousBoard = [];
+  }
+
+  // ループ確認
+  const newBoardString = JSON.stringify(newBoard);
+  if (previousBoard.some((prevBoard) => JSON.stringify(prevBoard) === newBoardString)) {
+    showToast("ループ発生　終了！ スコア:" + score, "Loop detected! End! Score:" + score);
+    window.parent.postMessage({ type: "timer_change", data: false }, "*");
+    previousBoard = [];
+  }
+
+  let previousLiveCells = board.flat().reduce((sum, cell) => sum + cell, 0);
+  let currentLiveCells = newBoard.flat().reduce((sum, cell) => sum + cell, 0);
+  if (previousBoard.length === 0) {
+    score = 0;
+  } else {
+    score += previousLiveCells > currentLiveCells ? previousLiveCells - currentLiveCells : 0;
+  }
+
+  previousBoard.push(board);
+  if (previousBoard.length > 120) {
+    previousBoard.shift(); // 120個までに制限
+  }
   board = newBoard;
   generationChange(generationFigure + 1);
   rerender();
@@ -237,6 +291,7 @@ on.board_reset = () => {
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => 0));
   renderBoard();
   generationChange(0);
+  scoreReset();
 };
 
 on.board_randomize = () => {
@@ -246,6 +301,7 @@ on.board_randomize = () => {
   );
   renderBoard();
   generationChange(0);
+  scoreReset();
 };
 
 on.get_boardsize = () => {
@@ -261,24 +317,22 @@ on.place_template = (template) => {
 };
 
 on.save_board = async () => {
-  window.parent.postMessage(
-    {
-      type: "save_board",
-      data: {
-        board: board,
-        isColorful: isColorful,
-      },
-    },
-    "*",
-  );
+  window.parent.postMessage({ type: "save_board", data: board }, "*");
 };
 
 on.apply_board = (newBoard) => {
   board = newBoard;
   renderBoard();
   generationChange(0);
+  scoreReset();
 };
 
-on.request_colorful_status = () => {
-  window.parent.postMessage({ type: "colorful_status", data: isColorful }, "*");
-};
+function showToast(jMessage, eMessage) {
+  window.parent.postMessage(
+    {
+      type: "show_toast",
+      data: { japanese: jMessage, english: eMessage },
+    },
+    "*",
+  );
+}

@@ -2,6 +2,7 @@ import lifespan from "$lib/assets/life-game-rules/lifespan.js?raw";
 import probabilistics from "$lib/assets/life-game-rules/probabilistics.js?raw";
 import wolframcode from "$lib/assets/life-game-rules/wolframcode.js?raw";
 import colorful from "$lib/assets/life-game-rules/colorful.js?raw";
+import score from "$lib/assets/life-game-rules/score.js?raw";
 
 export type RuleExplanation = {
   name: {
@@ -58,5 +59,16 @@ export const rulesExplanation = {
       en: "A system that enables colorful coloring",
     },
     code: colorful,
+  },
+  score: {
+    name: {
+      ja: "得点システム",
+      en: "Score system",
+    },
+    description: {
+      ja: "生きたセルの増加数で得点を競えます",
+      en: "Compete for points based on the number of live cells gained",
+    },
+    code: score,
   },
 };

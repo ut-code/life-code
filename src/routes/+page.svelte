@@ -76,7 +76,9 @@
     | "get_boardsize"
     | "Size shortage"
     | "save_board"
-    | "colorful_status";
+    | "colorful_status"
+    | "show_toast"
+    | "timer_change";
 
   function handleMessage(event: MessageEvent<{ type: IncomingEvent; data: unknown }>) {
     switch (event.data.type) {
@@ -105,6 +107,15 @@
       }
       case "colorful_status": {
         isColorful = event.data.data as boolean;
+        break;
+      }
+      case "show_toast": {
+        const sentence = event.data.data as { japanese: string; english: string };
+        toast.show(isJapanese ? sentence.japanese : sentence.english, "info");
+        break;
+      }
+      case "timer_change": {
+        timerIsRunnning = event.data.data as boolean;
         break;
       }
       default: {
