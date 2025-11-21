@@ -16,8 +16,8 @@
   import { oneDark } from "@codemirror/theme-one-dark";
   import { EditorView } from "@codemirror/view";
 
-  let editingCode = $state(lifeGameJS);
-  let appliedCode = $state(lifeGameJS);
+  let editingCode = $state(lifeGameJS || "");
+  let appliedCode = $state(lifeGameJS || "");
 
   const previewDoc = $derived(lifeGameHTML.replace('"@JAVASCRIPT@";', `${event}\n${appliedCode}`));
 
@@ -34,6 +34,9 @@
 
   const boardManager = new BoardManager();
   const codeManager = new CodeManager();
+
+  let showColorPicker = $state(false);
+  let selectedColor = $state("#000000");
 
   let disabledTemplates: { [key: string]: boolean } = $derived.by(() => {
     const newDisabledState: { [key: string]: boolean } = {};
@@ -64,7 +67,8 @@
     | "save_board"
     | "apply_board"
     | "request_sync"
-    | "progress";
+    | "progress"
+    | "apply_color";
 
   type IncomingEvent = "generation_change" | "sync" | "Size shortage" | "save_board";
 
@@ -145,6 +149,17 @@
     editingCode = rule.code;
     appliedCode = rule.code;
   }
+
+  function applyColor(color: string) {
+    // 16進数カラーコード（例: #ff0000）をRGBオブジェクトに変換
+    const hex = color.startsWith("#") ? color.slice(1) : color;
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+
+    sendEvent("apply_color", { r, g, b });
+    showColorPicker = false;
+  }
 </script>
 
 <div class="navbar bg-[#E0E0E0] shadow-sm">
@@ -154,8 +169,15 @@
 
   <div class="font-semibold text-black text-[20px] ml-5">Life code</div>
 
+  <label class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] swap ml-auto">
+    <input type="checkbox" bind:checked={showColorPicker} />
+    <div class="text-black">
+      <img class="size-6" src={icons.paintBrush} alt="Paint Brush" />
+    </div>
+  </label>
+
   <button
-    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-auto"
+    class="btn btn-ghost btn-circle hover:bg-[rgb(220,220,220)] ml-10"
     onclick={() => {
       resetModalOpen = true;
     }}
@@ -519,3 +541,29 @@
     </button>
   </div>
 </div>
+
+{#if showColorPicker}
+  <div
+    class="absolute top-16 right-32 z-50 bg-white p-4 rounded-lg shadow-lg border border-gray-300"
+  >
+    <h3 class="font-bold mb-2">
+      {isJapanese
+        ? "色選択可能時のみ利用できます"
+        : "Available only when color selection is enabled"}
+    </h3>
+    <input type="color" bind:value={selectedColor} class="w-full h-12 cursor-pointer" />
+    <div class="flex gap-2 mt-3">
+      <button
+        class="btn btn-sm btn-primary flex-1"
+        onclick={() => {
+          applyColor(selectedColor);
+        }}
+      >
+        {isJapanese ? "適用" : "Apply"}
+      </button>
+      <button class="btn btn-sm flex-1" onclick={() => (showColorPicker = false)}>
+        {isJapanese ? "キャンセル" : "Cancel"}
+      </button>
+    </div>
+  </div>
+{/if}

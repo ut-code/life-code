@@ -1,5 +1,6 @@
 import lifespan from "$lib/assets/life-game-rules/lifespan.js?raw";
 import probabilistics from "$lib/assets/life-game-rules/probabilistics.js?raw";
+import color from "$lib/assets/life-game-rules/color.js?raw";
 
 export type RuleExplanation = {
   name: {
@@ -34,5 +35,16 @@ export const rulesExplanation = {
       en: "Introduce probability to life and death",
     },
     code: probabilistics,
+  },
+  color: {
+    name: {
+      ja: "カラフル",
+      en: "Colorful",
+    },
+    description: {
+      ja: "セルに色を設定できます",
+      en: "Set colors to cells",
+    },
+    code: color,
   },
 };
