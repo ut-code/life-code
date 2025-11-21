@@ -1,5 +1,6 @@
 import lifespan from "$lib/assets/life-game-rules/lifespan.js?raw";
 import probabilistics from "$lib/assets/life-game-rules/probabilistics.js?raw";
+import wolframcode from "$lib/assets/life-game-rules/wolframcode.js?raw";
 
 export type RuleExplanation = {
   name: {
@@ -34,5 +35,16 @@ export const rulesExplanation = {
       en: "Introduce probability to life and death",
     },
     code: probabilistics,
+  },
+  wolframcode: {
+    name: {
+      ja: "ウルフラム・コード",
+      en: "Wolfram code",
+    },
+    description: {
+      ja: "１次元のセルオートマトンです",
+      en: "1 dimensional cellular automaton",
+    },
+    code: wolframcode,
   },
 };
