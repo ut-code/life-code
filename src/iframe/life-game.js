@@ -3,35 +3,43 @@
 let timer = "stop";
 let generationFigure = 0;
 let isDragging = false;
-let dragMode = 0; // 1: 黒にする, 0: 白にする
+let dragMode = 0; // 1: 生きたセルにする, 0: 死んだセルにする
 let isPlacingTemplate = false;
 let patternShape = [];
 let patternHeight = 0;
 let patternWidth = 0;
 let previewCells = [];
 
-//変数設定
-let boardSize = 20; //盤面の大きさ(20x20)
-const cellSize = 600 / boardSize; //セルの大きさ(px)
+//盤面の大きさ
+let boardSize = 20;
+const cellSize = 600 / boardSize;
+
+//セルの色
+const aliveCellColor = "black";
+const deadCellColor = "white";
+
+//セルの誕生/生存条件
+const birthCounts = [3];
+const survivalCounts = [2, 3];
 
 // around: 周囲の生きたセル数 self: 自身が生きているかどうか
 function isNextAlive(around, self) {
-  // 自身が生きている & 周囲が 2 か 3 で生存
-  if (self && 2 <= around && around <= 3) {
-    return self;
-  }
-  // 自身が死んでいる & 周囲が 3 で誕生
-  if (!self && around === 3) {
+  // 自身が死んでいる & 周囲が birthCounts で誕生
+  if (!self && birthCounts.includes(around)) {
     return 1;
+  }
+  // 自身が生きている & 周囲が survivalCounts で生存
+  if (self && survivalCounts.includes(around)) {
+    return self;
   }
   return 0;
 }
 
 // cellの状態に応じた色を返す関数
 function getStyle(cell) {
-  if (cell === 0) return "white";
+  if (cell === 0) return deadCellColor;
   // cellの値に応じて色を返す場合はここに追加
-  return "black"; // デフォルトは黒
+  return aliveCellColor; // デフォルトは黒
 }
 
 //Boardの初期化
@@ -57,7 +65,7 @@ function renderBoard() {
       const td = document.createElement("td");
       td.style.padding = "0";
       const button = document.createElement("button");
-      button.style.backgroundColor = board[i][j] ? "black" : "white"; //Boardの対応する値によって色を変更
+      button.style.backgroundColor = board[i][j] ? aliveCellColor : deadCellColor; //Boardの対応する値によって色を変更
       // ボードが大きいときは border をつけない
       if (boardSize >= 50) {
         button.style.border = "none";
@@ -67,8 +75,8 @@ function renderBoard() {
       }
       button.style.width = `${cellSize}px`;
       button.style.height = `${cellSize}px`;
-      button.style.padding = "0"; //cellSizeが小さいとき、セルが横長になることを防ぐ
-      button.style.display = "block"; //cellSizeが小さいとき、行間が空きすぎるのを防ぐ
+      button.style.padding = "0";
+      button.style.display = "block";
       button.onclick = () => {
         if (isPlacingTemplate) {
           clearPreview();
@@ -98,15 +106,15 @@ function renderBoard() {
         e.preventDefault();
         if (timer === "stop" && !isPlacingTemplate) {
           isDragging = true;
-          board[i][j] = !board[i][j];
+          board[i][j] = board[i][j] === 1 ? 0 : 1;
           dragMode = board[i][j];
-          button.style.backgroundColor = board[i][j] ? "black" : "white";
+          button.style.backgroundColor = board[i][j] ? aliveCellColor : deadCellColor;
         }
       };
       button.onmouseenter = () => {
         if (isDragging && timer === "stop" && board[i][j] !== dragMode && !isPlacingTemplate) {
           board[i][j] = dragMode;
-          button.style.backgroundColor = board[i][j] ? "black" : "white";
+          button.style.backgroundColor = board[i][j] ? aliveCellColor : deadCellColor;
         }
         if (isPlacingTemplate) {
           drawPreview(i, j);
@@ -145,7 +153,7 @@ function drawPreview(row, col) {
 function clearPreview() {
   previewCells.forEach((cellPos) => {
     const cell = table.rows[cellPos.row].cells[cellPos.col].firstChild;
-    cell.style.backgroundColor = board[cellPos.row][cellPos.col] ? "black" : "white";
+    cell.style.backgroundColor = board[cellPos.row][cellPos.col] ? aliveCellColor : deadCellColor;
   });
   previewCells = [];
 }
@@ -196,7 +204,7 @@ function progressBoard() {
   const newBoard = structuredClone(board);
   for (let i = 0; i < boardSize; i++) {
     for (let j = 0; j < boardSize; j++) {
-      //周囲のマスに黒マスが何個あるかを計算(aroundに格納)↓
+      //周囲のマスに生きたセルが何個あるかを計算(aroundに格納)↓
       let around = 0;
       let tate, yoko;
       if (i === 0) {
@@ -220,7 +228,7 @@ function progressBoard() {
           }
         }
       }
-      //↑周囲のマスに黒マスが何個あるかを計算(aroundに格納)
+      //↑周囲のマスに生きたセルが何個あるかを計算(aroundに格納)
       newBoard[i][j] = isNextAlive(around, board[i][j]);
     }
   }
@@ -244,14 +252,14 @@ on.pause = () => {
 };
 
 on.board_reset = () => {
-  //すべて白にBoardを変更
+  //すべて死んだセルにBoardを変更
   board = Array.from({ length: boardSize }, () => Array.from({ length: boardSize }, () => 0));
   renderBoard();
   generationChange(0);
 };
 
 on.board_randomize = () => {
-  //白黒ランダムにBoardを変更
+  //生きたセル死んだセルランダムにBoardを変更
   board = Array.from({ length: boardSize }, () =>
     Array.from({ length: boardSize }, () => (Math.random() > 0.5 ? 1 : 0)),
   );
