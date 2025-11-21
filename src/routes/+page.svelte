@@ -252,7 +252,7 @@
   class:translate-y-full={!ruleDrawerOpen}
   class:translate-y-0={ruleDrawerOpen}
 >
-  <div class="p-4 h-30 w-full overflow-x-auto">
+  <div class="p-4 h-40 w-full overflow-x-auto">
     <div class="flex gap-4">
       {#each Object.entries(rulesExplanation) as [ruleName, ruleData] (ruleName)}
         <button

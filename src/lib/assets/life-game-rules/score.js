@@ -268,7 +268,7 @@ function progressBoard() {
   if (previousBoard.length === 0) {
     score = 0;
   } else {
-    score += previousLiveCells > currentLiveCells ? previousLiveCells - currentLiveCells : 0;
+    score += currentLiveCells > previousLiveCells ? currentLiveCells - previousLiveCells : 0;
   }
 
   previousBoard.push(board);
