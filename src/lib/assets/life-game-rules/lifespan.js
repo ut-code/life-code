@@ -10,7 +10,7 @@ let patternWidth = 0;
 let previewCells = [];
 
 //変数設定
-let boardSize = 20; //盤面の大きさ(20x20)
+const boardSize = 20; //盤面の大きさ(20x20)
 const cellSize = 450 / boardSize; //セルの大きさ(px)
 const maxLifespan = 2; // セルの最大寿命
 
@@ -185,14 +185,6 @@ function rerender() {
       const expectedCellColor = getStyle(board[i][j], button.lifespan);
       if (currentCellColor !== expectedCellColor) {
         button.style.backgroundColor = expectedCellColor;
-      }
-
-      // セルサイズの更新
-      const currentCellsize = button.style.width;
-      const expectedCellsize = `${cellSize}px`;
-      if (currentCellsize !== expectedCellsize) {
-        button.style.width = expectedCellsize;
-        button.style.height = expectedCellsize;
       }
     }
   }
