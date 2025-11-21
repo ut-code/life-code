@@ -74,8 +74,8 @@
         break;
       }
       case "get_boardsize": {
-        const data = event.data.data as { boardSize: number };
-        sizeValue = data.boardSize;
+        const data = event.data.data as number;
+        sizeValue = data;
         break;
       }
       case "Size shortage": {
