@@ -37,6 +37,7 @@ export type BoardListItem = {
   name: string;
   createdAt: string;
   preview: number[][];
+  isColorful: boolean;
 };
 
 export async function fetchBoardList(isJapanese: boolean): Promise<BoardListItem[] | undefined> {

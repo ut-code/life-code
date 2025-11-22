@@ -72,6 +72,7 @@ export async function GET({ url }) {
         name: true,
         createdAt: true,
         preview: true,
+        isColorful: true,
       },
     });
 
