@@ -29,7 +29,7 @@
     selectedBoardId = null;
   }
 
-  function getCellColor(cell: number): string {
+  function getCellColor(cell: number, isColorful: boolean): string {
     const WHITE = 0xffffff;
 
     if (isColorful) {
@@ -71,7 +71,10 @@
             {#each manager.saveState.preview as row, i (i)}
               <div class="preview-row">
                 {#each row as cell, j (j)}
-                  <div class="preview-cell" style="background-color: {getCellColor(cell)}"></div>
+                  <div
+                    class="preview-cell"
+                    style="background-color: {getCellColor(cell, isColorful)}"
+                  ></div>
                 {/each}
               </div>
             {/each}
@@ -129,7 +132,7 @@
                         {#each row as cell, j (j)}
                           <div
                             class="preview-cell"
-                            style="background-color: {getCellColor(cell)}"
+                            style="background-color: {getCellColor(cell, item.isColorful)}"
                           ></div>
                         {/each}
                       </div>
